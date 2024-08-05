@@ -16,16 +16,28 @@ vardef: type ID (ASSIGN expr)? (COMMA ID (ASSIGN expr)?)* SEMI ;
 
 stmts: LBCE stmt* RBCE ;
 
+jmpstmt:
+    BREAK SEMI # BreakStmt
+    | CONTINUE SEMI # ContinueStmt
+    | RETURN expr? SEMI # ReturnStmt
+    ;
+
+loopstmt:
+    FOR LPAR rowexpr? SEMI rowexpr? SEMI rowexpr? RPAR stmt # ForStmt
+    | WHILE LPAR expr RPAR stmt # WhileStmt
+    ;
+
+branchstmt:
+    IF LPAR expr RPAR stmt (ELSE stmt)? # IfStmt
+    ;
+
 stmt:
     stmts
     | vardef
-    | expr SEMI
-    | IF LPAR expr RPAR stmt (ELSE stmt)?
-    | FOR LPAR expr? SEMI expr? SEMI expr? RPAR (stmt|stmts)
-    | WHILE LPAR expr RPAR (stmt|stmts)
-    | BREAK SEMI
-    | CONTINUE SEMI
-    | RETURN expr? SEMI
+    | rowexpr SEMI
+    | branchstmt
+    | loopstmt
+    | jmpstmt
     | SEMI
     ;
 
@@ -61,11 +73,12 @@ expr:
 
 rowexpr: expr (COMMA expr)*;
 indbrackets: LBKT expr? RBKT;
+
 type: atomtype | arraytype;
 atomtype: INT | BOOL | STRING | ID | VOID;
 arraytype: atomtype (LBKT INTCONST? RBKT)+;
 
 literal: INTCONST | STRINGCONST | (TRUE | FALSE) | NULL | arrayliteral;
-arrayliteral: LBCE (literal (COMMA literal)*)? RBCE ;
+arrayliteral: LBCE rowexpr? RBCE ;
 
 fmtstr: (FMTSTRBGN (expr (FMTSTRBODY expr)*) FMTSTREND) | FMTSTRPURE ;

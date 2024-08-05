@@ -1,4 +1,4 @@
-// Generated from F:/vscode/antlr-demo/compiler-2024/src/parser/Mx.g4 by ANTLR 4.13.1
+// Generated from Mx.g4 by ANTLR 4.7.1
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -45,6 +45,48 @@ public interface MxVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitStmts(Mx.StmtsContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code BreakStmt}
+	 * labeled alternative in {@link Mx#jmpstmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBreakStmt(Mx.BreakStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ContinueStmt}
+	 * labeled alternative in {@link Mx#jmpstmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitContinueStmt(Mx.ContinueStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ReturnStmt}
+	 * labeled alternative in {@link Mx#jmpstmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitReturnStmt(Mx.ReturnStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ForStmt}
+	 * labeled alternative in {@link Mx#loopstmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitForStmt(Mx.ForStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code WhileStmt}
+	 * labeled alternative in {@link Mx#loopstmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWhileStmt(Mx.WhileStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code IfStmt}
+	 * labeled alternative in {@link Mx#branchstmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIfStmt(Mx.IfStmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link Mx#stmt}.
 	 * @param ctx the parse tree
