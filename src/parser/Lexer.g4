@@ -1,4 +1,4 @@
-lexer grammar MxLexer;
+lexer grammar Lexer;
 
 VOID: 'void';
 BOOL: 'bool';

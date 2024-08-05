@@ -1,237 +1,237 @@
-// Generated from MxParser.g4 by ANTLR 4.7.1
+// Generated from Mx.g4 by ANTLR 4.7.1
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
- * This class provides an empty implementation of {@link MxParserVisitor},
+ * This class provides an empty implementation of {@link MxVisitor},
  * which can be extended to create a visitor which only needs to handle a subset
  * of the available methods.
  *
  * @param <T> The return type of the visit operation. Use {@link Void} for
  * operations with no return type.
  */
-public class MxParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements MxParserVisitor<T> {
+public class MxBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements MxVisitor<T> {
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitProg(MxParserParser.ProgContext ctx) { return visitChildren(ctx); }
+	@Override public T visitProg(MxParser.ProgContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitDef(MxParserParser.DefContext ctx) { return visitChildren(ctx); }
+	@Override public T visitDef(MxParser.DefContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFuncdef(MxParserParser.FuncdefContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFuncdef(MxParser.FuncdefContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitClassdef(MxParserParser.ClassdefContext ctx) { return visitChildren(ctx); }
+	@Override public T visitClassdef(MxParser.ClassdefContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitVardef(MxParserParser.VardefContext ctx) { return visitChildren(ctx); }
+	@Override public T visitVardef(MxParser.VardefContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStmts(MxParserParser.StmtsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitStmts(MxParser.StmtsContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitStmt(MxParserParser.StmtContext ctx) { return visitChildren(ctx); }
+	@Override public T visitStmt(MxParser.StmtContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitConstant(MxParserParser.ConstantContext ctx) { return visitChildren(ctx); }
+	@Override public T visitConstant(MxParser.ConstantContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitVarAccess(MxParserParser.VarAccessContext ctx) { return visitChildren(ctx); }
+	@Override public T visitVarAccess(MxParser.VarAccessContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMemberFuncAccess(MxParserParser.MemberFuncAccessContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMemberFuncAccess(MxParser.MemberFuncAccessContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitMemberObjAccess(MxParserParser.MemberObjAccessContext ctx) { return visitChildren(ctx); }
+	@Override public T visitMemberObjAccess(MxParser.MemberObjAccessContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitThisPointer(MxParserParser.ThisPointerContext ctx) { return visitChildren(ctx); }
+	@Override public T visitThisPointer(MxParser.ThisPointerContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitBinaryExp(MxParserParser.BinaryExpContext ctx) { return visitChildren(ctx); }
+	@Override public T visitBinaryExp(MxParser.BinaryExpContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFuncCall(MxParserParser.FuncCallContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFuncCall(MxParser.FuncCallContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAssignExp(MxParserParser.AssignExpContext ctx) { return visitChildren(ctx); }
+	@Override public T visitAssignExp(MxParser.AssignExpContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitNewArray(MxParserParser.NewArrayContext ctx) { return visitChildren(ctx); }
+	@Override public T visitNewArray(MxParser.NewArrayContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitTernaryExp(MxParserParser.TernaryExpContext ctx) { return visitChildren(ctx); }
+	@Override public T visitTernaryExp(MxParser.TernaryExpContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArrayAccess(MxParserParser.ArrayAccessContext ctx) { return visitChildren(ctx); }
+	@Override public T visitArrayAccess(MxParser.ArrayAccessContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPostSelf(MxParserParser.PostSelfContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPostSelf(MxParser.PostSelfContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitUnaryExp(MxParserParser.UnaryExpContext ctx) { return visitChildren(ctx); }
+	@Override public T visitUnaryExp(MxParser.UnaryExpContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFormatString(MxParserParser.FormatStringContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFormatString(MxParser.FormatStringContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitNewClass(MxParserParser.NewClassContext ctx) { return visitChildren(ctx); }
+	@Override public T visitNewClass(MxParser.NewClassContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitParentheses(MxParserParser.ParenthesesContext ctx) { return visitChildren(ctx); }
+	@Override public T visitParentheses(MxParser.ParenthesesContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitPreSelf(MxParserParser.PreSelfContext ctx) { return visitChildren(ctx); }
+	@Override public T visitPreSelf(MxParser.PreSelfContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitRowexpr(MxParserParser.RowexprContext ctx) { return visitChildren(ctx); }
+	@Override public T visitRowexpr(MxParser.RowexprContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitIndbrackets(MxParserParser.IndbracketsContext ctx) { return visitChildren(ctx); }
+	@Override public T visitIndbrackets(MxParser.IndbracketsContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitType(MxParserParser.TypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitType(MxParser.TypeContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitAtomtype(MxParserParser.AtomtypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitAtomtype(MxParser.AtomtypeContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArraytype(MxParserParser.ArraytypeContext ctx) { return visitChildren(ctx); }
+	@Override public T visitArraytype(MxParser.ArraytypeContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitLiteral(MxParserParser.LiteralContext ctx) { return visitChildren(ctx); }
+	@Override public T visitLiteral(MxParser.LiteralContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitArrayliteral(MxParserParser.ArrayliteralContext ctx) { return visitChildren(ctx); }
+	@Override public T visitArrayliteral(MxParser.ArrayliteralContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitFmtstr(MxParserParser.FmtstrContext ctx) { return visitChildren(ctx); }
+	@Override public T visitFmtstr(MxParser.FmtstrContext ctx) { return visitChildren(ctx); }
 }

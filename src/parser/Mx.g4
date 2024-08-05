@@ -1,6 +1,6 @@
-grammar MxParser;
+grammar Mx;
 
-import MxLexer;
+import Lexer;
 
 prog: def+ EOF? ;
 
