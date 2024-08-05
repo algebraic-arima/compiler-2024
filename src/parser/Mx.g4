@@ -1,6 +1,8 @@
-grammar Mx;
+parser grammar Mx;
 
-import Lexer;
+options {
+    tokenVocab = Lexer;
+}
 
 prog: def+ EOF? ;
 
