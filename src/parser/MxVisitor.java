@@ -1,12 +1,15 @@
 // Generated from Mx.g4 by ANTLR 4.7.1
+
+package src.parser;
+
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
  * This interface defines a complete generic visitor for a parse tree produced
  * by {@link Mx}.
  *
- * @param <T> The return type of the visit operation. Use {@link Void} for
- * operations with no return type.
+ * @param <T> The return atomType of the visit operation. Use {@link Void} for
+ * operations with no return atomType.
  */
 public interface MxVisitor<T> extends ParseTreeVisitor<T> {
 	/**

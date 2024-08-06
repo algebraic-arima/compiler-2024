@@ -1,4 +1,8 @@
-lexer grammar Lexer;
+lexer grammar Lex;
+
+@header{
+    package src.parser;
+}
 
 VOID: 'void';
 BOOL: 'bool';

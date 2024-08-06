@@ -5,8 +5,6 @@ import java.util.List;
 
 public class Prog extends BaseASTNode {
 
-
-
     public Prog() {
         super();
     }

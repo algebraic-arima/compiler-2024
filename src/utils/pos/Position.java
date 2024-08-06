@@ -1,9 +1,14 @@
-package src.utils.Position;
+package src.utils.pos;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
 public class Position {
     public int row, column;
+
+    public Position(){
+        this.row = 0;
+        this.column = 0;
+    }
 
     public Position(int row, int column) {
         this.row = row;

@@ -1,7 +1,11 @@
 parser grammar Mx;
 
+@header{
+    package src.parser;
+}
+
 options {
-    tokenVocab = Lexer;
+    tokenVocab = Lex;
 }
 
 prog: def+ EOF? ;
@@ -17,26 +21,22 @@ vardef: type ID (ASSIGN expr)? (COMMA ID (ASSIGN expr)?)* SEMI ;
 stmts: LBCE stmt* RBCE ;
 
 jmpstmt:
-    BREAK SEMI # BreakStmt
+    IF LPAR expr RPAR stmt (ELSE stmt)? # IfStmt
+    | BREAK SEMI # BreakStmt
     | CONTINUE SEMI # ContinueStmt
     | RETURN expr? SEMI # ReturnStmt
     ;
 
-loopstmt:
+lpstmt:
     FOR LPAR rowexpr? SEMI rowexpr? SEMI rowexpr? RPAR stmt # ForStmt
     | WHILE LPAR expr RPAR stmt # WhileStmt
-    ;
-
-branchstmt:
-    IF LPAR expr RPAR stmt (ELSE stmt)? # IfStmt
     ;
 
 stmt:
     stmts
     | vardef
     | rowexpr SEMI
-    | branchstmt
-    | loopstmt
+    | lpstmt
     | jmpstmt
     | SEMI
     ;
@@ -47,9 +47,9 @@ expr:
     | expr MEMB ID # MemberObjAccess
     | expr LBKT expr RBKT # ArrayAccess
     | ID LPAR rowexpr? RPAR # FuncCall
-    | expr op=(SDEC|SINC) # PreSelf
-    | op=(SDEC|SINC) expr # PostSelf
-    | op=(SUB|NOT|BNOT) expr # UnaryExp
+    | expr op=(SDEC|SINC) # RUnaryExp
+    | op=(SDEC|SINC) expr # LUnaryExp
+    | op=(SUB|NOT|BNOT) expr # LUnaryExp
     | expr op=(DIV|MUL) expr # BinaryExp
     | expr op=MOD expr # BinaryExp
     | expr op=(ADD|SUB) expr # BinaryExp
@@ -65,7 +65,7 @@ expr:
     | <assoc = right> expr op=ASSIGN expr # AssignExp
     | NEW atomtype indbrackets+ # NewArray
     | NEW ID (LPAR RPAR)? # NewClass
-    | THIS # ThisPointer
+    | THIS # ThisPtr
     | ID # VarAccess
     | literal # Constant
     | fmtstr # FormatString
