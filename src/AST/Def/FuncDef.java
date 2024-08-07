@@ -5,13 +5,17 @@ import src.AST.Stmt.PolyStmt;
 import src.utils.pos.Position;
 import src.utils.type.Type;
 
+import java.util.HashMap;
+
 public class FuncDef extends Def {
     public String funcName;
     public Type funcType;
+    public HashMap<String,Type> funcParams;
     public PolyStmt funcBody;
 
     public FuncDef(Position p) {
         super(p);
+        funcParams = new HashMap<>();
     }
 
     @Override

@@ -43,7 +43,7 @@ stmt:
 
 expr:
     LPAR expr RPAR # Parentheses
-    | expr MEMB ID LPAR rowexpr? RPAR # MemberFuncAccess
+    | expr MEMB ID LPAR rowexpr? RPAR # MemberFuncCall
     | expr MEMB ID # MemberObjAccess
     | expr LBKT expr RBKT # ArrayAccess
     | ID LPAR rowexpr? RPAR # FuncCall
@@ -63,7 +63,7 @@ expr:
     | expr op=OR expr # BinaryExp
     | <assoc = right> expr op=QUES expr op=COLON expr # TernaryExp
     | <assoc = right> expr op=ASSIGN expr # AssignExp
-    | NEW atomtype indbrackets+ # NewArray
+    | NEW atomtype indbrackets+ arrayliteral? # NewArray
     | NEW ID (LPAR RPAR)? # NewClass
     | THIS # ThisPtr
     | ID # VarAccess
@@ -76,7 +76,7 @@ indbrackets: LBKT expr? RBKT;
 
 type: atomtype | arraytype;
 atomtype: INT | BOOL | STRING | ID | VOID;
-arraytype: atomtype (LBKT INTCONST? RBKT)+;
+arraytype: atomtype (LBKT expr? RBKT)+;
 
 literal: INTCONST | STRINGCONST | (TRUE | FALSE) | NULL | arrayliteral;
 arrayliteral: LBCE rowexpr? RBCE ;

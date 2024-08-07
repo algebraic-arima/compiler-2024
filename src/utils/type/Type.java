@@ -5,18 +5,18 @@ import java.util.HashMap;
 
 public class Type {
     public enum T {
-        INT, BOOL, STRING, VOID, CLASS, ARRAY, FUNCTION, NULL, UNKNOWN
+        INT, BOOL, STRING, VOID, CLASS, ARRAY, NULL, UNKNOWN
     }
 
     public T atomType;
     public String typeName;
-    public HashMap<String, Type> members;
-    public ArrayList<Integer> dim;
+//    public HashMap<String, Type> members;
+//    store the members of a class in a universal hashmap
+    public Integer dim;
 
     public Type() {
         atomType = T.UNKNOWN;
         typeName = null;
-        members = null;
-        dim = new ArrayList<>();
+        dim = 0;
     }
 }
