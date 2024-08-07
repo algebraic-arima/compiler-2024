@@ -12,6 +12,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         System.out.println("Hello, MxWorld!");
         InputStream in = System.in;
+        System.out.println(in);
         Lex lexer = new Lex(CharStreams.fromStream(in));
         lexer.removeErrorListeners();
 //        lexer.addErrorListener(new MxErrorListener());
@@ -19,9 +20,10 @@ public class Main {
         parser.removeErrorListeners();
 //        parser.addErrorListener(new YxErrorListener());
         Mx.ProgContext parseTreeRoot = parser.prog();
+        return;
     }
 
-    private static void foo(){
+    private static void foo() {
 
     }
 }

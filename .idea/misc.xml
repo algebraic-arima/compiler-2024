@@ -21,6 +21,17 @@
           <option name="encoding" value="" />
           <option name="pkg" value="" />
           <option name="language" value="Java" />
+          <option name="generateListener" value="false" />
+          <option name="generateVisitor" value="true" />
+        </PerGrammarGenerationSettings>
+        <PerGrammarGenerationSettings>
+          <option name="fileName" value="$PROJECT_DIR$/src/parser/Lex.g4" />
+          <option name="autoGen" value="true" />
+          <option name="outputDir" value="F:\vscode\antlr-demo\compiler-2024\src\parser" />
+          <option name="libDir" value="" />
+          <option name="encoding" value="" />
+          <option name="pkg" value="" />
+          <option name="language" value="" />
           <option name="generateVisitor" value="true" />
         </PerGrammarGenerationSettings>
       </list>

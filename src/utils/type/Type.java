@@ -27,8 +27,8 @@ public class Type {
             dim = 0;
             return;
         }
-        if (ctx.atomtype() != null) {
-            String atstr = ctx.atomtype().getText();
+        if (ctx.singletype() != null) {
+            String atstr = ctx.singletype().getText();
             typeName = atstr;
             switch (atstr) {
                 case "int" -> atomType = T.INT;
@@ -40,7 +40,7 @@ public class Type {
         } else if (ctx.arraytype() != null) {
             Mx.ArraytypeContext at = ctx.arraytype();
             dim = (at.getChildCount() - 1) / 2;
-            typeName = at.atomtype().getText();
+            typeName = at.singletype().getText();
             switch (typeName) {
                 case "int" -> atomType = T.INT;
                 case "bool" -> atomType = T.BOOL;
