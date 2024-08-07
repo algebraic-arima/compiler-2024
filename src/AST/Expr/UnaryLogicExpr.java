@@ -1,5 +1,7 @@
 package src.AST.Expr;
 
+import src.utils.pos.Position;
+
 public class UnaryLogicExpr extends Expr{
 
     public enum ULogicOp {
@@ -9,9 +11,10 @@ public class UnaryLogicExpr extends Expr{
     public Expr expr;
     public ULogicOp op;
 
-    public UnaryLogicExpr(Expr e, ULogicOp o) {
+    public UnaryLogicExpr(Position p, Expr e) {
+        super(p);
         expr = e;
-        op = o;
+        op = ULogicOp.NOT;
     }
 
     @Override

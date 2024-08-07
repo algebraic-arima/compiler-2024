@@ -6,14 +6,11 @@ import src.AST.Stmt.Stmt;
 import src.utils.pos.Position;
 
 public class IfStmt extends Stmt {
-    Expr condition;
-    Stmt trueStmt, falseStmt;
+    public Expr condition;
+    public Stmt trueStmt, falseStmt;
 
-    public IfStmt(Position p, Expr c, Stmt t, Stmt f) {
+    public IfStmt(Position p) {
         super(p);
-        condition = c;
-        trueStmt = t;
-        falseStmt = f;
     }
 
     @Override

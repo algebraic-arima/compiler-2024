@@ -1,5 +1,7 @@
 package src.AST.Expr;
 
+import src.utils.pos.Position;
+
 public class BinaryArithExpr extends Expr {
 
     public enum BArithOp {
@@ -9,10 +11,43 @@ public class BinaryArithExpr extends Expr {
     public Expr lhs, rhs;
     public BArithOp op;
 
-    public BinaryArithExpr(Expr lhs, Expr rhs, BArithOp op) {
+    public BinaryArithExpr(Position p, Expr lhs, Expr rhs, String op) {
+        super(p);
         this.lhs = lhs;
         this.rhs = rhs;
-        this.op = op;
+        switch(op){
+            case "+":
+                this.op = BArithOp.ADD;
+                break;
+            case "-":
+                this.op = BArithOp.SUB;
+                break;
+            case "*":
+                this.op = BArithOp.MUL;
+                break;
+            case "/":
+                this.op = BArithOp.DIV;
+                break;
+            case "%":
+                this.op = BArithOp.MOD;
+                break;
+            case "<<":
+                this.op = BArithOp.BLS;
+                break;
+            case ">>":
+                this.op = BArithOp.BRS;
+                break;
+            case "&":
+                this.op = BArithOp.BAND;
+                break;
+            case "|":
+                this.op = BArithOp.BOR;
+                break;
+            case "^":
+                this.op = BArithOp.BXOR;
+                break;
+
+        }
     }
 
     public void accept(src.AST.ASTVisitor v) {

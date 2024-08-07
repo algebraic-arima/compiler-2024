@@ -14,9 +14,13 @@ def: funcdef | classdef | vardef ;
 
 funcdef: type ID LPAR (type ID (COMMA type ID)*)? RPAR stmts ;
 
-classdef: CLASS ID LBCE (vardef | funcdef)* (ID LPAR RPAR stmts)? (vardef | funcdef)* RBCE SEMI ;
+classdef: CLASS ID LBCE (vardef | funcdef)* constructor? (vardef | funcdef)* RBCE SEMI ;
 
-vardef: type ID (ASSIGN expr)? (COMMA ID (ASSIGN expr)?)* SEMI ;
+vardef: type singlevardef (COMMA singlevardef)* SEMI ;
+
+singlevardef: ID (ASSIGN expr)?;
+
+constructor: ID LPAR RPAR stmts;
 
 stmts: LBCE stmt* RBCE ;
 
@@ -28,14 +32,14 @@ jmpstmt:
     ;
 
 lpstmt:
-    FOR LPAR rowexpr? SEMI rowexpr? SEMI rowexpr? RPAR stmt # ForStmt
+    FOR LPAR expr? SEMI expr? SEMI expr? RPAR stmt # ForStmt
     | WHILE LPAR expr RPAR stmt # WhileStmt
     ;
 
 stmt:
     stmts
     | vardef
-    | rowexpr SEMI
+    | expr SEMI
     | lpstmt
     | jmpstmt
     | SEMI
@@ -63,7 +67,7 @@ expr:
     | expr op=OR expr # BinaryExp
     | <assoc = right> expr op=QUES expr op=COLON expr # TernaryExp
     | <assoc = right> expr op=ASSIGN expr # AssignExp
-    | NEW atomtype indbrackets+ arrayliteral? # NewArray
+    | NEW singletype (LBKT expr? RBKT)* (LBKT RBKT)*  arrayliteral? # NewArray
     | NEW ID (LPAR RPAR)? # NewClass
     | THIS # ThisPtr
     | ID # VarAccess
@@ -72,11 +76,15 @@ expr:
     ;
 
 rowexpr: expr (COMMA expr)*;
-indbrackets: LBKT expr? RBKT;
 
-type: atomtype | arraytype;
-atomtype: INT | BOOL | STRING | ID | VOID;
-arraytype: atomtype (LBKT expr? RBKT)+;
+type: singletype | arraytype;
+
+singletype:
+    ( BOOL | INT | STRING | VOID ) # BaseType
+    | ID # ClassType
+    ;
+
+arraytype: singletype (LBKT RBKT)+ ;
 
 literal: INTCONST | STRINGCONST | (TRUE | FALSE) | NULL | arrayliteral;
 arrayliteral: LBCE rowexpr? RBCE ;

@@ -1,14 +1,16 @@
 package src.AST.Expr;
 
+import src.utils.pos.Position;
+
 import java.util.ArrayList;
 
-public class FuncExpr extends Expr {
+public class FuncCallExpr extends Expr {
     public String funcName;
-    public ArrayList<Expr> args;
+    public RowExpr args;
 
-    public FuncExpr(String name) {
+    public FuncCallExpr(Position p, String name) {
+        super(p);
         funcName = name;
-        args = new ArrayList<>();
     }
 
     @Override

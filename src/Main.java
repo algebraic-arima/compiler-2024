@@ -20,4 +20,8 @@ public class Main {
 //        parser.addErrorListener(new YxErrorListener());
         Mx.ProgContext parseTreeRoot = parser.prog();
     }
+
+    private static void foo(){
+
+    }
 }

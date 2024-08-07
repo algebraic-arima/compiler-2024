@@ -7,13 +7,11 @@ import src.utils.pos.Position;
 import src.utils.type.Type;
 
 public class ReturnStmt extends Stmt {
-    public Type returnType;
-    public Expr returnExpr;
+//    public Type returnType;
+    public Expr retExpr;
 
-    public ReturnStmt(Position p,Type rt, Expr re) {
+    public ReturnStmt(Position p) {
         super(p);
-        returnType = rt;
-        returnExpr = re;
     }
 
     @Override

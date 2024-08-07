@@ -1,10 +1,13 @@
 package src.AST.Expr;
 
-public class ArrayIndExpr extends Expr {
+import src.utils.pos.Position;
+
+public class ArrayAccessExpr extends Expr {
     public Expr array;
     public Expr index;
 
-    public ArrayIndExpr(Expr a, Expr i) {
+    public ArrayAccessExpr(Position p, Expr a, Expr i) {
+        super(p);
         array = a;
         index = i;
     }

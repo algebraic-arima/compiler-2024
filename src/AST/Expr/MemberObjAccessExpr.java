@@ -1,10 +1,13 @@
 package src.AST.Expr;
 
-public class MemberVarExpr extends Expr{
+import src.utils.pos.Position;
+
+public class MemberObjAccessExpr extends Expr{
     public Expr obj;
     public String member;
 
-    public MemberVarExpr(Expr o, String m) {
+    public MemberObjAccessExpr(Position p, Expr o, String m) {
+        super(p);
         obj = o;
         member = m;
     }

@@ -1,5 +1,7 @@
 package src.AST.Expr;
 
+import src.utils.pos.Position;
+
 public class UnaryArithExpr extends Expr {
 
     public enum UArithOp {
@@ -9,9 +11,23 @@ public class UnaryArithExpr extends Expr {
     public Expr expr;
     public UArithOp op;
 
-    public UnaryArithExpr(Expr e, UArithOp o) {
+    public UnaryArithExpr(Position p, Expr e, String o, boolean isLeft) {
+        super(p);
         expr = e;
-        op = o;
+        switch (o) {
+            case "-":
+                op = UArithOp.NEG;
+                break;
+            case "~":
+                op = UArithOp.BNOT;
+                break;
+            case "++":
+                op = isLeft ? UArithOp.LINC : UArithOp.RINC;
+                break;
+            case "--":
+                op = isLeft ? UArithOp.LDEC : UArithOp.RDEC;
+                break;
+        }
     }
 
     @Override

@@ -8,15 +8,18 @@ import java.util.ArrayList;
 
 public class ClassDef extends Def {
     public String className;
-    public ArrayList<Def> classBody;
+    public Constructor constructor;
+    public ArrayList<VarDef> classMem;
+    public ArrayList<FuncDef> classFunc;
 
     public ClassDef(Position p) {
         super(p);
-        classBody = new ArrayList<>();
+        classMem = new ArrayList<>();
+        classFunc = new ArrayList<>();
     }
 
     @Override
     public void accept(ASTVisitor v) {
-
+        v.visit(this);
     }
 }

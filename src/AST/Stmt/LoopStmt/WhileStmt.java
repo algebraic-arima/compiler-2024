@@ -7,13 +7,11 @@ import src.utils.pos.Position;
 
 public class WhileStmt extends Stmt {
 
-    Expr cond;
-    Stmt body;
+    public Expr cond;
+    public Stmt body;
 
-    public WhileStmt(Position p, Expr c, Stmt y) {
+    public WhileStmt(Position p) {
         super(p);
-        cond = c;
-        body = y;
     }
 
     @Override

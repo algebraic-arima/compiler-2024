@@ -7,8 +7,8 @@ import java.util.ArrayList;
 public class ArrayLiteralExpr extends Expr {
     public ArrayList<Expr> elements;
 
-    public ArrayLiteralExpr(ArrayList<Expr> e) {
-        elements = e;
+    public ArrayLiteralExpr() {
+        elements = new ArrayList<>();
     }
 
     @Override

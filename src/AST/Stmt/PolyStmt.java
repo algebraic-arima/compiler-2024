@@ -6,9 +6,9 @@ import src.utils.pos.Position;
 import java.util.ArrayList;
 
 public class PolyStmt extends Stmt {
-    ArrayList<Stmt> stmts;
+    public ArrayList<Stmt> stmts;
 
-    PolyStmt(Position p){
+    public PolyStmt(Position p){
         super(p);
         stmts = new ArrayList<>();
     }
