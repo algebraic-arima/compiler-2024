@@ -19,20 +19,7 @@ public class Scope {
         parent = null;
         VarList = new HashMap<>();
         FuncList = new HashMap<>();
-        FuncType print = new FuncType(new Type("void"));
-        print.args.put("str", new Type("string"));
-        FuncList.put("print", print);
-        FuncList.put("println", print);
-        FuncType printint = new FuncType(new Type("void"));
-        printint.args.put("n", new Type("int"));
-        FuncList.put("printInt", printint);
-        FuncList.put("printlnInt", printint);
-        FuncType strings = new FuncType(new Type("string"));
-        FuncList.put("getString", strings);
-        strings.args.put("i", new Type("int"));
-        FuncList.put("toString", strings);
-        FuncType getInt = new FuncType(new Type("int"));
-        FuncList.put("getInt", getInt);
+
     }
 
     public Scope(Scope p) {
