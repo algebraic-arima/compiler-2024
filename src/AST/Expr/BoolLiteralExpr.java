@@ -1,13 +1,15 @@
 package src.AST.Expr;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
+import src.utils.pos.Position;
 
 import java.util.Objects;
 
 public class BoolLiteralExpr extends Expr {
     public boolean value;
 
-    public BoolLiteralExpr(boolean v) {
+    public BoolLiteralExpr(Position p, boolean v) {
+        super(p);
         value = v;
     }
 

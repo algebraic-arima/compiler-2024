@@ -1,12 +1,14 @@
 package src.AST.Expr;
 
+import src.utils.pos.Position;
 import src.utils.type.Type;
 
 public class NewTypeExpr extends Expr{
-    public Type typeName;
+    public Type type;
 
-    public NewTypeExpr(Type t) {
-        typeName = t;
+    public NewTypeExpr(Position p, Type t) {
+        super(p);
+        type = t;
     }
 
     @Override

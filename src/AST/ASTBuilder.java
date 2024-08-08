@@ -61,15 +61,6 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     }
 
     @Override
-    public BaseASTNode visitRowexpr(Mx.RowexprContext ctx) {
-        RowExpr re = new RowExpr(new Position(ctx));
-        for (int i = 0; i < ctx.expr().size(); i++) {
-            if (ctx.expr(i) != null) re.exps.add((Expr) visit(ctx.expr(i)));
-        }
-        return re;
-    }
-
-    @Override
     public BaseASTNode visitClassdef(Mx.ClassdefContext ctx) {
         ClassDef classDef = new ClassDef(new Position(ctx));
         classDef.className = ctx.ID().getText();
@@ -142,6 +133,62 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         return visit(ctx.getChild(0));
     }
 
+
+    ///expr
+    @Override
+    public BaseASTNode visitParentheses(Mx.ParenthesesContext ctx) {
+        return visit(ctx.expr());
+    }
+
+    @Override
+    public BaseASTNode visitMemberFuncCall(Mx.MemberFuncCallContext ctx) {
+        MemberFuncCallExpr mfce = new MemberFuncCallExpr(new Position(ctx),
+                (Expr) visit(ctx.expr()),
+                ctx.ID().getText());
+        mfce.args = (RowExpr) visit(ctx.rowexpr());
+        return mfce;
+    }
+
+    @Override
+    public BaseASTNode visitMemberObjAccess(Mx.MemberObjAccessContext ctx) {
+        return new MemberObjAccessExpr(new Position(ctx),
+                (Expr) visit(ctx.expr()),
+                ctx.ID().getText());
+    }
+
+    @Override
+    public BaseASTNode visitArrayAccess(Mx.ArrayAccessContext ctx) {
+        return new ArrayAccessExpr(new Position(ctx),
+                (Expr) visit(ctx.expr(0)),
+                (Expr) visit(ctx.expr(1)));
+    }
+
+    @Override
+    public BaseASTNode visitFuncCall(Mx.FuncCallContext ctx) {
+        FuncCallExpr fc = new FuncCallExpr(new Position(ctx),
+                ctx.ID().getText());
+        fc.args = (RowExpr) visit(ctx.rowexpr());
+        return fc;
+    }
+
+    @Override
+    public BaseASTNode visitRUnaryExp(Mx.RUnaryExpContext ctx) {
+        return new UnaryArithExpr(new Position(ctx),
+                (Expr) visit(ctx.expr()), ctx.op.getText(), false);
+    }
+
+    @Override
+    public BaseASTNode visitLUnaryExp(Mx.LUnaryExpContext ctx) {
+        String op = ctx.op.getText();
+        return switch (op) {
+            case "++", "--", "~", "-" -> new UnaryArithExpr(new Position(ctx),
+                    (Expr) visit(ctx.expr()), op, true);
+            case "!" -> new UnaryLogicExpr(new Position(ctx),
+                    (Expr) visit(ctx.expr()));
+            default -> null;
+        };
+    }
+
     @Override
     public BaseASTNode visitBinaryExp(Mx.BinaryExpContext ctx) {
         String op = ctx.op.getText();
@@ -158,52 +205,125 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         };
     }
 
-    @Override
-    public BaseASTNode visitLUnaryExp(Mx.LUnaryExpContext ctx) {
-        String op = ctx.op.getText();
-        return switch (op) {
-            case "++", "--", "~", "-" -> new UnaryArithExpr(new Position(ctx),
-                    (Expr) visit(ctx.expr()), op, true);
-            case "!" -> new UnaryLogicExpr(new Position(ctx),
-                    (Expr) visit(ctx.expr()));
-            default -> null;
-        };
-    }
 
     @Override
-    public BaseASTNode visitRUnaryExp(Mx.RUnaryExpContext ctx) {
-        return new UnaryArithExpr(new Position(ctx),
-                (Expr) visit(ctx.expr()), ctx.op.getText(), false);
-    }
-
-    @Override
-    public BaseASTNode visitFuncCall(Mx.FuncCallContext ctx){
-        FuncCallExpr fc=new FuncCallExpr(new Position(ctx),
-                ctx.ID().getText());
-        fc.args = (RowExpr) visit(ctx.rowexpr());
-        return fc;
-    }
-
-    @Override
-    public BaseASTNode visitMemberFuncCall(Mx.MemberFuncCallContext ctx){
-        MemberFuncCallExpr mfce=new MemberFuncCallExpr(new Position(ctx),
-                (Expr) visit(ctx.expr()),
-                ctx.ID().getText());
-        mfce.args = (RowExpr) visit(ctx.rowexpr());
-        return mfce;
-    }
-
-    @Override
-    public BaseASTNode visitMemberObjAccess(Mx.MemberObjAccessContext ctx){
-        return new MemberObjAccessExpr(new Position(ctx),
-                (Expr) visit(ctx.expr()),
-                ctx.ID().getText());
-    }
-
-    @Override
-    public BaseASTNode visitArrayAccess(Mx.ArrayAccessContext ctx){
-        return new ArrayAccessExpr(new Position(ctx),
+    public BaseASTNode visitTernaryExp(Mx.TernaryExpContext ctx) {
+        return new TernaryBranchExpr(new Position(ctx),
                 (Expr) visit(ctx.expr(0)),
-                (Expr) visit(ctx.expr(1)));
+                (Expr) visit(ctx.expr(1)),
+                (Expr) visit(ctx.expr(2)));
     }
+
+
+    @Override
+    public BaseASTNode visitNewArray(Mx.NewArrayContext ctx) {
+        int dim = ctx.LBKT().size();
+        if (!ctx.expr().isEmpty() && ctx.arrayliteral() == null) {
+            // no init
+            NewArrayExpr n = new NewArrayExpr(new Position(ctx));
+            n.dim = dim;
+            n.type = new Type(ctx.singletype().getText());
+            for (Mx.ExprContext e : ctx.expr()) {
+                n.len.add((Expr) visit(e));
+            }
+            return n;
+        } else if (ctx.expr().isEmpty() && ctx.arrayliteral() != null) {
+            NewArrayInitExpr n = new NewArrayInitExpr(new Position(ctx));
+            n.dim = dim;
+            n.type = new Type(ctx.singletype().getText());
+            n.init = (ArrayLiteralExpr) visit(ctx.arrayliteral());
+            return n;
+        }
+        // throw sth.
+        return null;
+    }
+
+    @Override
+    public BaseASTNode visitNewClass(Mx.NewClassContext ctx) {
+        return new NewTypeExpr(new Position(ctx),
+                new Type(ctx.ID().getText()));
+    }
+
+    @Override
+    public BaseASTNode visitThisPtr(Mx.ThisPtrContext ctx) {
+        return new ThisPtrExpr(new Position(ctx));
+    }
+
+    @Override
+    public BaseASTNode visitVarAccess(Mx.VarAccessContext ctx) {
+        return new VarExpr(new Position(ctx), ctx.ID().getText());
+    }
+
+    @Override
+    public BaseASTNode visitConstant(Mx.ConstantContext ctx) {
+        return visit(ctx.literal());
+    }
+
+    @Override
+    public BaseASTNode visitFormatString(Mx.FormatStringContext ctx) {
+        return visit(ctx.fmtstr());
+    }
+
+    @Override
+    public BaseASTNode visitLiteral(Mx.LiteralContext ctx) {
+        if (ctx.INTCONST() != null) {
+            return new IntLiteralExpr(new Position(ctx), Integer.parseInt(ctx.INTCONST().getText()));
+        }
+        if (ctx.TRUE() != null || ctx.FALSE() != null) {
+            return new BoolLiteralExpr(new Position(ctx), ctx.TRUE() != null);
+        }
+        if (ctx.STRINGCONST() != null) {
+            return new StringLiteralExpr(new Position(ctx), ctx.STRINGCONST().getText());
+        }
+        if (ctx.NULL() != null) {
+            return new NullExpr(new Position(ctx));
+        }
+        if (ctx.arrayliteral() != null) {
+            return visitArrayliteral(ctx.arrayliteral());
+        }
+        return null;
+    }
+
+
+    @Override
+    public BaseASTNode visitRowexpr(Mx.RowexprContext ctx) {
+        RowExpr re = new RowExpr(new Position(ctx));
+        for (int i = 0; i < ctx.expr().size(); i++) {
+            if (ctx.expr(i) != null) re.exps.add((Expr) visit(ctx.expr(i)));
+        }
+        return re;
+    }
+
+    @Override
+    public BaseASTNode visitArrayliteral(Mx.ArrayliteralContext ctx) {
+        ArrayLiteralExpr ale = new ArrayLiteralExpr(new Position(ctx));
+        for (Mx.ExprContext e : ctx.rowexpr().expr()) {
+            ale.elements.add((Expr) visit(e));
+        }
+        return ale;
+    }
+
+    @Override
+    public BaseASTNode visitFmtstr(Mx.FmtstrContext ctx) {
+        FmtStrLiteralExpr f = new FmtStrLiteralExpr(new Position(ctx));
+        String bgn = ctx.FMTSTRBGN().getText();
+        bgn = bgn.substring(2, bgn.length() - 1);
+        bgn = bgn.replace("$$", "$");
+        f.strs.add(bgn);
+        for (int i = 0; i < ctx.FMTSTRBODY().size(); ++i) {
+            String body = ctx.FMTSTRBODY(i).getText();
+            body = body.substring(1, body.length() - 1);
+            body = body.replace("$$", "$");
+            f.strs.add(body);
+        }
+        String end = ctx.FMTSTREND().getText();
+        end = end.substring(1, end.length() - 2);
+        end = end.replace("$$", "$");
+        for (int i = 0; i < ctx.expr().size(); ++i) {
+            f.exprs.add((Expr) visit(ctx.expr(i)));
+        }
+        return f;
+    }
+
+
 }

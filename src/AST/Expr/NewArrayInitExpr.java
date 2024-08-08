@@ -3,14 +3,13 @@ package src.AST.Expr;
 import src.utils.pos.Position;
 import src.utils.type.Type;
 
-public class VarExpr extends Expr {
-    public String varName;
-//    public Type type;
+public class NewArrayInitExpr extends Expr{
+    public Type type;
+    public int dim;
+    public ArrayLiteralExpr init;
 
-    public VarExpr(Position p, String v) {
+    public NewArrayInitExpr(Position p) {
         super(p);
-        varName = v;
-//        type = t;
     }
 
     @Override

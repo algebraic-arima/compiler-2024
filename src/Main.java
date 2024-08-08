@@ -22,8 +22,4 @@ public class Main {
         Mx.ProgContext parseTreeRoot = parser.prog();
         return;
     }
-
-    private static void foo() {
-
-    }
 }

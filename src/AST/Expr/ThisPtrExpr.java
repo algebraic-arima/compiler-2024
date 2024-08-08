@@ -1,8 +1,10 @@
 package src.AST.Expr;
 
+import src.utils.pos.Position;
+
 public class ThisPtrExpr extends Expr {
-    public ThisPtrExpr() {
-        super();
+    public ThisPtrExpr(Position p) {
+        super(p);
     }
 
     @Override

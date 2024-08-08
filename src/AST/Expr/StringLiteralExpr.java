@@ -1,11 +1,13 @@
 package src.AST.Expr;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
+import src.utils.pos.Position;
 
 public class StringLiteralExpr extends Expr {
     public String value;
 
-    public StringLiteralExpr(String v) {
+    public StringLiteralExpr(Position p, String v) {
+        super(p);
         value = v;
     }
 

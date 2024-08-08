@@ -20,6 +20,19 @@ public class Type {
         dim = 0;
     }
 
+    // for single type
+    public Type(String str){
+        typeName = str;
+        switch (str) {
+            case "int" -> atomType = T.INT;
+            case "bool" -> atomType = T.BOOL;
+            case "string" -> atomType = T.STRING;
+            case "void" -> atomType = T.VOID;
+            default -> atomType = T.CLASS;
+        }
+        dim = 0;
+    }
+
     public Type(Mx.TypeContext ctx) {
         if (ctx == null) {
             atomType = T.UNKNOWN;
