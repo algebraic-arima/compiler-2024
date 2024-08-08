@@ -1,5 +1,13 @@
 package src.utils.error;
 
-public abstract class error extends RuntimeException{
+import src.utils.pos.Position;
 
+public class error extends RuntimeException{
+    public Position pos;
+    public String message;
+
+    public error(String msg, Position pos){
+        this.pos = pos;
+        this.message = msg;
+    }
 }

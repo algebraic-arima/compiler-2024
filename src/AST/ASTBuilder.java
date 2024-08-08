@@ -11,6 +11,10 @@ import src.parser.Mx;
 import src.utils.pos.Position;
 import src.utils.type.Type;
 
+import src.utils.error.*;
+
+import java.util.Objects;
+
 public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     @Override
     public BaseASTNode visitProg(Mx.ProgContext ctx) {
@@ -132,7 +136,6 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     public BaseASTNode visitStmt(Mx.StmtContext ctx) {
         return visit(ctx.getChild(0));
     }
-
 
     ///expr
     @Override
@@ -305,6 +308,13 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
 
     @Override
     public BaseASTNode visitFmtstr(Mx.FmtstrContext ctx) {
+        if (ctx.FMTSTRPURE() != null) {
+            String p = ctx.FMTSTRPURE().getText();
+            p = p.substring(1, p.length() - 1);
+            p = p.replace("$$", "$");
+            return new StringLiteralExpr(new Position(ctx), p);
+        }
+        // with expr
         FmtStrLiteralExpr f = new FmtStrLiteralExpr(new Position(ctx));
         String bgn = ctx.FMTSTRBGN().getText();
         bgn = bgn.substring(2, bgn.length() - 1);

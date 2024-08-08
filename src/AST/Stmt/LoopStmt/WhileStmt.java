@@ -6,7 +6,6 @@ import src.AST.Stmt.Stmt;
 import src.utils.pos.Position;
 
 public class WhileStmt extends Stmt {
-
     public Expr cond;
     public Stmt body;
 

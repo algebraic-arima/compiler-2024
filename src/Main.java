@@ -20,6 +20,11 @@ public class Main {
         parser.removeErrorListeners();
 //        parser.addErrorListener(new YxErrorListener());
         Mx.ProgContext parseTreeRoot = parser.prog();
+
         return;
+    }
+
+    public static String trim(String s){
+        return s+"3";
     }
 }
