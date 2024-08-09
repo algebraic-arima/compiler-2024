@@ -37,12 +37,12 @@ lpstmt:
     ;
 
 stmt:
-    stmts
-    | vardef
-    | expr SEMI
-    | lpstmt
-    | jmpstmt
-    | SEMI
+    stmts # BlockStmt
+    | vardef # VarDefStmt
+    | expr SEMI # ExprStmt
+    | lpstmt # LoopStmt
+    | jmpstmt # JumpStmt
+    | SEMI # EmptyStmt
     ;
 
 expr:

@@ -44,6 +44,7 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         for (int i = 1; i < ctx.ID().size(); i++) {
             funcDef.funcParams.put(ctx.ID(i).getText(), new Type(ctx.type(i)));
         }
+        funcDef.funcBody = (PolyStmt) visit(ctx.stmts());
         return funcDef;
     }
 
@@ -83,10 +84,11 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         VarDef varDef = new VarDef(new Position(ctx));
         varDef.type = new Type(ctx.type());
         for (Mx.SinglevardefContext sv : ctx.singlevardef()) {
-            varDef.initVals.put(sv.getText(), (Expr) visit(sv.expr()));
+            varDef.initVals.put(sv.ID().getText(), (Expr) visit(sv.expr()));
         }
         return varDef;
     }
+
 
     @Override
     public BaseASTNode visitIfStmt(Mx.IfStmtContext jumping) {
@@ -133,8 +135,32 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     }
 
     @Override
-    public BaseASTNode visitStmt(Mx.StmtContext ctx) {
-        return visit(ctx.getChild(0));
+    public BaseASTNode visitBlockStmt(Mx.BlockStmtContext ctx) {
+        return visit(ctx.stmts());
+    }
+
+    @Override
+    public BaseASTNode visitVarDefStmt(Mx.VarDefStmtContext ctx) {
+        return new VarDefStmt(new Position(ctx), (VarDef) visit(ctx.vardef()));
+    }
+
+    @Override
+    public BaseASTNode visitExprStmt(Mx.ExprStmtContext ctx) {
+        return new ExprStmt(new Position(ctx), (Expr) visit(ctx.expr()));
+    }
+
+    @Override
+    public BaseASTNode visitLoopStmt(Mx.LoopStmtContext ctx) {
+        return visit(ctx.lpstmt());
+    }
+
+    @Override
+    public BaseASTNode visitJumpStmt(Mx.JumpStmtContext ctx) {
+        return visit(ctx.jmpstmt());
+    }
+
+    @Override public BaseASTNode visitEmptyStmt(Mx.EmptyStmtContext ctx) {
+        return null;
     }
 
     ///expr

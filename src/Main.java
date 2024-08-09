@@ -9,12 +9,15 @@ import src.parser.Lex;
 import src.parser.Mx;
 import src.utils.MxErrorListener;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 public class Main {
     public static void main(String[] args) throws Exception {
         System.out.println("Hello, MxWorld!");
-        InputStream in = System.in;
+//        InputStream in = System.in;
+        String name = "F:\\vscode\\antlr-demo\\compiler-2024\\src\\t.mx";
+        InputStream in = new FileInputStream(name);
         System.out.println(in);
         Lex lexer = new Lex(CharStreams.fromStream(in));
         lexer.removeErrorListeners();

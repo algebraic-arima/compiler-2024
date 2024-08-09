@@ -103,11 +103,47 @@ public interface MxVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitWhileStmt(Mx.WhileStmtContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link Mx#stmt}.
+	 * Visit a parse tree produced by the {@code BlockStmt}
+	 * labeled alternative in {@link Mx#stmt}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitStmt(Mx.StmtContext ctx);
+	T visitBlockStmt(Mx.BlockStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code VarDefStmt}
+	 * labeled alternative in {@link Mx#stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVarDefStmt(Mx.VarDefStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ExprStmt}
+	 * labeled alternative in {@link Mx#stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExprStmt(Mx.ExprStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code LoopStmt}
+	 * labeled alternative in {@link Mx#stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLoopStmt(Mx.LoopStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code JumpStmt}
+	 * labeled alternative in {@link Mx#stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJumpStmt(Mx.JumpStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code EmptyStmt}
+	 * labeled alternative in {@link Mx#stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEmptyStmt(Mx.EmptyStmtContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code MemberFuncCall}
 	 * labeled alternative in {@link Mx#expr}.

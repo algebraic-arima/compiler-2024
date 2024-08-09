@@ -997,29 +997,84 @@ public class Mx extends Parser {
 
 	@SuppressWarnings("CheckReturnValue")
 	public static class StmtContext extends ParserRuleContext {
-		public StmtsContext stmts() {
-			return getRuleContext(StmtsContext.class,0);
-		}
-		public VardefContext vardef() {
-			return getRuleContext(VardefContext.class,0);
-		}
-		public ExprContext expr() {
-			return getRuleContext(ExprContext.class,0);
-		}
-		public TerminalNode SEMI() { return getToken(Mx.SEMI, 0); }
-		public LpstmtContext lpstmt() {
-			return getRuleContext(LpstmtContext.class,0);
-		}
-		public JmpstmtContext jmpstmt() {
-			return getRuleContext(JmpstmtContext.class,0);
-		}
 		public StmtContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_stmt; }
+	 
+		public StmtContext() { }
+		public void copyFrom(StmtContext ctx) {
+			super.copyFrom(ctx);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
+	public static class VarDefStmtContext extends StmtContext {
+		public VardefContext vardef() {
+			return getRuleContext(VardefContext.class,0);
+		}
+		public VarDefStmtContext(StmtContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof MxVisitor ) return ((MxVisitor<? extends T>)visitor).visitStmt(this);
+			if ( visitor instanceof MxVisitor ) return ((MxVisitor<? extends T>)visitor).visitVarDefStmt(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
+	public static class ExprStmtContext extends StmtContext {
+		public ExprContext expr() {
+			return getRuleContext(ExprContext.class,0);
+		}
+		public TerminalNode SEMI() { return getToken(Mx.SEMI, 0); }
+		public ExprStmtContext(StmtContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof MxVisitor ) return ((MxVisitor<? extends T>)visitor).visitExprStmt(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
+	public static class LoopStmtContext extends StmtContext {
+		public LpstmtContext lpstmt() {
+			return getRuleContext(LpstmtContext.class,0);
+		}
+		public LoopStmtContext(StmtContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof MxVisitor ) return ((MxVisitor<? extends T>)visitor).visitLoopStmt(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
+	public static class JumpStmtContext extends StmtContext {
+		public JmpstmtContext jmpstmt() {
+			return getRuleContext(JmpstmtContext.class,0);
+		}
+		public JumpStmtContext(StmtContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof MxVisitor ) return ((MxVisitor<? extends T>)visitor).visitJumpStmt(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
+	public static class BlockStmtContext extends StmtContext {
+		public StmtsContext stmts() {
+			return getRuleContext(StmtsContext.class,0);
+		}
+		public BlockStmtContext(StmtContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof MxVisitor ) return ((MxVisitor<? extends T>)visitor).visitBlockStmt(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	@SuppressWarnings("CheckReturnValue")
+	public static class EmptyStmtContext extends StmtContext {
+		public TerminalNode SEMI() { return getToken(Mx.SEMI, 0); }
+		public EmptyStmtContext(StmtContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof MxVisitor ) return ((MxVisitor<? extends T>)visitor).visitEmptyStmt(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1032,6 +1087,7 @@ public class Mx extends Parser {
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,20,_ctx) ) {
 			case 1:
+				_localctx = new BlockStmtContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(166);
@@ -1039,6 +1095,7 @@ public class Mx extends Parser {
 				}
 				break;
 			case 2:
+				_localctx = new VarDefStmtContext(_localctx);
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(167);
@@ -1046,6 +1103,7 @@ public class Mx extends Parser {
 				}
 				break;
 			case 3:
+				_localctx = new ExprStmtContext(_localctx);
 				enterOuterAlt(_localctx, 3);
 				{
 				setState(168);
@@ -1055,6 +1113,7 @@ public class Mx extends Parser {
 				}
 				break;
 			case 4:
+				_localctx = new LoopStmtContext(_localctx);
 				enterOuterAlt(_localctx, 4);
 				{
 				setState(171);
@@ -1062,6 +1121,7 @@ public class Mx extends Parser {
 				}
 				break;
 			case 5:
+				_localctx = new JumpStmtContext(_localctx);
 				enterOuterAlt(_localctx, 5);
 				{
 				setState(172);
@@ -1069,6 +1129,7 @@ public class Mx extends Parser {
 				}
 				break;
 			case 6:
+				_localctx = new EmptyStmtContext(_localctx);
 				enterOuterAlt(_localctx, 6);
 				{
 				setState(173);
