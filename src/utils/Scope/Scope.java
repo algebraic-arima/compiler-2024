@@ -12,7 +12,6 @@ public class Scope {
     public HashMap<String, Type> VarList;
     public HashMap<String, FuncType> FuncList;
 
-
     public Scope parent;
 
     public Scope() {

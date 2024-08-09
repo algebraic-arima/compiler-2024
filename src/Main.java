@@ -5,9 +5,12 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import src.AST.ASTBuilder;
 import src.AST.Prog;
+import src.Semantic.SymbolCollector;
 import src.parser.Lex;
 import src.parser.Mx;
 import src.utils.MxErrorListener;
+import src.utils.Scope.GlobalScope;
+import src.utils.error.error;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -15,20 +18,25 @@ import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        System.out.println("Hello, MxWorld!");
+        try{
+            System.out.println("Hello, MxWorld!");
+            String file = "F:\\vscode\\antlr-demo\\compiler-2024\\src\\t.mx";
+            InputStream in = new FileInputStream(file);
+            Lex lexer = new Lex(CharStreams.fromStream(in));
 //        InputStream in = System.in;
-        String name = "F:\\vscode\\antlr-demo\\compiler-2024\\src\\t.mx";
-        InputStream in = new FileInputStream(name);
-//        System.out.println(Arrays.toString(in.readAllBytes()));
-        Lex lexer = new Lex(CharStreams.fromStream(in));
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(new MxErrorListener());
-        Mx parser = new Mx(new CommonTokenStream(lexer));
-        parser.removeErrorListeners();
-        parser.addErrorListener(new MxErrorListener());
-        Mx.ProgContext parseTreeRoot = parser.prog();
-        ASTBuilder astBuilder = new ASTBuilder();
-        Prog root = (Prog) astBuilder.visit(parseTreeRoot);
-        return;
+            lexer.removeErrorListeners();
+            lexer.addErrorListener(new MxErrorListener());
+            Mx parser = new Mx(new CommonTokenStream(lexer));
+            parser.removeErrorListeners();
+            parser.addErrorListener(new MxErrorListener());
+            Mx.ProgContext parseTreeRoot = parser.prog();
+            ASTBuilder astBuilder = new ASTBuilder();
+            Prog root = (Prog) astBuilder.visit(parseTreeRoot);
+            GlobalScope gScope = new GlobalScope();
+            new SymbolCollector(gScope).visit(root);
+            return;
+        } catch (error e){
+            System.err.println(e.pos.row + ":" + e.pos.column + " " + e.message);
+        }
     }
 }

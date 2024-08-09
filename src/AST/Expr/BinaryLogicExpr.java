@@ -2,6 +2,7 @@ package src.AST.Expr;
 
 import src.AST.ASTVisitor;
 import src.utils.pos.Position;
+import src.utils.type.Type;
 
 public class BinaryLogicExpr extends Expr {
 
@@ -12,10 +13,12 @@ public class BinaryLogicExpr extends Expr {
     public Expr lhs, rhs;
     public BLogicOp op;
 
-    public BinaryLogicExpr(Position p, Expr lhs, Expr rhs, String op) {
+    public BinaryLogicExpr(Position p, Expr lhs, Expr rhs, Type boolT, String op) {
+        super(p);
         this.lhs = lhs;
         this.rhs = rhs;
-        switch(op){
+        type = boolT;
+        switch (op) {
             case "==":
                 this.op = BLogicOp.EQ;
                 break;

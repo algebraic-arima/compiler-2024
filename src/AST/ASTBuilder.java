@@ -16,6 +16,12 @@ import src.utils.error.*;
 import java.util.Objects;
 
 public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
+
+    Type voidType = new Type("void");
+    Type intType = new Type("int");
+    Type boolType = new Type("bool");
+    Type stringType = new Type("string");
+
     @Override
     public BaseASTNode visitProg(Mx.ProgContext ctx) {
         Prog prog = new Prog(new Position(ctx));
@@ -69,7 +75,8 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     public BaseASTNode visitClassdef(Mx.ClassdefContext ctx) {
         ClassDef classDef = new ClassDef(new Position(ctx));
         classDef.className = ctx.ID().getText();
-        classDef.constructor = (Constructor) visit(ctx.constructor());
+        classDef.constructor = (ctx.constructor() == null) ? null :
+                ((Constructor) visit(ctx.constructor()));
         for (Mx.VardefContext tc : ctx.vardef()) {
             classDef.classMem.add((VarDef) visit(tc));
         }
@@ -228,10 +235,12 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
             case "+", "-", "*", "/", "%", "<<", ">>", "&", "|", "^" -> new BinaryArithExpr(new Position(ctx),
                     (Expr) visit(ctx.expr(0)),
                     (Expr) visit(ctx.expr(1)),
+                    intType,
                     op);
             case "<", ">", "<=", ">=", "==", "!=", "&&", "||" -> new BinaryLogicExpr(new Position(ctx),
                     (Expr) visit(ctx.expr(0)),
                     (Expr) visit(ctx.expr(1)),
+                    boolType,
                     op);
             default -> null;
         };
@@ -305,13 +314,13 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     @Override
     public BaseASTNode visitLiteral(Mx.LiteralContext ctx) {
         if (ctx.INTCONST() != null) {
-            return new IntLiteralExpr(new Position(ctx), Integer.parseInt(ctx.INTCONST().getText()));
+            return new IntLiteralExpr(new Position(ctx), Integer.parseInt(ctx.INTCONST().getText()), intType);
         }
         if (ctx.TRUE() != null || ctx.FALSE() != null) {
-            return new BoolLiteralExpr(new Position(ctx), ctx.TRUE() != null);
+            return new BoolLiteralExpr(new Position(ctx), ctx.TRUE() != null, boolType);
         }
         if (ctx.STRINGCONST() != null) {
-            return new StringLiteralExpr(new Position(ctx), ctx.STRINGCONST().getText());
+            return new StringLiteralExpr(new Position(ctx), ctx.STRINGCONST().getText(), stringType);
         }
         if (ctx.NULL() != null) {
             return new NullExpr(new Position(ctx));
@@ -347,10 +356,10 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
             String p = ctx.FMTSTRPURE().getText();
             p = p.substring(1, p.length() - 1);
             p = p.replace("$$", "$");
-            return new StringLiteralExpr(new Position(ctx), p);
+            return new StringLiteralExpr(new Position(ctx), p, stringType);
         }
         // with expr
-        FmtStrLiteralExpr f = new FmtStrLiteralExpr(new Position(ctx));
+        FmtStrLiteralExpr f = new FmtStrLiteralExpr(new Position(ctx), stringType);
         String bgn = ctx.FMTSTRBGN().getText();
         bgn = bgn.substring(2, bgn.length() - 1);
         bgn = bgn.replace("$$", "$");

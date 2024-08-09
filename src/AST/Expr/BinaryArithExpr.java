@@ -1,6 +1,7 @@
 package src.AST.Expr;
 
 import src.utils.pos.Position;
+import src.utils.type.Type;
 
 public class BinaryArithExpr extends Expr {
 
@@ -11,11 +12,12 @@ public class BinaryArithExpr extends Expr {
     public Expr lhs, rhs;
     public BArithOp op;
 
-    public BinaryArithExpr(Position p, Expr lhs, Expr rhs, String op) {
+    public BinaryArithExpr(Position p, Expr lhs, Expr rhs,Type intT, String op) {
         super(p);
         this.lhs = lhs;
         this.rhs = rhs;
-        switch(op){
+        type = intT;
+        switch (op) {
             case "+":
                 this.op = BArithOp.ADD;
                 break;

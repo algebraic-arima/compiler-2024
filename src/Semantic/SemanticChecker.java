@@ -9,13 +9,16 @@ import src.AST.Expr.Expr;
 import src.AST.Prog;
 import src.AST.Stmt.Stmt;
 import src.utils.Scope.GlobalScope;
+import src.utils.Scope.Scope;
 
 public class SemanticChecker implements ASTVisitor {
 
-    GlobalScope gScope;
+    public Scope curScope;
+    public GlobalScope gScope;
 
     public SemanticChecker(GlobalScope g) {
         gScope = g;
+        curScope = new Scope(gScope);
     }
 
     @Override
@@ -25,7 +28,9 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(FuncDef node) {
+        curScope = new Scope(gScope);
 
+        node.funcBody.accept(this);
     }
 
     @Override
