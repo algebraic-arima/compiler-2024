@@ -1,13 +1,13 @@
 package src.AST.Stmt.LoopStmt;
 
 import src.AST.ASTVisitor;
-import src.AST.Expr.RowExpr;
+import src.AST.Expr.Expr;
 import src.AST.Stmt.Stmt;
 import src.utils.pos.Position;
 
 public class ForStmt extends Stmt {
 
-    public RowExpr init, cond, update;
+    public Expr init, cond, update;
     public Stmt body;
 
     public ForStmt(Position p) {

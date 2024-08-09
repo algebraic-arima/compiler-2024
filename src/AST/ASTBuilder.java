@@ -84,7 +84,7 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         VarDef varDef = new VarDef(new Position(ctx));
         varDef.type = new Type(ctx.type());
         for (Mx.SinglevardefContext sv : ctx.singlevardef()) {
-            varDef.initVals.put(sv.ID().getText(), (Expr) visit(sv.expr()));
+            varDef.initVals.put(sv.ID().getText(), (sv.expr() == null) ? null : (Expr) visit(sv.expr()));
         }
         return varDef;
     }
@@ -119,9 +119,9 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     @Override
     public BaseASTNode visitForStmt(Mx.ForStmtContext ctx) {
         ForStmt fs = new ForStmt(new Position(ctx));
-        fs.init = (RowExpr) visit(ctx.expr(0));
-        fs.cond = (RowExpr) visit(ctx.expr(1));
-        fs.update = (RowExpr) visit(ctx.expr(2));
+        fs.init = (Expr) visit(ctx.expr(0));
+        fs.cond = (Expr) visit(ctx.expr(1));
+        fs.update = (Expr) visit(ctx.expr(2));
         fs.body = (Stmt) visit(ctx.stmt());
         return fs;
     }
@@ -159,7 +159,8 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         return visit(ctx.jmpstmt());
     }
 
-    @Override public BaseASTNode visitEmptyStmt(Mx.EmptyStmtContext ctx) {
+    @Override
+    public BaseASTNode visitEmptyStmt(Mx.EmptyStmtContext ctx) {
         return null;
     }
 
@@ -196,7 +197,9 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     public BaseASTNode visitFuncCall(Mx.FuncCallContext ctx) {
         FuncCallExpr fc = new FuncCallExpr(new Position(ctx),
                 ctx.ID().getText());
-        fc.args = (RowExpr) visit(ctx.rowexpr());
+        fc.args = (ctx.rowexpr() == null)
+                ? new RowExpr(new Position(ctx))
+                : (RowExpr) visit(ctx.rowexpr());
         return fc;
     }
 
@@ -234,6 +237,12 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         };
     }
 
+    @Override
+    public BaseASTNode visitAssignExp(Mx.AssignExpContext ctx) {
+        return new AssignExpr(new Position(ctx),
+                (Expr) visit(ctx.expr(0)),
+                (Expr) visit(ctx.expr(1)));
+    }
 
     @Override
     public BaseASTNode visitTernaryExp(Mx.TernaryExpContext ctx) {
@@ -353,8 +362,9 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
             f.strs.add(body);
         }
         String end = ctx.FMTSTREND().getText();
-        end = end.substring(1, end.length() - 2);
+        end = end.substring(1, end.length() - 1);
         end = end.replace("$$", "$");
+        f.strs.add(end);
         for (int i = 0; i < ctx.expr().size(); ++i) {
             f.exprs.add((Expr) visit(ctx.expr(i)));
         }

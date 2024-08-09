@@ -66,7 +66,7 @@ expr:
     | expr op=AND expr # BinaryExp
     | expr op=OR expr # BinaryExp
     | <assoc = right> expr op=QUES expr op=COLON expr # TernaryExp
-    | <assoc = right> expr op=ASSIGN expr # AssignExp
+    | <assoc = right> ID op=ASSIGN expr # AssignExp
     | NEW singletype (LBKT expr? RBKT)* (LBKT RBKT)*  arrayliteral? # NewArray
     | NEW ID (LPAR RPAR)? # NewClass
     | THIS # ThisPtr

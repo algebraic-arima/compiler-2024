@@ -2,4 +2,5 @@
 out
 lib
 testcases
-*.txt
+tools
+*.mx

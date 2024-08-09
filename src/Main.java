@@ -11,6 +11,7 @@ import src.utils.MxErrorListener;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -18,7 +19,7 @@ public class Main {
 //        InputStream in = System.in;
         String name = "F:\\vscode\\antlr-demo\\compiler-2024\\src\\t.mx";
         InputStream in = new FileInputStream(name);
-        System.out.println(in);
+//        System.out.println(Arrays.toString(in.readAllBytes()));
         Lex lexer = new Lex(CharStreams.fromStream(in));
         lexer.removeErrorListeners();
         lexer.addErrorListener(new MxErrorListener());
@@ -29,9 +30,5 @@ public class Main {
         ASTBuilder astBuilder = new ASTBuilder();
         Prog root = (Prog) astBuilder.visit(parseTreeRoot);
         return;
-    }
-
-    public static String trim(String s) {
-        return s + "3";
     }
 }

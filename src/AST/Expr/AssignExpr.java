@@ -1,13 +1,15 @@
 package src.AST.Expr;
 
 import src.AST.ASTVisitor;
+import src.utils.pos.Position;
 
-public class AssignExpr extends Expr{
-    public String varName;
+public class AssignExpr extends Expr {
+    public Expr var;
     public Expr value;
 
-    public AssignExpr(String v, Expr va) {
-        varName = v;
+    public AssignExpr(Position p, Expr v, Expr va) {
+        super(p);
+        var = v;
         value = va;
     }
 
