@@ -1,7 +1,7 @@
 package src.AST.Def;
 
 import src.AST.ASTVisitor;
-import src.AST.Stmt.PolyStmt;
+import src.AST.Stmt.BlockStmt;
 import src.utils.pos.Position;
 import src.utils.type.Type;
 
@@ -11,7 +11,7 @@ public class FuncDef extends Def {
     public String funcName;
     public Type funcType;
     public HashMap<String,Type> funcParams;
-    public PolyStmt funcBody;
+    public BlockStmt funcBody;
 
     public FuncDef(Position p) {
         super(p);

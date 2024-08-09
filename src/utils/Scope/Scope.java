@@ -9,6 +9,9 @@ import src.utils.type.Type;
 import java.util.HashMap;
 
 public class Scope {
+
+    public boolean isLOOP;
+
     public HashMap<String, Type> VarList;
     public HashMap<String, FuncType> FuncList;
 
@@ -48,6 +51,7 @@ public class Scope {
 
     public FuncType getFunc(String name) {
         if (FuncList.containsKey(name)) return FuncList.get(name);
+        if (parent != null) return parent.getFunc(name);
         return null;
     }
 }

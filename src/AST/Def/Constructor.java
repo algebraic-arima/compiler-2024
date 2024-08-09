@@ -1,12 +1,12 @@
 package src.AST.Def;
 
 import src.AST.ASTVisitor;
-import src.AST.Stmt.PolyStmt;
+import src.AST.Stmt.BlockStmt;
 import src.utils.pos.Position;
 
 public class Constructor extends Def{
     public String className;
-    public PolyStmt funcBody;
+    public BlockStmt funcBody;
 
     public Constructor(Position p){
         super(p);

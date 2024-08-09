@@ -41,9 +41,9 @@ public class Type {
             return;
         }
         if (ctx.singletype() != null) {
-            String atstr = ctx.singletype().getText();
-            typeName = atstr;
-            switch (atstr) {
+            String str = ctx.singletype().getText();
+            typeName = str;
+            switch (str) {
                 case "int" -> atomType = T.INT;
                 case "bool" -> atomType = T.BOOL;
                 case "string" -> atomType = T.STRING;

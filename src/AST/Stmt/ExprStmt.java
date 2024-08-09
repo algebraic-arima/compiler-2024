@@ -5,7 +5,7 @@ import src.AST.Expr.Expr;
 import src.utils.pos.Position;
 
 public class ExprStmt extends Stmt {
-    Expr expr;
+    public Expr expr;
 
     public ExprStmt(Position p, Expr e) {
         super(p);

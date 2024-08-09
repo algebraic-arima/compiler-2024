@@ -4,11 +4,11 @@ import src.AST.ASTVisitor;
 import src.AST.Def.VarDef;
 import src.utils.pos.Position;
 
-public class VarDefStmt extends Stmt{
+public class VarDefStmt extends Stmt {
 
-    VarDef varDef;
+    public VarDef varDef;
 
-    public VarDefStmt(Position p, VarDef v){
+    public VarDefStmt(Position p, VarDef v) {
         super(p);
         varDef = v;
     }

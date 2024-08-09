@@ -1,6 +1,5 @@
 package src.AST;
 
-import src.AST.*;
 import src.AST.Def.*;
 import src.AST.Expr.*;
 import src.AST.Stmt.*;
@@ -10,10 +9,6 @@ import src.parser.MxBaseVisitor;
 import src.parser.Mx;
 import src.utils.pos.Position;
 import src.utils.type.Type;
-
-import src.utils.error.*;
-
-import java.util.Objects;
 
 public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
 
@@ -50,7 +45,7 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         for (int i = 1; i < ctx.ID().size(); i++) {
             funcDef.funcParams.put(ctx.ID(i).getText(), new Type(ctx.type(i)));
         }
-        funcDef.funcBody = (PolyStmt) visit(ctx.stmts());
+        funcDef.funcBody = (BlockStmt) visit(ctx.stmts());
         return funcDef;
     }
 
@@ -58,17 +53,17 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     public BaseASTNode visitConstructor(Mx.ConstructorContext ctx) {
         Constructor constructor = new Constructor(new Position(ctx));
         constructor.className = ctx.ID().getText();
-        constructor.funcBody = (PolyStmt) visit(ctx.stmts());
+        constructor.funcBody = (BlockStmt) visit(ctx.stmts());
         return constructor;
     }
 
     @Override
     public BaseASTNode visitStmts(Mx.StmtsContext ctx) {
-        PolyStmt polyStmt = new PolyStmt(new Position(ctx));
+        BlockStmt blockStmt = new BlockStmt(new Position(ctx));
         for (Mx.StmtContext stmt : ctx.stmt()) {
-            polyStmt.stmts.add((Stmt) visit(stmt));
+            blockStmt.stmts.add((Stmt) visit(stmt));
         }
-        return polyStmt;
+        return blockStmt;
     }
 
     @Override
@@ -126,9 +121,13 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     @Override
     public BaseASTNode visitForStmt(Mx.ForStmtContext ctx) {
         ForStmt fs = new ForStmt(new Position(ctx));
-        fs.init = (Expr) visit(ctx.expr(0));
-        fs.cond = (Expr) visit(ctx.expr(1));
-        fs.update = (Expr) visit(ctx.expr(2));
+        if (ctx.rowexpr() != null) {
+            fs.init = (Stmt) visit(ctx.rowexpr());
+        } else if (ctx.vardef() != null) {
+            fs.init = (Stmt) visit(ctx.vardef());
+        }
+        fs.cond = (Expr) visit(ctx.expr(0));
+        fs.update = (Expr) visit(ctx.expr(1));
         fs.body = (Stmt) visit(ctx.stmt());
         return fs;
     }

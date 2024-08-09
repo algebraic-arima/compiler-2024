@@ -7,8 +7,8 @@ import src.utils.pos.Position;
 
 public class ForStmt extends Stmt {
 
-    public Expr init, cond, update;
-    public Stmt body;
+    public Expr cond, update;
+    public Stmt init,body;
 
     public ForStmt(Position p) {
         super(p);

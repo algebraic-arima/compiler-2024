@@ -14,6 +14,10 @@ public abstract class Expr extends BaseASTNode {
         super();
     }
 
+    public Type getType() {
+        return type;
+    }
+
     public Expr(Position p) {
         super(p);
     }
