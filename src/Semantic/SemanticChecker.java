@@ -148,6 +148,8 @@ public class SemanticChecker implements ASTVisitor {
         RollBack();
     }
 
+    /// todo: visiting expr should implement the type and is_lvalue
+
     @Override
     public void visit(ArrayAccessExpr node) {
 

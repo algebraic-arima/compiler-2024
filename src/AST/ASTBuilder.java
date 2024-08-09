@@ -124,7 +124,7 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         if (ctx.rowexpr() != null) {
             fs.init = (Stmt) visit(ctx.rowexpr());
         } else if (ctx.vardef() != null) {
-            fs.init = (Stmt) visit(ctx.vardef());
+            fs.init = new VarDefStmt(new Position(ctx), (VarDef) visit(ctx.vardef()));
         }
         fs.cond = (Expr) visit(ctx.expr(0));
         fs.update = (Expr) visit(ctx.expr(1));
