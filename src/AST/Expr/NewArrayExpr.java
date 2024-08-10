@@ -1,13 +1,10 @@
 package src.AST.Expr;
 
 import src.utils.pos.Position;
-import src.utils.type.Type;
 
 import java.util.ArrayList;
 
 public class NewArrayExpr extends Expr {
-    public Type type;
-    public int dim;
     public ArrayList<Expr> len;
 
     public NewArrayExpr(Position p) {

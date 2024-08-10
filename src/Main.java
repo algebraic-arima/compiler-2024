@@ -17,7 +17,6 @@ import java.io.InputStream;
 public class Main {
     public static void main(String[] args) throws Exception {
         try{
-            System.out.println("Hello, MxWorld!");
             String file = "F:\\vscode\\antlr-demo\\compiler-2024\\src\\t.mx";
             InputStream in = new FileInputStream(file);
             Lex lexer = new Lex(CharStreams.fromStream(in));

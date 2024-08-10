@@ -103,6 +103,10 @@ public class Type {
         return atomType == T.CLASS;
     }// for class type and its array type
 
+    public boolean isClass(){
+        return atomType == T.CLASS && dim == 0;
+    }
+
     public boolean isArray() {
         return dim > 0;
     }

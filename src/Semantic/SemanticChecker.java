@@ -9,9 +9,11 @@ import src.AST.Stmt.JumpStmt.*;
 import src.AST.Stmt.LoopStmt.*;
 import src.utils.Scope.*;
 import src.utils.error.error;
+import src.utils.type.FuncType;
 import src.utils.type.Type;
 
 import java.util.Map;
+import java.util.Objects;
 
 import static src.AST.Expr.BinaryArithExpr.BArithOp.*;
 import static src.utils.type.Type.T.*;
@@ -206,7 +208,7 @@ public class SemanticChecker implements ASTVisitor {
             if (!(e instanceof IntLiteralExpr || e instanceof BoolLiteralExpr
                     || e instanceof StringLiteralExpr || e instanceof NullExpr)) {
                 throw new error("Array literal invalid with other types", node.pos);
-            }
+            }// a bug
             e.accept(this);
             if (a != -1 && a != e.type.dim) {
                 throw new error("Array literal invalid with different dimensions", node.pos);
@@ -225,7 +227,7 @@ public class SemanticChecker implements ASTVisitor {
             throw new error("AssignExpr: type not match", node.pos);
         }
         if (!node.var.isLvalue) {
-            throw new error("AssignExpr: left value not assignable", node.pos);
+            throw new error("AssignExpr: left operand not assignable", node.pos);
         }
         node.type = node.var.type;
         node.isLvalue = false;
@@ -264,7 +266,7 @@ public class SemanticChecker implements ASTVisitor {
 
         } else if (node.lhs.type.hasClass()) {
 
-        }  else {
+        } else {
             throw new error("type invalid for binary expression", node.pos);
         }
         node.type = node.lhs.type;
@@ -305,17 +307,18 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(FuncCallExpr node) {
         if (curScope.getFunc(node.funcName) == null) {
-            throw new error("function not defined", node.pos);
+            throw new error("FuncCall: function not defined", node.pos);
         }
         if (curScope.getFunc(node.funcName).args.size() != node.args.exps.size()) {
-            throw new error("function call: number of arguments not match", node.pos);
+            throw new error("FuncCall: number of arguments not match", node.pos);
         }
         int i = 0;
         for (Map.Entry<String, Type> entry : curScope.getFunc(node.funcName).args.entrySet()) {
             node.args.exps.get(i).accept(this);
             if (!entry.getValue().equals(node.args.exps.get(i).type)) {
-                throw new error("function call: type of arguments not match", node.pos);
+                throw new error("FuncCall: type of arguments not match", node.pos);
             }
+            ++i;
         }
         node.type = curScope.getFunc(node.funcName).retType;
         node.isLvalue = !(node.type.isInt() || node.type.isBool());
@@ -330,27 +333,79 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(MemberFuncCallExpr node) {
-
+        node.obj.accept(this);
+        if (!node.obj.type.isClass()) {
+            throw new error("MemberFuncCall: object should be class", node.pos);
+        }
+        String cn = node.obj.type.typeName;
+        if (gScope.getClass(cn) == null) {
+            throw new error("MemberFuncCall: class not defined", node.pos);
+        }
+        if (gScope.getClass(cn).methods.get(node.funcName) == null) {
+            throw new error("MemberFuncCall: method not defined", node.pos);
+        }
+        FuncType ft = gScope.getClass(cn).methods.get(node.funcName);
+        if (ft.args.size() != node.args.exps.size()) {
+            throw new error("MemberFuncCall: number of arguments not match", node.pos);
+        }
+        int i = 0;
+        for (Map.Entry<String, Type> entry : ft.args.entrySet()) {
+            node.args.exps.get(i).accept(this);
+            if (!entry.getValue().equals(node.args.exps.get(i).type)) {
+                throw new error("MemberFuncCall: type of arguments not match", node.pos);
+            }
+            ++i;
+        }
+        node.type = ft.retType;
+        node.isLvalue = !(node.type.isInt() || node.type.isBool());
     }
 
     @Override
     public void visit(MemberObjAccessExpr node) {
-
+        node.obj.accept(this);
+        if (!node.obj.type.isClass()) {
+            throw new error("MemberObjAccessExpr: object should be class", node.pos);
+        }
+        String cn = node.obj.type.typeName;
+        if (gScope.getClass(cn) == null) {
+            throw new error("MemberObjAccessExpr: class not defined", node.pos);
+        }
+        if (gScope.getClass(cn).fields.get(node.member) == null) {
+            throw new error("MemberObjAccessExpr: field not defined", node.pos);
+        }
+        node.type = gScope.getClass(cn).fields.get(node.member);
+        node.isLvalue = true;
     }
 
     @Override
     public void visit(NewArrayExpr node) {
-
+        for (Expr e : node.len) {
+            if (e == null) continue;
+            e.accept(this);
+            if (!e.type.isInt()) {
+                throw new error("NewArrayExpr: dimension should be int", node.pos);
+            }
+        }
+        node.isLvalue = false;
     }
 
     @Override
     public void visit(NewArrayInitExpr node) {
-
+        node.init.accept(this);
+        if (!Objects.equals(node.type.dim, node.init.type.dim)) {
+            throw new error("NewArrayInitExpr: dimension not match", node.pos);
+        }
+        node.isLvalue = false;
     }
 
     @Override
     public void visit(NewTypeExpr node) {
-
+        if (node.type.hasClass()) {
+            if (gScope.getClass(node.type.typeName) == null) {
+                throw new error("invalid variable definition: class not defined", node.pos);
+            }
+        }
+        node.isLvalue = false;
     }
 
     @Override
@@ -387,7 +442,12 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(ThisPtrExpr node) {
-
+        Type t = curScope.getVar("this");
+        if (t == null) {
+            throw new error("'this' ptr used out of class", node.pos);
+        }
+        node.type = t;
+        node.isLvalue = false;
     }
 
     @Override
@@ -412,10 +472,11 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(VarExpr node) {
-        if (curScope.getVar(node.varName) == null) {
+        Type t = curScope.getVar(node.varName);
+        if (t == null) {
             throw new error("variable not defined", node.pos);
         }
-        node.type = curScope.getVar(node.varName);
+        node.type = t;
         node.isLvalue = true;
     }
 

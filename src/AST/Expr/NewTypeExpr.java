@@ -4,7 +4,6 @@ import src.utils.pos.Position;
 import src.utils.type.Type;
 
 public class NewTypeExpr extends Expr{
-    public Type type;
 
     public NewTypeExpr(Position p, Type t) {
         super(p);

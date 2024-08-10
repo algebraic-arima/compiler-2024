@@ -269,16 +269,14 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         if (!ctx.expr().isEmpty() && ctx.arrayliteral() == null) {
             // no init
             NewArrayExpr n = new NewArrayExpr(new Position(ctx));
-            n.dim = dim;
-            n.type = new Type(ctx.singletype().getText());
+            n.type = new Type(ctx.singletype().getText(), dim);
             for (Mx.ExprContext e : ctx.expr()) {
                 n.len.add((Expr) visit(e));
             }
             return n;
         } else if (ctx.expr().isEmpty() && ctx.arrayliteral() != null) {
             NewArrayInitExpr n = new NewArrayInitExpr(new Position(ctx));
-            n.dim = dim;
-            n.type = new Type(ctx.singletype().getText());
+            n.type = new Type(ctx.singletype().getText(), dim);
             n.init = (ArrayLiteralExpr) visit(ctx.arrayliteral());
             return n;
         }
