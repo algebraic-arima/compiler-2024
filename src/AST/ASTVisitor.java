@@ -9,8 +9,14 @@ import src.AST.Stmt.JumpStmt.*;
 import src.AST.Stmt.LoopStmt.*;
 import src.AST.Stmt.*;
 import src.parser.Mx;
+import src.utils.type.Type;
 
 public interface ASTVisitor {
+
+    Type voidType = new Type("void");
+    Type intType = new Type("int");
+    Type boolType = new Type("bool");
+    Type stringType = new Type("string");
 
     void visit(Prog node);
 

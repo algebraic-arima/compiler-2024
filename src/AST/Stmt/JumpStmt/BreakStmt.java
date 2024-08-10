@@ -12,6 +12,6 @@ public class BreakStmt extends Stmt{
 
     @Override
     public void accept(ASTVisitor v) {
-
+        v.visit(this);
     }
 }

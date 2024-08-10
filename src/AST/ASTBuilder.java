@@ -97,7 +97,8 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         IfStmt is = new IfStmt(new Position(jumping));
         is.condition = (Expr) visit(jumping.expr());
         is.trueStmt = (Stmt) visit(jumping.stmt(0));
-        is.falseStmt = (Stmt) visit(jumping.stmt(1));
+        is.falseStmt = (jumping.stmt(1) == null) ?
+                null : (Stmt) visit(jumping.stmt(1));
         return is;
     }
 
@@ -181,7 +182,9 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         MemberFuncCallExpr mfce = new MemberFuncCallExpr(new Position(ctx),
                 (Expr) visit(ctx.expr()),
                 ctx.ID().getText());
-        mfce.args = (RowExpr) visit(ctx.rowexpr());
+        mfce.args = (ctx.rowexpr() == null)
+                ? new RowExpr(new Position(ctx))
+                : (RowExpr) visit(ctx.rowexpr());
         return mfce;
     }
 
@@ -231,15 +234,14 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     public BaseASTNode visitBinaryExp(Mx.BinaryExpContext ctx) {
         String op = ctx.op.getText();
         return switch (op) {
-            case "+", "-", "*", "/", "%", "<<", ">>", "&", "|", "^" -> new BinaryArithExpr(new Position(ctx),
+            case "<", ">", "<=", ">=", "==", "!=", "+", "-", "*", "/",
+                 "%", "<<", ">>", "&", "|", "^" -> new BinaryArithExpr(new Position(ctx),
                     (Expr) visit(ctx.expr(0)),
                     (Expr) visit(ctx.expr(1)),
-                    intType,
                     op);
-            case "<", ">", "<=", ">=", "==", "!=", "&&", "||" -> new BinaryLogicExpr(new Position(ctx),
+            case "&&", "||" -> new BinaryLogicExpr(new Position(ctx),
                     (Expr) visit(ctx.expr(0)),
                     (Expr) visit(ctx.expr(1)),
-                    boolType,
                     op);
             default -> null;
         };

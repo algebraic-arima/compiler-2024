@@ -6,17 +6,16 @@ import src.utils.type.Type;
 public class BinaryArithExpr extends Expr {
 
     public enum BArithOp {
-        ADD, SUB, MUL, DIV, MOD, BLS, BRS, BAND, BOR, BXOR
-    }
+        ADD, SUB, MUL, DIV, MOD, BLS, BRS, BAND, BOR, BXOR, EQ, NE, LT, GT, LE, GE,
+    }// 16 = 9 + 7
 
     public Expr lhs, rhs;
     public BArithOp op;
 
-    public BinaryArithExpr(Position p, Expr lhs, Expr rhs,Type intT, String op) {
+    public BinaryArithExpr(Position p, Expr lhs, Expr rhs, String op) {
         super(p);
         this.lhs = lhs;
         this.rhs = rhs;
-        type = intT;
         switch (op) {
             case "+":
                 this.op = BArithOp.ADD;
@@ -47,6 +46,24 @@ public class BinaryArithExpr extends Expr {
                 break;
             case "^":
                 this.op = BArithOp.BXOR;
+                break;
+            case "==":
+                this.op = BArithOp.EQ;
+                break;
+            case "!=":
+                this.op = BArithOp.NE;
+                break;
+            case "<":
+                this.op = BArithOp.LT;
+                break;
+            case ">":
+                this.op = BArithOp.GT;
+                break;
+            case "<=":
+                this.op = BArithOp.LE;
+                break;
+            case ">=":
+                this.op = BArithOp.GE;
                 break;
 
         }

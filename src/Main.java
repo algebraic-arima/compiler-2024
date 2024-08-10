@@ -1,11 +1,10 @@
 package src;
 
-import org.antlr.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import src.AST.ASTBuilder;
 import src.AST.Prog;
-import src.Semantic.SymbolCollector;
+import src.Semantic.*;
 import src.parser.Lex;
 import src.parser.Mx;
 import src.utils.MxErrorListener;
@@ -14,7 +13,6 @@ import src.utils.error.error;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.Arrays;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -34,6 +32,7 @@ public class Main {
             Prog root = (Prog) astBuilder.visit(parseTreeRoot);
             GlobalScope gScope = new GlobalScope();
             new SymbolCollector(gScope).visit(root);
+            new SemanticChecker(gScope).visit(root);
             return;
         } catch (error e){
             System.err.println(e.pos.row + ":" + e.pos.column + " " + e.message);

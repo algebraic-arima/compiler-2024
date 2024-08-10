@@ -1,13 +1,13 @@
 package src.utils.type;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class FuncType {
-    public Type returnType;
-    public HashMap<String, Type> args;
+    public Type retType;
+    public LinkedHashMap<String, Type> args;
 
     public FuncType(Type returnType) {
-        this.returnType = returnType;
-        args = new HashMap<>();
+        this.retType = returnType;
+        args = new LinkedHashMap<>();
     }
 }

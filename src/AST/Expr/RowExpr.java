@@ -12,6 +12,10 @@ public class RowExpr extends Expr {
         exps = new ArrayList<>();
     }
 
+    public int size() {
+        return exps.size();
+    }
+
     @Override
     public void accept(src.AST.ASTVisitor v) {
         v.visit(this);

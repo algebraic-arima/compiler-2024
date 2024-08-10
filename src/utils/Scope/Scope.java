@@ -21,12 +21,12 @@ public class Scope {
         parent = null;
         VarList = new HashMap<>();
         FuncList = new HashMap<>();
-
     }
 
     public Scope(Scope p) {
         parent = p;
         VarList = new HashMap<>();
+        FuncList = new HashMap<>();
     }
 
     public void addVar(String name, Type t, Position p) {
@@ -50,8 +50,10 @@ public class Scope {
     }
 
     public FuncType getFunc(String name) {
-        if (FuncList.containsKey(name)) return FuncList.get(name);
-        if (parent != null) return parent.getFunc(name);
+        if (FuncList.containsKey(name))
+            return FuncList.get(name);
+        if (parent != null)
+            return parent.getFunc(name);
         return null;
     }
 }
