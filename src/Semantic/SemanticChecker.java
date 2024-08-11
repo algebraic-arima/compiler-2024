@@ -305,6 +305,12 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(FmtStrLiteralExpr node) {
+        for (Expr e : node.exprs) {
+            e.accept(this);
+            if (!e.type.isInt() && !e.type.isString() && !e.type.isBool()) {
+                throw new error("Formatted string: invalid type", node.pos);
+            }
+        }
         node.type = stringType;
         node.isLvalue = false;
     }

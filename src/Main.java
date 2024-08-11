@@ -17,7 +17,7 @@ import java.io.InputStream;
 public class Main {
     public static void main(String[] args) throws Exception {
         try{
-            String file = "F:\\vscode\\antlr-demo\\compiler-2024\\testcases\\sema\\string-package\\string-1.mx";
+            String file = "F:\\vscode\\antlr-demo\\compiler-2024\\testcases\\sema\\formatted-string-package\\formatted-string7.mx";
             InputStream in = new FileInputStream(file);
             Lex lexer = new Lex(CharStreams.fromStream(in));
 //        InputStream in = System.in;
