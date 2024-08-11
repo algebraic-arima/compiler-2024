@@ -46,6 +46,8 @@ public interface ASTVisitor {
 
     void visit(BlockStmt node);
 
+    void visit(EmptyStmt node);
+
     void visit(ArrayAccessExpr node);
 
     void visit(ArrayLiteralExpr node);

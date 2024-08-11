@@ -96,9 +96,9 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     public BaseASTNode visitIfStmt(Mx.IfStmtContext jumping) {
         IfStmt is = new IfStmt(new Position(jumping));
         is.condition = (Expr) visit(jumping.expr());
-        is.trueStmt = (Stmt) visit(jumping.stmt(0));
-        is.falseStmt = (jumping.stmt(1) == null) ?
-                null : (Stmt) visit(jumping.stmt(1));
+        is.trueStmt = (Stmt) visit(jumping.truestmt);
+        is.falseStmt = (jumping.falsestmt == null) ?
+                null : (Stmt) visit(jumping.falsestmt);
         return is;
     }
 
@@ -123,12 +123,12 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     public BaseASTNode visitForStmt(Mx.ForStmtContext ctx) {
         ForStmt fs = new ForStmt(new Position(ctx));
         if (ctx.rowexpr() != null) {
-            fs.init = (Stmt) visit(ctx.rowexpr());
+            fs.init = new ExprStmt(new Position(ctx), (Expr) visit(ctx.rowexpr()));
         } else if (ctx.vardef() != null) {
             fs.init = new VarDefStmt(new Position(ctx), (VarDef) visit(ctx.vardef()));
         }
-        fs.cond = (Expr) visit(ctx.expr(0));
-        fs.update = (Expr) visit(ctx.expr(1));
+        fs.cond = ctx.cond == null ? null : (Expr) visit(ctx.cond);
+        fs.update = ctx.update == null ? null : (Expr) visit(ctx.update);
         fs.body = (Stmt) visit(ctx.stmt());
         return fs;
     }
@@ -168,7 +168,7 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
 
     @Override
     public BaseASTNode visitEmptyStmt(Mx.EmptyStmtContext ctx) {
-        return null;
+        return new EmptyStmt(new Position(ctx));
     }
 
     ///expr
@@ -266,6 +266,10 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     @Override
     public BaseASTNode visitNewArray(Mx.NewArrayContext ctx) {
         int dim = ctx.LBKT().size();
+        if (dim == 0) {
+            return new NewTypeExpr(new Position(ctx),
+                    new Type(ctx.singletype().getText()));
+        }
         if (!ctx.expr().isEmpty() && ctx.arrayliteral() == null) {
             // no init
             NewArrayExpr n = new NewArrayExpr(new Position(ctx));

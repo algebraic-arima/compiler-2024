@@ -728,6 +728,8 @@ public class Mx extends Parser {
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class IfStmtContext extends JmpstmtContext {
+		public StmtContext truestmt;
+		public StmtContext falsestmt;
 		public TerminalNode IF() { return getToken(Mx.IF, 0); }
 		public TerminalNode LPAR() { return getToken(Mx.LPAR, 0); }
 		public ExprContext expr() {
@@ -795,7 +797,7 @@ public class Mx extends Parser {
 				setState(130);
 				match(RPAR);
 				setState(131);
-				stmt();
+				((IfStmtContext)_localctx).truestmt = stmt();
 				setState(134);
 				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,13,_ctx) ) {
@@ -804,7 +806,7 @@ public class Mx extends Parser {
 					setState(132);
 					match(ELSE);
 					setState(133);
-					stmt();
+					((IfStmtContext)_localctx).falsestmt = stmt();
 					}
 					break;
 				}
@@ -897,6 +899,8 @@ public class Mx extends Parser {
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class ForStmtContext extends LpstmtContext {
+		public ExprContext cond;
+		public ExprContext update;
 		public TerminalNode FOR() { return getToken(Mx.FOR, 0); }
 		public TerminalNode LPAR() { return getToken(Mx.LPAR, 0); }
 		public List<TerminalNode> SEMI() { return getTokens(Mx.SEMI); }
@@ -967,7 +971,7 @@ public class Mx extends Parser {
 				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 1862810194129455008L) != 0)) {
 					{
 					setState(154);
-					expr(0);
+					((ForStmtContext)_localctx).cond = expr(0);
 					}
 				}
 
@@ -979,7 +983,7 @@ public class Mx extends Parser {
 				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 1862810194129455008L) != 0)) {
 					{
 					setState(158);
-					expr(0);
+					((ForStmtContext)_localctx).update = expr(0);
 					}
 				}
 

@@ -25,14 +25,14 @@ constructor: ID LPAR RPAR stmts;
 stmts: LBCE stmt* RBCE ;
 
 jmpstmt:
-    IF LPAR expr RPAR stmt (ELSE stmt)? # IfStmt
+    IF LPAR expr RPAR truestmt=stmt (ELSE falsestmt=stmt)? # IfStmt
     | BREAK SEMI # BreakStmt
     | CONTINUE SEMI # ContinueStmt
     | RETURN expr? SEMI # ReturnStmt
     ;
 
 lpstmt:
-    FOR LPAR (rowexpr | vardef)? SEMI expr? SEMI expr? RPAR stmt # ForStmt
+    FOR LPAR (rowexpr | vardef)? SEMI cond=expr? SEMI update=expr? RPAR stmt # ForStmt
     | WHILE LPAR expr RPAR stmt # WhileStmt
     ;
 

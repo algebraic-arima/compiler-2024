@@ -7,16 +7,13 @@ import src.AST.Def.FuncDef;
 import src.AST.Def.VarDef;
 import src.AST.Expr.*;
 import src.AST.Prog;
-import src.AST.Stmt.BlockStmt;
-import src.AST.Stmt.ExprStmt;
+import src.AST.Stmt.*;
 import src.AST.Stmt.JumpStmt.BreakStmt;
 import src.AST.Stmt.JumpStmt.ContinueStmt;
 import src.AST.Stmt.JumpStmt.IfStmt;
 import src.AST.Stmt.JumpStmt.ReturnStmt;
 import src.AST.Stmt.LoopStmt.ForStmt;
 import src.AST.Stmt.LoopStmt.WhileStmt;
-import src.AST.Stmt.Stmt;
-import src.AST.Stmt.VarDefStmt;
 import src.utils.Scope.GlobalScope;
 import src.utils.error.error;
 import src.utils.type.ClassType;
@@ -115,6 +112,11 @@ public class SymbolCollector implements ASTVisitor {
 
     @Override
     public void visit(BlockStmt node) {
+
+    }
+
+    @Override
+    public void visit(EmptyStmt node) {
 
     }
 

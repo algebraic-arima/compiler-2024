@@ -54,7 +54,6 @@ public class SemanticChecker implements ASTVisitor {
         curScope.addVar("this", new Type(node.className), node.pos);
         curScope.FuncList = gScope.getClass(node.className).methods;
         if (node.constructor != null) node.constructor.accept(this);
-        ///todo: constructor name check
         node.classFunc.forEach(d -> d.accept(this));
         curScope.FuncList = null;
         curScope.VarList = null;
@@ -76,10 +75,13 @@ public class SemanticChecker implements ASTVisitor {
             if (entry.getValue() != null) {
                 entry.getValue().accept(this);
                 if (!entry.getValue().type.equals(node.type)) {
-                    throw new error("variable definition: type not match", node.pos);
+                    if (!(entry.getValue().type.isNull() && node.type.isArray()) &&
+                            !(entry.getValue().type.isNull() && node.type.isClass())) {
+                        throw new error("variable definition: type not match", node.pos);
+                    }
                 }
             }
-            if (curScope.getVar(entry.getKey()) == null) {
+            if (!curScope.VarList.containsKey(entry.getKey())) {
                 curScope.addVar(entry.getKey(), node.type, node.pos);
             } else {
                 throw new error("variable definition: variable already defined in current scope", node.pos);
@@ -89,7 +91,7 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(Constructor node) {
-        // check whether constructor name is the same as class name
+        /// todo: check whether constructor name is the same as class name
         curScope = new Scope(curScope);
         node.funcBody.accept(this);
         curScope.VarList = null;
@@ -114,6 +116,10 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(ReturnStmt node) {
         // stmts only appear in functions
         /// todo: check return type
+        if (node.retExpr != null) {
+            node.retExpr.accept(this);
+
+        }
     }
 
     @Override
@@ -188,6 +194,10 @@ public class SemanticChecker implements ASTVisitor {
     }
 
     @Override
+    public void visit(EmptyStmt node) {
+    }
+
+    @Override
     public void visit(ArrayAccessExpr node) {
         node.array.accept(this);
         node.index.accept(this);
@@ -203,19 +213,15 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(ArrayLiteralExpr node) {
-        int a = -1;
+        Type a = null;
         for (Expr e : node.elements) {
-            if (!(e instanceof IntLiteralExpr || e instanceof BoolLiteralExpr
-                    || e instanceof StringLiteralExpr || e instanceof NullExpr)) {
-                throw new error("Array literal invalid with other types", node.pos);
-            }// a bug
             e.accept(this);
-            if (a != -1 && a != e.type.dim) {
+            if (a != null && !a.equals(e.type)) {
                 throw new error("Array literal invalid with different dimensions", node.pos);
             }
-            a = e.type.dim;
+            a = e.type;
         }
-        node.type = new Type(node.elements.getFirst().type.typeName, a + 1);
+        node.type = new Type(node.elements.getFirst().type.typeName, (a == null ? 0 : a.dim) + 1);
         node.isLvalue = false;
     }
 
@@ -236,7 +242,6 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(BinaryArithExpr node) {
         // many bugs here
-        ///todo: class and array can operate as well
         node.lhs.accept(this);
         node.rhs.accept(this);
         if (node.lhs.type.isArray() && node.rhs.type.isNull()) {
@@ -334,8 +339,8 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(MemberFuncCallExpr node) {
         node.obj.accept(this);
-        if (!node.obj.type.isClass()) {
-            throw new error("MemberFuncCall: object should be class", node.pos);
+        if (!node.obj.type.isClass() && !node.obj.type.isString()) {
+            throw new error("MemberFuncCall: object should be class or string", node.pos);
         }
         String cn = node.obj.type.typeName;
         if (gScope.getClass(cn) == null) {
