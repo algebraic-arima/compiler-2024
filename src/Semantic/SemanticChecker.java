@@ -230,7 +230,10 @@ public class SemanticChecker implements ASTVisitor {
         node.var.accept(this);
         node.value.accept(this);
         if (!node.var.type.equals(node.value.type)) {
-            throw new error("AssignExpr: type not match", node.pos);
+            if (!(node.value.type.isNull() && node.var.type.isArray()) &&
+                    !(node.value.type.isNull() && node.var.type.isClass())) {
+                throw new error("AssignExpr: type not match", node.pos);
+            }
         }
         if (!node.var.isLvalue) {
             throw new error("AssignExpr: left operand not assignable", node.pos);
@@ -466,6 +469,11 @@ public class SemanticChecker implements ASTVisitor {
         node.expr.accept(this);
         if (!node.expr.type.isInt()) {
             throw new error("UnaryArithExpr should be int", node.pos);
+        }
+        if (!(node.op == UnaryArithExpr.UArithOp.LDEC || node.op == UnaryArithExpr.UArithOp.LINC)) {
+            if (!node.expr.isLvalue) {
+                throw new error("rvalue", node.pos);
+            }
         }
         node.type = intType;
         node.isLvalue = node.op == UnaryArithExpr.UArithOp.LDEC || node.op == UnaryArithExpr.UArithOp.LINC;
