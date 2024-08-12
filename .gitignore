@@ -4,6 +4,6 @@ lib
 testcases
 tools
 *.mx
-*.bash
 log
 *.class
+bin.src
