@@ -3,14 +3,13 @@ package src.AST.Expr;
 import src.AST.ASTVisitor;
 import src.utils.pos.Position;
 
-public class AssignExpr extends Expr {
-    public Expr var;
-    public Expr value;
+public class ParenthesesExpr extends Expr {
 
-    public AssignExpr(Position p, Expr v, Expr va) {
+    public Expr exp;
+
+    public ParenthesesExpr(Position p, Expr e) {
         super(p);
-        var = v;
-        value = va;
+        exp = e;
     }
 
     @Override

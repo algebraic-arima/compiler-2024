@@ -24,34 +24,14 @@ public class Type {
     // for array type
     public Type(String str, int d) {
         typeName = str;
-        if (Objects.equals(str, "null")) {
-            atomType = T.NULL;
-            return;
-        }
-        switch (str) {
-            case "int" -> atomType = T.INT;
-            case "bool" -> atomType = T.BOOL;
-            case "string" -> atomType = T.STRING;
-            case "void" -> atomType = T.VOID;
-            default -> atomType = T.CLASS;
-        }
+        atomType = determineAtomType(str);
         dim = d;
     }
 
     // for single type
     public Type(String str) {
         typeName = str;
-        if (Objects.equals(str, "null")) {
-            atomType = T.NULL;
-            return;
-        }
-        switch (str) {
-            case "int" -> atomType = T.INT;
-            case "bool" -> atomType = T.BOOL;
-            case "string" -> atomType = T.STRING;
-            case "void" -> atomType = T.VOID;
-            default -> atomType = T.CLASS;
-        }
+        atomType = determineAtomType(str);
         dim = 0;
     }
 
@@ -63,27 +43,32 @@ public class Type {
             return;
         }
         if (ctx.singletype() != null) {
-            String str = ctx.singletype().getText();
-            typeName = str;
-            switch (str) {
-                case "int" -> atomType = T.INT;
-                case "bool" -> atomType = T.BOOL;
-                case "string" -> atomType = T.STRING;
-                case "void" -> atomType = T.VOID;
-                default -> atomType = T.CLASS;
-            }
+            typeName = ctx.singletype().getText();
+            atomType = determineAtomType(typeName);
             dim = 0;
         } else if (ctx.arraytype() != null) {
             Mx.ArraytypeContext at = ctx.arraytype();
             dim = (at.getChildCount() - 1) / 2;
             typeName = at.singletype().getText();
-            switch (typeName) {
-                case "int" -> atomType = T.INT;
-                case "bool" -> atomType = T.BOOL;
-                case "string" -> atomType = T.STRING;
-                case "void" -> atomType = T.VOID;
-                default -> atomType = T.CLASS;
-            }
+            atomType = determineAtomType(typeName);
+        }
+    }
+
+    private T determineAtomType(String str) {
+        if (Objects.equals(str, "null")) {
+            return T.NULL;
+        }
+        switch (str) {
+            case "int":
+                return T.INT;
+            case "bool":
+                return T.BOOL;
+            case "string":
+                return T.STRING;
+            case "void":
+                return T.VOID;
+            default:
+                return T.CLASS;
         }
     }
 
@@ -103,7 +88,7 @@ public class Type {
         return atomType == T.CLASS;
     }// for class type and its array type
 
-    public boolean isClass(){
+    public boolean isClass() {
         return atomType == T.CLASS && dim == 0;
     }
 
@@ -113,6 +98,10 @@ public class Type {
 
     public boolean isNull() {
         return atomType == T.NULL;
+    }
+
+    public boolean isVoid() {
+        return atomType == T.VOID;
     }
 
     /// @equals compares atom types, class names and dimensions

@@ -10,6 +10,8 @@ import src.parser.Mx;
 import src.utils.pos.Position;
 import src.utils.type.Type;
 
+import src.utils.error.*;
+
 public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
 
     Type voidType = new Type("void");
@@ -86,6 +88,9 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         VarDef varDef = new VarDef(new Position(ctx));
         varDef.type = new Type(ctx.type());
         for (Mx.SinglevardefContext sv : ctx.singlevardef()) {
+            if (varDef.initVals.containsKey(sv.ID().getText())) {
+                throw new MultipleDefinitions(new Position(ctx));
+            }
             varDef.initVals.put(sv.ID().getText(), (sv.expr() == null) ? null : (Expr) visit(sv.expr()));
         }
         return varDef;
@@ -171,12 +176,6 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         return new EmptyStmt(new Position(ctx));
     }
 
-    ///expr
-    @Override
-    public BaseASTNode visitParentheses(Mx.ParenthesesContext ctx) {
-        return visit(ctx.expr());
-    }
-
     @Override
     public BaseASTNode visitMemberFuncCall(Mx.MemberFuncCallContext ctx) {
         MemberFuncCallExpr mfce = new MemberFuncCallExpr(new Position(ctx),
@@ -221,30 +220,33 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     @Override
     public BaseASTNode visitLUnaryExp(Mx.LUnaryExpContext ctx) {
         String op = ctx.op.getText();
-        return switch (op) {
-            case "++", "--", "~", "-" -> new UnaryArithExpr(new Position(ctx),
-                    (Expr) visit(ctx.expr()), op, true);
-            case "!" -> new UnaryLogicExpr(new Position(ctx),
-                    (Expr) visit(ctx.expr()));
-            default -> null;
-        };
+        Expr expr = (Expr) visit(ctx.expr());
+        if (op.equals("++") || op.equals("--") || op.equals("~") || op.equals("-")) {
+            return new UnaryArithExpr(new Position(ctx), expr, op, true);
+        } else if (op.equals("!")) {
+            return new UnaryLogicExpr(new Position(ctx), expr);
+        } else {
+            return null;
+        }
     }
 
     @Override
     public BaseASTNode visitBinaryExp(Mx.BinaryExpContext ctx) {
         String op = ctx.op.getText();
-        return switch (op) {
-            case "<", ">", "<=", ">=", "==", "!=", "+", "-", "*", "/",
-                 "%", "<<", ">>", "&", "|", "^" -> new BinaryArithExpr(new Position(ctx),
-                    (Expr) visit(ctx.expr(0)),
-                    (Expr) visit(ctx.expr(1)),
-                    op);
-            case "&&", "||" -> new BinaryLogicExpr(new Position(ctx),
-                    (Expr) visit(ctx.expr(0)),
-                    (Expr) visit(ctx.expr(1)),
-                    op);
-            default -> null;
-        };
+        Expr expr1 = (Expr) visit(ctx.expr(0));
+        Expr expr2 = (Expr) visit(ctx.expr(1));
+        if (op.equals("<") || op.equals(">") || op.equals("<=") ||
+                op.equals(">=") || op.equals("==") || op.equals("!=")
+                || op.equals("+") || op.equals("-") || op.equals("*")
+                || op.equals("/") || op.equals("%") || op.equals("<<")
+                || op.equals(">>") || op.equals("&") || op.equals("|")
+                || op.equals("^")) {
+            return new BinaryArithExpr(new Position(ctx), expr1, expr2, op);
+        } else if (op.equals("&&") || op.equals("||")) {
+            return new BinaryLogicExpr(new Position(ctx), expr1, expr2, op);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -252,6 +254,11 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         return new AssignExpr(new Position(ctx),
                 (Expr) visit(ctx.expr(0)),
                 (Expr) visit(ctx.expr(1)));
+    }
+
+    @Override
+    public BaseASTNode visitParentheses(Mx.ParenthesesContext ctx) {
+        return new ParenthesesExpr(new Position(ctx), (Expr) visit(ctx.expr()));
     }
 
     @Override
@@ -347,6 +354,8 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     @Override
     public BaseASTNode visitArrayliteral(Mx.ArrayliteralContext ctx) {
         ArrayLiteralExpr ale = new ArrayLiteralExpr(new Position(ctx));
+        if (ctx.rowexpr() == null)
+            return ale;
         for (Mx.ExprContext e : ctx.rowexpr().expr()) {
             ale.elements.add((Expr) visit(e));
         }

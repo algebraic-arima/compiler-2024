@@ -196,6 +196,11 @@ public class SymbolCollector implements ASTVisitor {
     }
 
     @Override
+    public void visit(ParenthesesExpr node) {
+
+    }
+
+    @Override
     public void visit(RowExpr node) {
 
     }

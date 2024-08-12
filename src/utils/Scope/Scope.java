@@ -25,6 +25,7 @@ public class Scope {
 
     public Scope(Scope p) {
         parent = p;
+        isLOOP = p.isLOOP;
         VarList = new HashMap<>();
         FuncList = new HashMap<>();
     }

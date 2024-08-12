@@ -78,6 +78,8 @@ public interface ASTVisitor {
 
     void visit(NullExpr node);
 
+    void visit(ParenthesesExpr node);
+
     void visit(RowExpr node);
 
     void visit(StringLiteralExpr node);
