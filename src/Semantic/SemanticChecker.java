@@ -358,12 +358,12 @@ public class SemanticChecker implements ASTVisitor {
                     || node.op == MOD || node.op == BLS || node.op == BRS
                     || node.op == BAND || node.op == BOR || node.op == BXOR) {
 //                throw new error("string invalid operation", node.pos);
-                throw new TypeMismatch(node.pos);
+                throw new InvalidType(node.pos);
             }
         } else if (node.lhs.type.isBool()) {
             if (!(node.op == EQ || node.op == NE)) {
 //                throw new error("bool invalid operation", node.pos);
-                throw new TypeMismatch(node.pos);
+                throw new InvalidType(node.pos);
             }
         } else if (node.lhs.type.isArray()) {
 
@@ -372,11 +372,11 @@ public class SemanticChecker implements ASTVisitor {
         } else if (node.lhs.type.hasClass()) {
             if (!(node.op == EQ || node.op == NE)) {
 //                throw new error("array invalid operation", node.pos);
-                throw new TypeMismatch(node.pos);
+                throw new InvalidType(node.pos);
             }
         } else {
 //            throw new error("type invalid for binary expression", node.pos);
-            throw new TypeMismatch(node.pos);
+            throw new InvalidType(node.pos);
         }
         node.type = node.lhs.type;
         if (node.op == EQ || node.op == NE ||
@@ -393,11 +393,11 @@ public class SemanticChecker implements ASTVisitor {
         node.rhs.accept(this);
         if (!node.lhs.type.isBool()) {
 //            throw new error("lhs of binary logic expr should be bool", node.pos);
-            throw new TypeMismatch(node.pos);
+            throw new InvalidType(node.pos);
         }
         if (!node.rhs.type.isBool()) {
 //            throw new error("rhs of binary logic expr should be bool", node.pos);
-            throw new TypeMismatch(node.pos);
+            throw new InvalidType(node.pos);
         }
         node.type = boolType;
         node.isLvalue = false;
@@ -625,7 +625,7 @@ public class SemanticChecker implements ASTVisitor {
         node.expr.accept(this);
         if (!node.expr.type.isInt()) {
 //            throw new error("UnaryArithExpr should be int", node.pos);
-            throw new TypeMismatch(node.pos);
+            throw new InvalidType(node.pos);
         }
         if (node.op == UnaryArithExpr.UArithOp.RDEC || node.op == UnaryArithExpr.UArithOp.RINC
                 || node.op == UnaryArithExpr.UArithOp.LDEC || node.op == UnaryArithExpr.UArithOp.LINC) {
@@ -643,7 +643,7 @@ public class SemanticChecker implements ASTVisitor {
         node.expr.accept(this);
         if (!node.expr.type.isBool()) {
 //            throw new error("UnaryLogicExpr should be bool", node.pos);
-            throw new TypeMismatch(node.pos);
+            throw new InvalidType(node.pos);
         }
         node.type = boolType;
         node.isLvalue = false;
