@@ -5,6 +5,6 @@ import src.utils.pos.Position;
 public class SyntaxError extends error{
 
         public SyntaxError(String msg, Position pos) {
-            super("SyntaxError: " + msg, pos);
+            super("Invalid Identifier", pos);
         }
 }

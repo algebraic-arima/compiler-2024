@@ -51,7 +51,7 @@ public class SymbolCollector implements ASTVisitor {
     public void visit(ClassDef node) {
         gScope.addClass(node.className, new ClassType(), node.pos);
         if (curClass == null) curClass = node.className;
-        else throw new error("nested class definition", node.pos);
+        else throw new error("nested class definition", node.pos); // guaranteed by g4
         node.classFunc.forEach(d -> d.accept(this));
         node.classMem.forEach(d -> d.accept(this));
         curClass = null;

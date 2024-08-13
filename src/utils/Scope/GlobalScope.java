@@ -1,6 +1,7 @@
 package src.utils.Scope;
 
 import src.utils.error.MultipleDefinitions;
+import src.utils.error.UndefinedIdentifier;
 import src.utils.error.error;
 import src.utils.pos.Position;
 import src.utils.type.ClassType;
@@ -70,20 +71,22 @@ public class GlobalScope extends Scope {
 
     public void addMemberFunc(String className, String funcName, FuncType t, Position p) {
         if (!ClassList.containsKey(className)) {
-            throw new error("No such class: " + className, p);
+//            throw new error("No such class: " + className, p);
+            throw new UndefinedIdentifier(p);
         }
         if (ClassList.get(className).methods.containsKey(funcName)) {
-            throw new error("Multiple definitions of " + funcName, p);
+            throw new MultipleDefinitions(p);
         }
         ClassList.get(className).methods.put(funcName, t);
     }
 
     public void addMemberVar(String className, String varName, Type t, Position p) {
         if (!ClassList.containsKey(className)) {
-            throw new error("No such class: " + className, p);
+//            throw new error("No such class: " + className, p);
+            throw new UndefinedIdentifier(p);
         }
         if (ClassList.get(className).fields.containsKey(varName)) {
-            throw new error("Multiple definitions of " + varName, p);
+            throw new MultipleDefinitions(p);
         }
         ClassList.get(className).fields.put(varName, t);
     }
