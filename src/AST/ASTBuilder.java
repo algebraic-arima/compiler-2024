@@ -277,7 +277,7 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
             return new NewTypeExpr(new Position(ctx),
                     new Type(ctx.singletype().getText()));
         }
-        if (!ctx.expr().isEmpty() && ctx.arrayliteral() == null) {
+        if (ctx.arrayliteral() == null) {
             // no init
             NewArrayExpr n = new NewArrayExpr(new Position(ctx));
             n.type = new Type(ctx.singletype().getText(), dim);
@@ -324,7 +324,7 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     @Override
     public BaseASTNode visitLiteral(Mx.LiteralContext ctx) {
         if (ctx.INTCONST() != null) {
-            return new IntLiteralExpr(new Position(ctx), Integer.parseInt(ctx.INTCONST().getText()), intType);
+            return new IntLiteralExpr(new Position(ctx), Long.parseLong(ctx.INTCONST().getText()), intType);
         }
         if (ctx.TRUE() != null || ctx.FALSE() != null) {
             return new BoolLiteralExpr(new Position(ctx), ctx.TRUE() != null, boolType);

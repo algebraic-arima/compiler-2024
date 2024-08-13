@@ -3,13 +3,18 @@ package src.AST.Expr;
 import src.utils.pos.Position;
 import src.utils.type.Type;
 
-public class IntLiteralExpr extends Expr {
-    public Integer value;
+import src.utils.error.error;
 
-    public IntLiteralExpr(Position p, Integer v, Type t) {
+public class IntLiteralExpr extends Expr {
+    public Long value;
+
+    public IntLiteralExpr(Position p, Long v, Type t) {
         super(p);
-        type=t;
+        type = t;
         value = v;
+        if (v > 2147483648L) {
+            throw new error("Integer out of bound", pos);
+        }
     }
 
     @Override

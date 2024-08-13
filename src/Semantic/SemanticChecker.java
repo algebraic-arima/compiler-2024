@@ -184,11 +184,13 @@ public class SemanticChecker implements ASTVisitor {
         Type retTypa = curScope.getFunc(cur_f).retType;
         if (retTypa.isVoid()) {
             if (node.retExpr != null) {
-                throw new error("void function must not have return value", node.pos);
+//                throw new error("void function must not have return value", node.pos);
+                throw new TypeMismatch(node.pos);
             }
         } else {
             if (node.retExpr == null) {
-                throw new error("non-void function must have a return value", node.pos);
+//                throw new error("non-void function must have a return value", node.pos);
+                throw new TypeMismatch(node.pos);
             }
             if (!node.retExpr.type.equals(retTypa) &&
                     !(node.retExpr.type.isNull() && (retTypa.isArray() || retTypa.isString() || retTypa.hasClass()))) {
@@ -545,7 +547,8 @@ public class SemanticChecker implements ASTVisitor {
         }
         node.init.accept(this);
         if (!Objects.equals(node.type.dim, node.init.type.dim)) {
-            throw new error("NewArrayInitExpr: dimension not match", node.pos);
+//            throw new error("NewArrayInitExpr: dimension not match", node.pos);
+            throw new TypeMismatch(node.pos);
         }
         node.isLvalue = false;
     }

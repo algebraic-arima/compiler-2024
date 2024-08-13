@@ -15,21 +15,25 @@ import src.AST.Stmt.JumpStmt.ReturnStmt;
 import src.AST.Stmt.LoopStmt.ForStmt;
 import src.AST.Stmt.LoopStmt.WhileStmt;
 import src.utils.Scope.GlobalScope;
+import src.utils.error.MultipleDefinitions;
 import src.utils.error.error;
 import src.utils.type.ClassType;
 import src.utils.type.FuncType;
 
+import java.util.HashSet;
 import java.util.Map;
 
 public class SymbolCollector implements ASTVisitor {
 
     public GlobalScope gScope;
     public String curClass = null;
+    public HashSet<String> symbols;
     // if in class, take down var and func
     // if not, take down func and class only
 
     public SymbolCollector(GlobalScope g) {
         gScope = g;
+        symbols = new HashSet<>();
     }
 
     @Override
@@ -45,11 +49,23 @@ public class SymbolCollector implements ASTVisitor {
             gScope.addFunc(node.funcName, ft, node.pos);
         else
             gScope.addMemberFunc(curClass, node.funcName, ft, node.pos);
+        if (curClass == null) {
+            if (symbols.contains(node.funcName)) {
+                throw new MultipleDefinitions(node.pos);
+            } else {
+                symbols.add(node.funcName);
+            }
+        }
     }
 
     @Override
     public void visit(ClassDef node) {
         gScope.addClass(node.className, new ClassType(), node.pos);
+        if (symbols.contains(node.className)) {
+            throw new MultipleDefinitions(node.pos);
+        } else {
+            symbols.add(node.className);
+        }
         if (curClass == null) curClass = node.className;
         else throw new error("nested class definition", node.pos); // guaranteed by g4
         node.classFunc.forEach(d -> d.accept(this));
