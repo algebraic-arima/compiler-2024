@@ -34,7 +34,7 @@ public class Main {
             new SemanticChecker(gScope).visit(root);
 //            System.exit(0);
         } catch (error e) {
-            System.err.println(e.pos.row + ":" + e.pos.column + " " + e.message);
+            System.out.println(e.message);
             System.exit(1);
         }
     }
