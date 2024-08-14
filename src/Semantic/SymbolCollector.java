@@ -51,7 +51,7 @@ public class SymbolCollector implements ASTVisitor {
             gScope.addMemberFunc(curClass, node.funcName, ft, node.pos);
         if (curClass == null) {
             if (symbols.contains(node.funcName)) {
-                throw new MultipleDefinitions(node.pos);
+                throw new error("function name used in class or function", node.pos);
             } else {
                 symbols.add(node.funcName);
             }

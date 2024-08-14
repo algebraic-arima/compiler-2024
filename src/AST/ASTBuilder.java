@@ -89,7 +89,7 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         varDef.type = new Type(ctx.type());
         for (Mx.SinglevardefContext sv : ctx.singlevardef()) {
             if (varDef.initVals.containsKey(sv.ID().getText())) {
-                throw new MultipleDefinitions(new Position(ctx));
+                throw new error("multiple definitions in one stmt", new Position(ctx));
             }
             varDef.initVals.put(sv.ID().getText(), (sv.expr() == null) ? null : (Expr) visit(sv.expr()));
         }

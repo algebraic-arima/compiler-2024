@@ -27,15 +27,14 @@ public class Main {
             parser.removeErrorListeners();
             parser.addErrorListener(new MxErrorListener());
             Mx.ProgContext parseTreeRoot = parser.prog();
-            ASTBuilder astBuilder = new ASTBuilder();
-            Prog root = (Prog) astBuilder.visit(parseTreeRoot);
+            ASTBuilder AST = new ASTBuilder();
+            Prog root = (Prog) AST.visit(parseTreeRoot);
             GlobalScope gScope = new GlobalScope();
             new SymbolCollector(gScope).visit(root);
             new SemanticChecker(gScope).visit(root);
-//            System.exit(0);
         } catch (error e) {
-            System.out.println(e.message);
-            System.exit(1);
+            System.err.println(e.pos.row + ":" + e.pos.column + " " + e.message);
+//            System.exit(1); // if judge
         }
     }
 }
