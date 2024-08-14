@@ -1,7 +1,7 @@
 package src.AST.Expr;
 
+import src.AST.__ASTVisitor;
 import src.utils.pos.Position;
-import src.utils.type.Type;
 
 public class BinaryArithExpr extends Expr {
 
@@ -69,7 +69,7 @@ public class BinaryArithExpr extends Expr {
         }
     }
 
-    public void accept(src.AST.ASTVisitor v) {
+    public void accept(__ASTVisitor v) {
         v.visit(this);
     }
 }

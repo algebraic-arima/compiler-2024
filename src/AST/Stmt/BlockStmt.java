@@ -1,6 +1,6 @@
 package src.AST.Stmt;
 
-import src.AST.ASTVisitor;
+import src.AST.__ASTVisitor;
 import src.utils.pos.Position;
 
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ public class BlockStmt extends Stmt {
     }
 
     @Override
-    public void accept(ASTVisitor v) {
+    public void accept(__ASTVisitor v) {
         v.visit(this);
     }
 }

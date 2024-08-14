@@ -1,6 +1,6 @@
 package src.AST.Def;
 
-import src.AST.ASTVisitor;
+import src.AST.__ASTVisitor;
 import src.AST.BaseASTNode;
 import src.utils.pos.Position;
 
@@ -10,6 +10,6 @@ public abstract class Def extends BaseASTNode {
         super(p);
     }
 
-    abstract public void accept(ASTVisitor v);
+    abstract public void accept(__ASTVisitor v);
 
 }

@@ -1,6 +1,7 @@
 package src.AST.Expr;
 
 import org.antlr.v4.runtime.tree.TerminalNode;
+import src.AST.__ASTVisitor;
 import src.utils.pos.Position;
 import src.utils.type.Type;
 
@@ -20,7 +21,7 @@ public class BoolLiteralExpr extends Expr {
     }
 
     @Override
-    public void accept(src.AST.ASTVisitor v) {
+    public void accept(__ASTVisitor v) {
         v.visit(this);
     }
 }

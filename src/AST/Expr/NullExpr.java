@@ -1,5 +1,6 @@
 package src.AST.Expr;
 
+import src.AST.__ASTVisitor;
 import src.utils.pos.Position;
 
 public class NullExpr extends Expr{
@@ -9,7 +10,7 @@ public class NullExpr extends Expr{
         type=null;
     }
     @Override
-    public void accept(src.AST.ASTVisitor v) {
+    public void accept(__ASTVisitor v) {
         v.visit(this);
     }
 }

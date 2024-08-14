@@ -1,6 +1,6 @@
 package src.AST.Def;
 
-import src.AST.ASTVisitor;
+import src.AST.__ASTVisitor;
 import src.AST.Stmt.BlockStmt;
 import src.utils.pos.Position;
 
@@ -13,7 +13,7 @@ public class Constructor extends Def{
     }
 
     @Override
-    public void accept(ASTVisitor v) {
+    public void accept(__ASTVisitor v) {
         v.visit(this);
     }
 }

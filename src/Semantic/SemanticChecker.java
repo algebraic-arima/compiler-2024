@@ -1,6 +1,6 @@
 package src.Semantic;
 
-import src.AST.ASTVisitor;
+import src.AST.__ASTVisitor;
 import src.AST.Def.*;
 import src.AST.Expr.*;
 import src.AST.Prog;
@@ -13,14 +13,13 @@ import src.utils.type.ClassType;
 import src.utils.type.FuncType;
 import src.utils.type.Type;
 
-import java.lang.module.FindException;
 import java.util.Map;
 import java.util.Objects;
 
 import static src.AST.Expr.BinaryArithExpr.BArithOp.*;
 import static src.utils.type.Type.T.*;
 
-public class SemanticChecker implements ASTVisitor {
+public class SemanticChecker implements __ASTVisitor {
 
     public Scope curScope;
     public GlobalScope gScope;

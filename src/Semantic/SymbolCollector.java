@@ -1,6 +1,6 @@
 package src.Semantic;
 
-import src.AST.ASTVisitor;
+import src.AST.__ASTVisitor;
 import src.AST.Def.ClassDef;
 import src.AST.Def.Constructor;
 import src.AST.Def.FuncDef;
@@ -23,7 +23,7 @@ import src.utils.type.FuncType;
 import java.util.HashSet;
 import java.util.Map;
 
-public class SymbolCollector implements ASTVisitor {
+public class SymbolCollector implements __ASTVisitor {
 
     public GlobalScope gScope;
     public String curClass = null;

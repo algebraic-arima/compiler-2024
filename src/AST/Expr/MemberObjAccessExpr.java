@@ -1,5 +1,6 @@
 package src.AST.Expr;
 
+import src.AST.__ASTVisitor;
 import src.utils.pos.Position;
 
 public class MemberObjAccessExpr extends Expr{
@@ -13,7 +14,7 @@ public class MemberObjAccessExpr extends Expr{
     }
 
     @Override
-    public void accept(src.AST.ASTVisitor v) {
+    public void accept(__ASTVisitor v) {
         v.visit(this);
     }
 }

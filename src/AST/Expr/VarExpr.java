@@ -1,7 +1,7 @@
 package src.AST.Expr;
 
+import src.AST.__ASTVisitor;
 import src.utils.pos.Position;
-import src.utils.type.Type;
 
 public class VarExpr extends Expr {
     public String varName;
@@ -14,7 +14,7 @@ public class VarExpr extends Expr {
     }
 
     @Override
-    public void accept(src.AST.ASTVisitor v) {
+    public void accept(__ASTVisitor v) {
         v.visit(this);
     }
 }

@@ -14,7 +14,7 @@ public class Prog extends BaseASTNode {
         defs = new ArrayList<>();
     }
 
-    public void accept(ASTVisitor v) {
+    public void accept(__ASTVisitor v) {
         v.visit(this);
     }
 }

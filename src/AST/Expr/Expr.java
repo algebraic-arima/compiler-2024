@@ -1,13 +1,15 @@
 package src.AST.Expr;
 
-import src.AST.ASTVisitor;
+import src.AST.__ASTVisitor;
 import src.AST.BaseASTNode;
 import src.utils.pos.Position;
 import src.utils.type.Type;
+import src.utils.Entity.Entity;
 
 public abstract class Expr extends BaseASTNode {
 
     public Type type;
+    public Entity value;
     public boolean isLvalue = false;
 
     public Expr() {
@@ -22,5 +24,5 @@ public abstract class Expr extends BaseASTNode {
         super(p);
     }
 
-    abstract public void accept(ASTVisitor v);
+    abstract public void accept(__ASTVisitor v);
 }

@@ -1,10 +1,9 @@
 package src.AST.Stmt.JumpStmt;
 
-import src.AST.ASTVisitor;
+import src.AST.__ASTVisitor;
 import src.AST.Expr.Expr;
 import src.AST.Stmt.Stmt;
 import src.utils.pos.Position;
-import src.utils.type.Type;
 
 public class ReturnStmt extends Stmt {
 //    public Type returnType;
@@ -15,7 +14,7 @@ public class ReturnStmt extends Stmt {
     }
 
     @Override
-    public void accept(ASTVisitor v) {
+    public void accept(__ASTVisitor v) {
         v.visit(this);
     }
 }

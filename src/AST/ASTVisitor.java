@@ -8,89 +8,82 @@ import src.AST.Expr.*;
 import src.AST.Stmt.JumpStmt.*;
 import src.AST.Stmt.LoopStmt.*;
 import src.AST.Stmt.*;
-import src.parser.Mx;
-import src.utils.type.Type;
 
-public interface ASTVisitor {
+public interface ASTVisitor<T> {
 
-    Type voidType = new Type("void");
-    Type intType = new Type("int");
-    Type boolType = new Type("bool");
-    Type stringType = new Type("string");
+    T visit(Prog node);
 
-    void visit(Prog node);
+    T visit(FuncDef node);
 
-    void visit(FuncDef node);
+    T visit(ClassDef node);
 
-    void visit(ClassDef node);
+    T visit(VarDef node);
 
-    void visit(VarDef node);
+    T visit(Constructor node);
 
-    void visit(Constructor node);
+    T visit(BreakStmt node);
 
-    void visit(BreakStmt node);
+    T visit(ContinueStmt node);
 
-    void visit(ContinueStmt node);
+    T visit(ReturnStmt node);
 
-    void visit(ReturnStmt node);
+    T visit(IfStmt node);
 
-    void visit(IfStmt node);
+    T visit(WhileStmt node);
 
-    void visit(WhileStmt node);
+    T visit(ForStmt node);
 
-    void visit(ForStmt node);
+    T visit(VarDefStmt node);
 
-    void visit(VarDefStmt node);
+    T visit(ExprStmt node);
 
-    void visit(ExprStmt node);
+    T visit(BlockStmt node);
 
-    void visit(BlockStmt node);
+    T visit(EmptyStmt node);
 
-    void visit(EmptyStmt node);
+    T visit(ArrayAccessExpr node);
 
-    void visit(ArrayAccessExpr node);
+    T visit(ArrayLiteralExpr node);
 
-    void visit(ArrayLiteralExpr node);
+    T visit(AssignExpr node);
 
-    void visit(AssignExpr node);
+    T visit(BinaryArithExpr node);
 
-    void visit(BinaryArithExpr node);
+    T visit(BinaryLogicExpr node);
 
-    void visit(BinaryLogicExpr node);
+    T visit(BoolLiteralExpr node);
 
-    void visit(BoolLiteralExpr node);
+    T visit(FmtStrLiteralExpr node);
 
-    void visit(FmtStrLiteralExpr node);
+    T visit(FuncCallExpr node);
 
-    void visit(FuncCallExpr node);
+    T visit(IntLiteralExpr node);
 
-    void visit(IntLiteralExpr node);
+    T visit(MemberFuncCallExpr node);
 
-    void visit(MemberFuncCallExpr node);
+    T visit(MemberObjAccessExpr node);
 
-    void visit(MemberObjAccessExpr node);
+    T visit(NewArrayExpr node);
 
-    void visit(NewArrayExpr node);
+    T visit(NewArrayInitExpr node);
 
-    void visit(NewArrayInitExpr node);
+    T visit(NewTypeExpr node);
 
-    void visit(NewTypeExpr node);
+    T visit(NullExpr node);
 
-    void visit(NullExpr node);
+    T visit(ParenthesesExpr node);
 
-    void visit(ParenthesesExpr node);
+    T visit(RowExpr node);
 
-    void visit(RowExpr node);
+    T visit(StringLiteralExpr node);
 
-    void visit(StringLiteralExpr node);
+    T visit(TernaryBranchExpr node);
 
-    void visit(TernaryBranchExpr node);
+    T visit(ThisPtrExpr node);
 
-    void visit(ThisPtrExpr node);
+    T visit(UnaryArithExpr node);
 
-    void visit(UnaryArithExpr node);
+    T visit(UnaryLogicExpr node);
 
-    void visit(UnaryLogicExpr node);
-
-    void visit(VarExpr node);
+    T visit(VarExpr node);
 }

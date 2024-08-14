@@ -1,6 +1,6 @@
 package src.AST.Def;
 
-import src.AST.ASTVisitor;
+import src.AST.__ASTVisitor;
 import src.utils.pos.Position;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class ClassDef extends Def {
     }
 
     @Override
-    public void accept(ASTVisitor v) {
+    public void accept(__ASTVisitor v) {
         v.visit(this);
     }
 }
