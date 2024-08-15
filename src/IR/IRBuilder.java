@@ -8,10 +8,14 @@ import src.AST.Stmt.JumpStmt.*;
 import src.AST.Stmt.LoopStmt.*;
 import src.AST.Stmt.VarDefStmt;
 import src.AST.ASTVisitor;
+import src.utils.Scope.GlobalScope;
+import src.utils.Scope.Scope;
 
 public class IRBuilder implements ASTVisitor<IRNode> {
 
     IRNode IRroot, IRcur;
+    GlobalScope gScope;
+    Scope curScope;
 
     @Override
     public IRNode visit(Prog node) {

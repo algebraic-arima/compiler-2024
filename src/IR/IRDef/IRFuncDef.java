@@ -1,12 +1,19 @@
 package src.IR.IRDef;
 
-import src.IR.IRInst.Inst;
+import src.IR.IRBlock;
+import src.utils.IRType.IRType;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class IRFuncDef extends IRDef{
 
-    public ArrayList<Inst> insts;
+
+    public IRType retType;
+    public String name;
+    public ArrayList<IRType> paramTypes;
+    public IRBlock entry;
+    public HashSet<IRBlock> blocks;
 
 
     @Override

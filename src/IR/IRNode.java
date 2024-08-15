@@ -1,6 +1,8 @@
 package src.IR;
 
 abstract public class IRNode {
-    public abstract String str();
+    public String str(){
+        return "";
+    }
 
 }

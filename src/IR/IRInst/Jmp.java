@@ -1,10 +1,11 @@
 package src.IR.IRInst;
 
-public class Br extends terminalInst {
+public class Jmp extends terminalInst {
+    // unconditional branch
 
     public String label;
 
-    public Br(String label) {
+    public Jmp(String label) {
         this.label = label;
     }
 
