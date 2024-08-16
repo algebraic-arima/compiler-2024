@@ -10,6 +10,12 @@ public class IRClassDef extends IRDef {
     public int fieldNum;
     public ArrayList<VarDef> fields;
 
+    public IRClassDef (String className){
+        this.className = "%class-" + className;
+        this.fieldNum = 0;
+        this.fields = new ArrayList<>();
+    }
+
     public IRClassDef(String className, ArrayList<VarDef> fields) {
         this.className = "%class-" + className;
         this.fieldNum = fields.size();

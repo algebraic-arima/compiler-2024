@@ -17,9 +17,9 @@ import java.io.InputStream;
 public class Main {
     public static void main(String[] args) throws Exception {
         try {
-//            String file = "/home/limike/Git/compiler-2024/src/testcases/sema/basic-package/basic-8.mx";
-//            InputStream in = new FileInputStream(file);
-            InputStream in = System.in;
+            String file = "F:\\vscode\\antlr-demo\\compiler-2024\\src\\t.mx";
+            InputStream in = new FileInputStream(file);
+//            InputStream in = System.in;
             Lex lexer = new Lex(CharStreams.fromStream(in));
             lexer.removeErrorListeners();
             lexer.addErrorListener(new MxErrorListener());
@@ -31,7 +31,9 @@ public class Main {
             Prog root = (Prog) AST.visit(parseTreeRoot);
             GlobalScope gScope = new GlobalScope();
             new SymbolCollector(gScope).visit(root);
-            new SemanticChecker(gScope).visit(root);
+            SemanticChecker sc=new SemanticChecker(gScope);
+            sc.visit(root);
+            System.exit(0);
         } catch (error e) {
             System.err.println(e.pos.row + ":" + e.pos.column + " " + e.message);
 //            System.exit(1); // if judge

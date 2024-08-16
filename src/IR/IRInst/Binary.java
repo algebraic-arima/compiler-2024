@@ -1,5 +1,6 @@
 package src.IR.IRInst;
 
+import src.AST.Expr.BinaryArithExpr;
 import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
@@ -9,6 +10,22 @@ public class Binary extends Inst {
     public Register dest;
     public Entity lhs, rhs;
     public String op;
+
+    public Binary(BinaryArithExpr.BArithOp op){
+        this.op=switch (op){
+            case ADD->"add";
+            case SUB->"sub";
+            case MUL->"mul";
+            case DIV->"sdiv";
+            case MOD->"srem";
+            case BLS->"shl";
+            case BRS->"ashr";
+            case BAND->"and";
+            case BOR->"or";
+            case BXOR->"xor";
+            default -> null;
+        };
+    }
 
 
     public Binary(String op){
@@ -41,6 +58,14 @@ public class Binary extends Inst {
 
     public void setRhs(Register register) {
         this.rhs = register;
+    }
+
+    public void setLhs(Entity entity) {
+        this.lhs = entity;
+    }
+
+    public void setRhs(Entity entity) {
+        this.rhs = entity;
     }
 
     @Override

@@ -41,4 +41,26 @@ public class IRType {
         }
 
     }
+
+    public IRType setType(Type.T atomType){
+        switch (atomType) {
+            case INT:
+                typeName = "i32";
+                size = 32;
+                break;
+            case BOOL:
+                typeName = "i1";
+                size = 1;
+                break;
+            case STRING:
+                typeName = "ptr";
+                size = 32;
+                break;
+            case VOID:
+                typeName = "void";
+                size = -1;
+                break;
+        }
+        return this;
+    }
 }

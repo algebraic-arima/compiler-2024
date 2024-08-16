@@ -1,5 +1,6 @@
 package src.AST.Expr;
 
+import src.AST.ASTVisitor;
 import src.AST.__ASTVisitor;
 import src.utils.pos.Position;
 
@@ -7,7 +8,7 @@ public class BinaryArithExpr extends Expr {
 
     public enum BArithOp {
         ADD, SUB, MUL, DIV, MOD, BLS, BRS, BAND, BOR, BXOR, EQ, NE, LT, GT, LE, GE,
-    }// 16 = 9 + 7
+    }// 16 = 10 + 6
 
     public Expr lhs, rhs;
     public BArithOp op;
@@ -71,5 +72,10 @@ public class BinaryArithExpr extends Expr {
 
     public void accept(__ASTVisitor v) {
         v.visit(this);
+    }
+
+    @Override
+    public <T> T accept(ASTVisitor<T> v) {
+        return v.visit(this);
     }
 }

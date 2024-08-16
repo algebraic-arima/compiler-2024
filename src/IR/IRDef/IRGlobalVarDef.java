@@ -6,12 +6,11 @@ public class IRGlobalVarDef extends IRDef {
 
     public IRType irType;
     public String name;
-    public IRFuncDef init;
+    public long value;
 
     public IRGlobalVarDef() {
         irType = new IRType();
         name = "";
-        init = new IRFuncDef();
     }
 
     @Override

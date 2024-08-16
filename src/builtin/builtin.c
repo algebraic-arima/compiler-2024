@@ -1,7 +1,6 @@
 #define bool _Bool
 typedef unsigned int size_t;
 
-
 int printf(const char *pattern, ...);
 int sprintf(char *dest, const char *pattern, ...);
 int scanf(const char *pattern, ...);

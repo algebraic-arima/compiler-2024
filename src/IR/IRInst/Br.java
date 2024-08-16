@@ -1,11 +1,17 @@
 package src.IR.IRInst;
 
+import src.IR.IRBlock;
+import src.utils.Entity.Entity;
+
 public class Br extends terminalInst {
 
-    public String label;
+    public Entity cond;
+    public IRBlock trueBlock, falseBlock;
 
-    public Br(String label) {
-        this.label = label;
+    public Br(Entity cond, IRBlock trueBlock, IRBlock falseBlock) {
+        this.cond = cond;
+        this.trueBlock = trueBlock;
+        this.falseBlock = falseBlock;
     }
 
     @Override

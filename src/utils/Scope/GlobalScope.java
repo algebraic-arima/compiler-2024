@@ -8,12 +8,14 @@ import src.utils.type.ClassType;
 import src.utils.type.FuncType;
 import src.utils.type.Type;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GlobalScope extends Scope {
 
 
     public HashMap<String, ClassType> ClassList;
+    public ArrayList<String> strLiteral = new ArrayList<>();
 
     public GlobalScope() {
         super();
@@ -54,7 +56,6 @@ public class GlobalScope extends Scope {
         stringclass.methods.put("ord", ordfunc);
 
         ClassList.put("string", stringclass);
-
     }
 
     public void addClass(String name, ClassType t, Position p) {
@@ -89,5 +90,10 @@ public class GlobalScope extends Scope {
             throw new MultipleDefinitions(p);
         }
         ClassList.get(className).fields.put(varName, t);
+    }
+
+    @Override
+    public boolean isGlobal() {
+        return true;
     }
 }

@@ -12,4 +12,6 @@ public abstract class Def extends BaseASTNode {
 
     abstract public void accept(__ASTVisitor v);
 
+    abstract public <T> T accept(src.AST.ASTVisitor<T> v);
+
 }

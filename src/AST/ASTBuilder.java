@@ -42,7 +42,7 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     @Override
     public BaseASTNode visitFuncdef(Mx.FuncdefContext ctx) {
         FuncDef funcDef = new FuncDef(new Position(ctx));
-        funcDef.funcType = new Type(ctx.type(0));
+        funcDef.retType = new Type(ctx.type(0));
         funcDef.funcName = ctx.ID(0).getText();
         for (int i = 1; i < ctx.ID().size(); i++) {
             funcDef.funcParams.put(ctx.ID(i).getText(), new Type(ctx.type(i)));
@@ -330,7 +330,9 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
             return new BoolLiteralExpr(new Position(ctx), ctx.TRUE() != null, boolType);
         }
         if (ctx.STRINGCONST() != null) {
-            return new StringLiteralExpr(new Position(ctx), ctx.STRINGCONST().getText(), stringType);
+            String val = ctx.STRINGCONST().getText();
+            val = val.substring(1, val.length() - 1);
+            return new StringLiteralExpr(new Position(ctx), val, stringType);
         }
         if (ctx.NULL() != null) {
             return new NullExpr(new Position(ctx));

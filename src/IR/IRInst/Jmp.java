@@ -1,12 +1,14 @@
 package src.IR.IRInst;
 
+import src.IR.IRBlock;
+
 public class Jmp extends terminalInst {
     // unconditional branch
 
-    public String label;
+    public IRBlock dest;
 
-    public Jmp(String label) {
-        this.label = label;
+    public Jmp(IRBlock dest) {
+        this.dest = dest;
     }
 
     @Override

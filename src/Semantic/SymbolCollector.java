@@ -43,7 +43,7 @@ public class SymbolCollector implements __ASTVisitor {
 
     @Override
     public void visit(FuncDef node) {
-        FuncType ft = new FuncType(node.funcType);
+        FuncType ft = new FuncType(node.retType);
         ft.args = node.funcParams;
         if (curClass == null)
             gScope.addFunc(node.funcName, ft, node.pos);

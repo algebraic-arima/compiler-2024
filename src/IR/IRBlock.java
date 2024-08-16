@@ -10,4 +10,8 @@ public class IRBlock {
     public Label label = null;
     public ArrayList<Inst> insts = new ArrayList<>();
     public terminalInst tInst = null;
+
+    public IRBlock(String s) {
+        label = new Label(s);
+    }
 }

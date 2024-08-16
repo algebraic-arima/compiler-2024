@@ -14,4 +14,6 @@ public abstract class BaseASTNode {
     }
 
     abstract public void accept(__ASTVisitor v);
+
+    abstract public <T> T accept(ASTVisitor<T> v);
 }

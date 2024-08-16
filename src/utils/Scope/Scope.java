@@ -14,6 +14,10 @@ public class Scope {
 
     public HashMap<String, Type> VarList;
     public HashMap<String, FuncType> FuncList;
+    public HashMap<String,String> renameVarMap;
+    // to find the var,
+    // if in the scope, find in renameVarMap
+    // if not, resort to parent
 
     public Scope parent;
 
@@ -21,6 +25,7 @@ public class Scope {
         parent = null;
         VarList = new HashMap<>();
         FuncList = new HashMap<>();
+        renameVarMap = new HashMap<>();
     }
 
     public Scope(Scope p) {
@@ -28,6 +33,7 @@ public class Scope {
         isLOOP = p.isLOOP;
         VarList = new HashMap<>();
         FuncList = new HashMap<>();
+        renameVarMap = new HashMap<>();
     }
 
     public void addVar(String name, Type t, Position p) {
@@ -37,8 +43,18 @@ public class Scope {
         VarList.put(name, t);
     }
 
-    public Type getVar(String name) {
-        if (VarList.containsKey(name)) return VarList.get(name);
+    public class VarInfo{
+        public Type t;
+        public String alias;
+
+        public VarInfo(Type t, String alias){
+            this.t = t;
+            this.alias = alias;
+        }
+    }
+
+    public VarInfo getVar(String name) {
+        if (VarList.containsKey(name)) return new VarInfo(VarList.get(name),renameVarMap.get(name));
         if (parent != null) return parent.getVar(name);
         return null;
     }
@@ -56,5 +72,9 @@ public class Scope {
         if (parent != null)
             return parent.getFunc(name);
         return null;
+    }
+
+    public boolean isGlobal(){
+        return false;
     }
 }

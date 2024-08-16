@@ -1,5 +1,6 @@
 package src.AST.Stmt.LoopStmt;
 
+import src.AST.ASTVisitor;
 import src.AST.__ASTVisitor;
 import src.AST.Expr.Expr;
 import src.AST.Stmt.Stmt;
@@ -16,5 +17,10 @@ public class WhileStmt extends Stmt {
     @Override
     public void accept(__ASTVisitor v) {
         v.visit(this);
+    }
+
+    @Override
+    public <T> T accept(ASTVisitor<T> v) {
+        return v.visit(this);
     }
 }

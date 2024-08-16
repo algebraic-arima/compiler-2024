@@ -17,4 +17,8 @@ public class Prog extends BaseASTNode {
     public void accept(__ASTVisitor v) {
         v.visit(this);
     }
+
+    public <T> T accept(ASTVisitor<T> v) {
+        return v.visit(this);
+    }
 }

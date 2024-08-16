@@ -18,4 +18,9 @@ public class ForStmt extends Stmt {
     public void accept(__ASTVisitor v) {
         v.visit(this);
     }
+
+    @Override
+    public <T> T accept(src.AST.ASTVisitor<T> v) {
+        return v.visit(this);
+    }
 }

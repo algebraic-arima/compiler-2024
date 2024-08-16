@@ -13,6 +13,7 @@ import src.utils.type.ClassType;
 import src.utils.type.FuncType;
 import src.utils.type.Type;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -26,6 +27,7 @@ public class SemanticChecker implements __ASTVisitor {
     public String cur_f = null, cur_c = null;
     public boolean hasReturn = false;
     public boolean hasMain = false;
+    public HashMap<String, Integer> varCount = new HashMap<>();
 
     public void RollBack() {
         if (curScope.parent == null) return;
@@ -53,8 +55,8 @@ public class SemanticChecker implements __ASTVisitor {
         String res = cur_f;
         cur_f = node.funcName;
         curScope = new Scope(curScope);
-        if (node.funcType.hasClass()) {
-            String cn = node.funcType.typeName;
+        if (node.retType.hasClass()) {
+            String cn = node.retType.typeName;
             ClassType ct = gScope.getClass(cn);
             if (ct == null) {
                 throw new error("no such return type", node.pos);
@@ -63,12 +65,12 @@ public class SemanticChecker implements __ASTVisitor {
         }
         curScope.VarList = curScope.getFunc(node.funcName).args;
         node.funcBody.accept(this);
-        if (!node.funcType.isVoid() && !hasReturn && !node.funcName.equals("main")) {
+        if (!node.retType.isVoid() && !hasReturn && !node.funcName.equals("main")) {
             throw new error("non-void non-main function must have a return statement", node.pos);
 //            throw new MissingReturnStmt(node.pos);
         }
         if (node.funcName.equals("main")) {
-            if (!node.funcType.isInt()) {
+            if (!node.retType.isInt()) {
                 throw new error("main function must return int type", node.pos);
 //                throw new FunctionMainError(node.pos);
             }
@@ -114,6 +116,7 @@ public class SemanticChecker implements __ASTVisitor {
             throw new error("invalid variable definition: void type", node.pos);
 //            throw new InvalidType(node.pos);
         }
+        HashMap<String, String> changes = new HashMap<>();
         for (Map.Entry<String, Expr> entry : node.initVals.entrySet()) {
             if (entry.getValue() != null) {
                 entry.getValue().accept(this);
@@ -131,6 +134,18 @@ public class SemanticChecker implements __ASTVisitor {
                 throw new error("variable definition: variable already defined in current scope", node.pos);
 //                throw new MultipleDefinitions(node.pos);
             }
+            if (varCount.containsKey(entry.getKey())) {
+                int ind = varCount.get(entry.getKey());
+                varCount.put(entry.getKey(), ind + 1);
+                curScope.renameVarMap.put(entry.getKey(), entry.getKey() + ind);
+                changes.put(entry.getKey(), entry.getKey() + ind);
+            } else {
+                varCount.put(entry.getKey(), 1);
+            }
+        }
+        for (Map.Entry<String, String> entry : changes.entrySet()) {
+            node.initVals.put(entry.getValue(), node.initVals.get(entry.getKey()));
+            node.initVals.remove(entry.getKey());
         }
     }
 
@@ -583,6 +598,7 @@ public class SemanticChecker implements __ASTVisitor {
 
     @Override
     public void visit(StringLiteralExpr node) {
+        gScope.strLiteral.add(node.value);
         node.type = stringType;
         node.isLvalue = false;
     }
@@ -607,7 +623,7 @@ public class SemanticChecker implements __ASTVisitor {
 
     @Override
     public void visit(ThisPtrExpr node) {
-        Type t = curScope.getVar("this");
+        Type t = curScope.getVar("this").t;
         if (t == null) {
             throw new error("'this' ptr used out of class", node.pos);
         }
@@ -646,11 +662,15 @@ public class SemanticChecker implements __ASTVisitor {
 
     @Override
     public void visit(VarExpr node) {
-        Type t = curScope.getVar(node.varName);
-        if (t == null) {
+        Scope.VarInfo vi = curScope.getVar(node.varName);
+        if (vi == null) {
             throw new error("variable not defined", node.pos);
 //            throw new UndefinedIdentifier(node.pos);
         }
+        Type t = vi.t;
+        String a = vi.alias;
+
+        node.varName = a == null ? node.varName : a;
         node.type = t;
         node.isLvalue = true;
     }
