@@ -14,6 +14,12 @@ public class Br extends terminalInst {
         this.falseBlock = falseBlock;
     }
 
+    public Br(Entity cond) {
+        this.cond = cond;
+        this.trueBlock = null;
+        this.falseBlock = null;
+    }
+
     @Override
     public String str() {
         return "";

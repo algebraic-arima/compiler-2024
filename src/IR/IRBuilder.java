@@ -12,6 +12,7 @@ import src.IR.IRDef.IRClassDef;
 import src.IR.IRDef.IRFuncDef;
 import src.IR.IRDef.IRGlobalVarDef;
 import src.IR.IRInst.*;
+import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
@@ -25,7 +26,9 @@ import java.util.HashSet;
 import java.util.Map;
 
 import static src.AST.Expr.BinaryArithExpr.BArithOp.*;
+import static src.AST.Expr.BinaryLogicExpr.BLogicOp.*;
 import static src.AST.Expr.UnaryArithExpr.UArithOp.*;
+import static src.AST.Expr.UnaryLogicExpr.ULogicOp.*;
 import static src.utils.type.Type.T.*;
 
 public class IRBuilder implements __ASTVisitor {
@@ -37,7 +40,7 @@ public class IRBuilder implements __ASTVisitor {
     Scope curScope;
     public HashMap<Register, String> entityMap;
     // temporary register to name
-    public HashMap<String, String> addrMap;
+    // the address of variable `a` is stored in %a.addr
     // name to the register name that stores the variable address
     // for change of field, update and restore the map
     public int varCnt;
@@ -52,16 +55,16 @@ public class IRBuilder implements __ASTVisitor {
         irProg = new IRProg();
         globalVar = new HashSet<>();
         entityMap = new HashMap<>();
-        addrMap = new HashMap<>();
         varCnt = 0;
         curBlock = null;
         this.gScope = gScope;
         this.curScope = gScope;
+        gScope.strLiteral.forEach(s -> irProg.strDef.push(s));
     }
 
     @Override
     public void visit(Prog node) {
-
+        node.defs.forEach(d -> d.accept(this));
     }
 
     @Override
@@ -74,10 +77,8 @@ public class IRBuilder implements __ASTVisitor {
             f.paramNames.add(entry.getKey());
         }
         curBlock = f.entry;
-        curScope=new Scope(curScope);
+        curScope = new Scope(curScope);
         curScope.VarList = curScope.getFunc(node.funcName).args;
-        HashMap<String,String> tmp = addrMap;
-        addrMap = new HashMap<>();
 
         node.funcBody.stmts.forEach(d -> d.accept(this));
     }
@@ -105,6 +106,8 @@ public class IRBuilder implements __ASTVisitor {
                 } else {
                     g.value = 0;
                     IRFuncDef init = new IRFuncDef("@__init_global_" + entry.getKey());
+                    curBlock = init.entry;
+                    // complete init function
                     irProg.addFuncDef(init);
                 }
                 irProg.addGVarDef(g);
@@ -119,8 +122,11 @@ public class IRBuilder implements __ASTVisitor {
                 }
 
                 Alloca a = new Alloca(typeI32, addr);
-//                curBlock.addInst(a);
-
+                curBlock.addInst(a);
+                if (entry.getValue() != null) {
+                    Store s = new Store(typeI32, (Register) entry.getValue().entity, addr);
+                    curBlock.addInst(s);
+                }
             }
         }
     }
@@ -162,13 +168,12 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(VarDefStmt node) {
-
-
+        node.varDef.accept(this);
     }
 
     @Override
     public void visit(ExprStmt node) {
-
+        node.expr.accept(this);
     }
 
     @Override
@@ -178,7 +183,6 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(EmptyStmt node) {
-
     }
 
     @Override
@@ -257,17 +261,48 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(BinaryLogicExpr node) {
-
+        Register res = new Register();
+        if (node.op == AND) {
+            IRBlock trueBlock = new IRBlock(node.pos.row + "." + node.pos.column + ".and.rhs");
+            IRBlock falseBlock = new IRBlock(node.pos.row + "." + node.pos.column + ".and.end");
+            node.lhs.accept(this);
+            Br b = new Br(node.lhs.entity, trueBlock, falseBlock);
+            curBlock.insts.add(b);
+            curBlock = trueBlock;
+            node.rhs.accept(this);
+            Jmp j = new Jmp(falseBlock);
+            curBlock.insts.add(j);
+            curBlock = falseBlock;
+            Phi p= new Phi();// not completed
+            p.dest = res;
+            curBlock.addInst(p);
+        } else if (node.op == OR) {
+            IRBlock trueBlock = new IRBlock(node.pos.row + "." + node.pos.column + ".or.end");
+            IRBlock falseBlock = new IRBlock(node.pos.row + "." + node.pos.column + ".or.rhs");
+            node.lhs.accept(this);
+            Br b = new Br(node.lhs.entity, trueBlock, falseBlock);
+            curBlock.insts.add(b);
+            curBlock = falseBlock;
+            node.rhs.accept(this);
+            Jmp j = new Jmp(trueBlock);
+            curBlock.insts.add(j);
+            curBlock = trueBlock;
+            Phi p= new Phi();// not completed
+            p.dest = res;
+            curBlock.addInst(p);
+        }
+        node.entity=res;
     }
 
     @Override
     public void visit(BoolLiteralExpr node) {
-
+        node.entity = new Constant(node.value ? 1 : 0);
     }
 
     @Override
     public void visit(FmtStrLiteralExpr node) {
-
+        node.exprs.forEach(e -> e.accept(this));
+        /// todo: call printf to print all the expr values
     }
 
     @Override
@@ -279,7 +314,7 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(IntLiteralExpr node) {
-
+        node.entity = new Constant(node.value);
     }
 
     @Override
@@ -314,17 +349,19 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(NullExpr node) {
-
+        node.entity = null;
     }
 
     @Override
     public void visit(ParenthesesExpr node) {
-
+        node.accept(this);
+        node.entity = node.exp.entity;
     }
 
     @Override
     public void visit(RowExpr node) {
-
+        node.exps.forEach(e -> e.accept(this));
+        node.entity = node.exps.getLast().entity;
     }
 
     @Override
@@ -398,6 +435,7 @@ public class IRBuilder implements __ASTVisitor {
         entityMap.put(res, "%t" + varCnt);
         varCnt++;
         Load l = new Load(new IRType(node.type), res, (Register) node.entity);
+        node.entity = res;
         curBlock.insts.add(l);
     }
 }

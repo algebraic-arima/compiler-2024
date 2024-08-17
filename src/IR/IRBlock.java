@@ -14,4 +14,8 @@ public class IRBlock {
     public IRBlock(String s) {
         label = new Label(s);
     }
+
+    public void addInst(Inst inst) {
+        insts.add(inst);
+    }
 }

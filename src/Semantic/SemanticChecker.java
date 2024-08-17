@@ -428,6 +428,7 @@ public class SemanticChecker implements __ASTVisitor {
 //                throw new InvalidType(node.pos);
             }
         }
+        gScope.strLiteral.addAll(node.strs);
         node.type = stringType;
         node.isLvalue = false;
     }
