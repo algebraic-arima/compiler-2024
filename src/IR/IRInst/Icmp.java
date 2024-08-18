@@ -61,5 +61,15 @@ public class Icmp extends Inst {
         this.rhs = entity;
     }
 
+    @Override
+    public void print() {
+        System.out.print("  ");
+        dest.print();
+        System.out.print(" = icmp " + op + " i32 ");
+        lhs.print();
+        System.out.print(", ");
+        rhs.print();
+        System.out.print("\n");
+    }
 }
 

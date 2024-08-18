@@ -4,6 +4,8 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import src.AST.ASTBuilder;
 import src.AST.Prog;
+import src.IR.IRBuilder;
+import src.IR.IRPrinter;
 import src.Semantic.*;
 import src.parser.Lex;
 import src.parser.Mx;
@@ -28,11 +30,15 @@ public class Main {
             parser.addErrorListener(new MxErrorListener());
             Mx.ProgContext parseTreeRoot = parser.prog();
             ASTBuilder AST = new ASTBuilder();
-            Prog root = (Prog) AST.visit(parseTreeRoot);
+            Prog ASTRoot = (Prog) AST.visit(parseTreeRoot);
             GlobalScope gScope = new GlobalScope();
-            new SymbolCollector(gScope).visit(root);
-            SemanticChecker sc=new SemanticChecker(gScope);
-            sc.visit(root);
+            new SymbolCollector(gScope).visit(ASTRoot);
+            SemanticChecker sc = new SemanticChecker(gScope);
+            sc.visit(ASTRoot);
+            IRBuilder irBuilder = new IRBuilder(gScope);
+            irBuilder.visit(ASTRoot);
+            IRPrinter irPrinter = new IRPrinter(irBuilder.irProg);
+            irPrinter.print();
             System.exit(0);
         } catch (error e) {
             System.err.println(e.pos.row + ":" + e.pos.column + " " + e.message);

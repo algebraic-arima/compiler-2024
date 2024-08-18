@@ -23,11 +23,9 @@ public class IRProg{
         funcDefs.add(funcDef);
     }
 
-    public void addStrDef(IRStrDef strDef){
-        this.strDef=strDef;
-    }
-
-    public String str() {
-        return "";
+    public void print(){
+        strDef.print();
+        gVarDefs.forEach(IRGlobalVarDef::print);
+        funcDefs.forEach(IRFuncDef::print);
     }
 }

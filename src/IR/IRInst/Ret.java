@@ -18,4 +18,16 @@ public class Ret extends terminalInst {
         this.value = null;
     }
 
+    @Override
+    public void print() {
+        if (value == null) {
+            System.out.print("  ret void\n");
+        } else {
+            System.out.print("  ret ");
+            type.print();
+            System.out.print(" ");
+            value.print();
+            System.out.print("\n");
+        }
+    }
 }

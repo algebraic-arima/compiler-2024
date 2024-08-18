@@ -4,28 +4,39 @@ import src.IR.IRBlock;
 import src.utils.IRType.IRType;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
-public class IRFuncDef extends IRDef{
+public class IRFuncDef extends IRDef {
 
     public IRType retType;
     public String name;
     public ArrayList<IRType> paramTypes;
     public ArrayList<String> paramNames;
     public IRBlock entry;
-    public HashSet<IRBlock> blocks;
+    public ArrayList<IRBlock> blocks;
 
     public IRFuncDef(String name) {
         retType = new IRType();
         this.name = name;
         paramTypes = new ArrayList<>();
+        paramNames = new ArrayList<>();
         entry = new IRBlock("entry");
-        blocks = new HashSet<>();
+        blocks = new ArrayList<>();
+    }
+
+    public void addBlock(IRBlock e) {
+        blocks.add(e);
     }
 
 
-    @Override
-    public String str() {
-        return "";
+    public void print() {
+        System.out.print("\ndefine dso_local " + retType.typeName + " " + name + "(");
+        for (int i = 0; i < paramNames.size(); ++i) {
+            System.out.print(paramTypes + " " + paramNames);
+            if (i != paramNames.size() - 1)
+                System.out.print(", ");
+        }
+        System.out.print(") {\n");
+        blocks.forEach(IRBlock::print);
+        System.out.print("}\n");
     }
 }

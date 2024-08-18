@@ -22,8 +22,9 @@ public class IRClassDef extends IRDef {
         this.fields = fields;
     }
 
+
     @Override
-    public String str() {
-        return "";
+    void print() {
+
     }
 }

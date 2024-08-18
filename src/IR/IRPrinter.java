@@ -28,7 +28,8 @@ public class IRPrinter {
                 "declare i1 @string.gt(ptr,ptr)\n",
                 "declare i1 @string.ge(ptr,ptr)\n",
                 "declare i32 @array.size(ptr)\n",
-                "declare ptr @.malloc(i32)\n");
+                "declare ptr @.malloc(i32)\n\n");
+        irProgram.print();
     }
 
     public void printOut(String... strings) {

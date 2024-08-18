@@ -18,4 +18,16 @@ public class IRBlock {
     public void addInst(Inst inst) {
         insts.add(inst);
     }
+
+    public void print() {
+        StringBuilder s = new StringBuilder();
+        s.append(label.label).append(":\n");
+        insts.forEach(d -> s.append(d.str()));
+//        s.append(tInst.str());
+        s.append("\n");
+        System.out.print(label.label+":\n");
+        insts.forEach(Inst::print);// indent in inst::print()
+//        tInst.print();
+        System.out.print("\n");
+    }
 }

@@ -11,35 +11,35 @@ public class Binary extends Inst {
     public Entity lhs, rhs;
     public String op;
 
-    public Binary(BinaryArithExpr.BArithOp op){
-        this.op=switch (op){
-            case ADD->"add";
-            case SUB->"sub";
-            case MUL->"mul";
-            case DIV->"sdiv";
-            case MOD->"srem";
-            case BLS->"shl";
-            case BRS->"ashr";
-            case BAND->"and";
-            case BOR->"or";
-            case BXOR->"xor";
+    public Binary(BinaryArithExpr.BArithOp op) {
+        this.op = switch (op) {
+            case ADD -> "add";
+            case SUB -> "sub";
+            case MUL -> "mul";
+            case DIV -> "sdiv";
+            case MOD -> "srem";
+            case BLS -> "shl";
+            case BRS -> "ashr";
+            case BAND -> "and";
+            case BOR -> "or";
+            case BXOR -> "xor";
             default -> null;
         };
     }
 
 
-    public Binary(String op){
-        this.op=switch (op){
-            case "+"->"add";
-            case "-"->"sub";
-            case "*"->"mul";
-            case "/"->"sdiv";
-            case "%"->"srem";
-            case "<<"->"shl";
-            case ">>"->"ashr";
-            case "&"->"and";
-            case "|"->"or";
-            case "^"->"xor";
+    public Binary(String op) {
+        this.op = switch (op) {
+            case "+" -> "add";
+            case "-" -> "sub";
+            case "*" -> "mul";
+            case "/" -> "sdiv";
+            case "%" -> "srem";
+            case "<<" -> "shl";
+            case ">>" -> "ashr";
+            case "&" -> "and";
+            case "|" -> "or";
+            case "^" -> "xor";
             default -> null;
         };
     }
@@ -69,7 +69,13 @@ public class Binary extends Inst {
     }
 
     @Override
-    public String str() {
-        return "";
+    public void print() {
+        System.out.print("  " + dest.name + " = " + op + " i32 ");
+        lhs.print();
+        System.out.print(", ");
+        rhs.print();
+        System.out.print("\n");
     }
+
+
 }

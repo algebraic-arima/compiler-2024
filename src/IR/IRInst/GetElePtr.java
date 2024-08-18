@@ -12,7 +12,7 @@ public class GetElePtr extends Inst {
 
 
     @Override
-    public String str() {
-        return "";
+    public void print() {
+
     }
 }

@@ -12,7 +12,7 @@ public class Jmp extends terminalInst {
     }
 
     @Override
-    public String str() {
-        return "";
+    public void print() {
+        System.out.print("  br label " + dest.label.label + "\n");
     }
 }

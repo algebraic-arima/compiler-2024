@@ -17,4 +17,8 @@ public class Call extends Inst {
         args = new ArrayList<>();
     }
 
+    @Override
+    public void print() {
+
+    }
 }

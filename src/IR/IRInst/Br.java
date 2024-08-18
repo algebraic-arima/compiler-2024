@@ -21,7 +21,13 @@ public class Br extends terminalInst {
     }
 
     @Override
-    public String str() {
-        return "";
+    public void print() {
+        System.out.print("  br i1 ");
+        cond.print();
+        System.out.print(", label ");
+        System.out.print(trueBlock.label.label);
+        System.out.print(", label ");
+        System.out.print(falseBlock.label.label);
+        System.out.print("\n");
     }
 }

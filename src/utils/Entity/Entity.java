@@ -13,4 +13,6 @@ abstract public class Entity {
     public Entity(Type type) {
         this.type = new IRType(type);
     }
+
+    abstract public void print();
 }

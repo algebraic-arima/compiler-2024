@@ -15,7 +15,13 @@ public class Load extends Inst {
     }
 
     @Override
-    public String str() {
-        return "";
+    public void print() {
+        System.out.print("  ");
+        dest.print();
+        System.out.print(" = load ");
+        irType.print();
+        System.out.print(", ptr ");
+        src.print();
+        System.out.print("\n");
     }
 }

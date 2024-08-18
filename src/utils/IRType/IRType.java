@@ -6,6 +6,10 @@ public class IRType {
     public String typeName;
     public int size = 0;// bit
 
+    public void print() {
+        System.out.print(typeName);
+    }
+
     public IRType() {
         typeName = "void";
         size = -1;
@@ -42,7 +46,7 @@ public class IRType {
 
     }
 
-    public IRType setType(Type.T atomType){
+    public IRType setType(Type.T atomType) {
         switch (atomType) {
             case INT:
                 typeName = "i32";

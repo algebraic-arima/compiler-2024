@@ -14,7 +14,9 @@ public class Alloca extends Inst {
     }
 
     @Override
-    public String str() {
-        return "";
+    public void print() {
+        System.out.print("  "+ptr.name+" = alloca ");
+        irType.print();
+        System.out.print("\n");
     }
 }

@@ -1,25 +1,36 @@
 package src.IR.IRDef;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-public class IRStrDef extends IRDef{
+public class IRStrDef extends IRDef {
 
-    public HashMap<String,Integer> strMap;
+    public LinkedHashMap<String, Integer> strMap;
 
-    public IRStrDef(){
-        strMap = new HashMap<>();
+    public IRStrDef() {
+        strMap = new LinkedHashMap<>();
     }
 
-    public String push(String s){
-        if(strMap.containsKey((s))){
+    public String push(String s) {
+        if (strMap.containsKey((s))) {
             return null;
-        }else {
+        } else {
             strMap.put(s, strMap.size());
             return "@constStr-" + (strMap.size() - 1);
         }
     }
+
     @Override
-    public String str() {
-        return "";
+    public void print() {
+        for (Map.Entry<String, Integer> e : strMap.entrySet()) {
+            System.out.print("@constStr-");
+            System.out.print(e.getValue());
+            System.out.print(" = private unnamed_addr constant [");
+            System.out.print(e.getKey().length()+1);
+            System.out.print(" x i8] c\"");
+            System.out.print(e.getValue());
+            /// todo: translate \n to \0A, \ to \\, \" to \22
+            System.out.print("\\00\"\n");
+        }
     }
 }

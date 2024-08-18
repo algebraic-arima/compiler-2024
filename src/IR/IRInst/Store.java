@@ -17,7 +17,13 @@ public class Store extends Inst {
     }
 
     @Override
-    public String str() {
-        return "";
+    public void print() {
+        System.out.print("  store ");
+        irType.print();
+        System.out.print(" ");
+        value.print();
+        System.out.print(", ptr ");
+        dest.print();
+        System.out.print("\n");
     }
 }
