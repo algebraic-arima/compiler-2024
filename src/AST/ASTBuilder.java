@@ -45,6 +45,9 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         funcDef.retType = new Type(ctx.type(0));
         funcDef.funcName = ctx.ID(0).getText();
         for (int i = 1; i < ctx.ID().size(); i++) {
+            if(funcDef.funcParams.containsKey(ctx.ID(i).getText())){
+                throw new error("multiple definitions in function parameter", new Position(ctx));
+            }
             funcDef.funcParams.put(ctx.ID(i).getText(), new Type(ctx.type(i)));
         }
         funcDef.funcBody = (BlockStmt) visit(ctx.stmts());

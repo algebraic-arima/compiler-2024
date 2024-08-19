@@ -11,7 +11,6 @@ public class Icmp extends Inst {
     public IRType type;
     public Entity lhs = null, rhs = null;
     // null if ptr is compared to null in EQ, NE
-    public Register dest;
 
     public Icmp(BinaryArithExpr.BArithOp op) {
         this.op = switch (op) {

@@ -8,7 +8,7 @@ public class Store extends Inst {
 
     public IRType irType;
     public Entity value;
-    public Register dest;
+    // dest: ptr to the destination memory
 
     public Store(IRType irType, Entity value, Register dest) {
         this.irType = irType;

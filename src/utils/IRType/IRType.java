@@ -38,12 +38,36 @@ public class IRType {
                     size = -1;
                     break;
                 case CLASS:
-                    typeName = "%Class-" + t.typeName;
-                    size = 0;
+                    typeName = "ptr"; // as a parameter
+                    size = 32;
                     break;
             }
         }
+    }
 
+    public IRType(String s){
+        switch (s) {
+            case "int":
+                typeName = "i32";
+                size = 32;
+                break;
+            case "bool":
+                typeName = "i1";
+                size = 1;
+                break;
+            case "string":
+                typeName = "ptr";
+                size = 32;
+                break;
+            case "void":
+                typeName = "void";
+                size = -1;
+                break;
+            default:
+                typeName = "%Class-" + s;// on how to interpret a ptr
+                size = 0;
+                break;
+        }
     }
 
     public IRType setType(Type.T atomType) {

@@ -11,7 +11,6 @@ public class IRFuncDef extends IRDef {
     public String name;
     public ArrayList<IRType> paramTypes;
     public ArrayList<String> paramNames;
-    public IRBlock entry;
     public ArrayList<IRBlock> blocks;
 
     public IRFuncDef(String name) {
@@ -19,7 +18,6 @@ public class IRFuncDef extends IRDef {
         this.name = name;
         paramTypes = new ArrayList<>();
         paramNames = new ArrayList<>();
-        entry = new IRBlock("entry");
         blocks = new ArrayList<>();
     }
 
@@ -31,7 +29,8 @@ public class IRFuncDef extends IRDef {
     public void print() {
         System.out.print("\ndefine dso_local " + retType.typeName + " " + name + "(");
         for (int i = 0; i < paramNames.size(); ++i) {
-            System.out.print(paramTypes + " " + paramNames);
+            paramTypes.get(i).print();
+            System.out.print(" " + paramNames.get(i));
             if (i != paramNames.size() - 1)
                 System.out.print(", ");
         }

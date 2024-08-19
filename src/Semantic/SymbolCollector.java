@@ -21,6 +21,7 @@ import src.utils.type.ClassType;
 import src.utils.type.FuncType;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SymbolCollector implements __ASTVisitor {
@@ -44,7 +45,7 @@ public class SymbolCollector implements __ASTVisitor {
     @Override
     public void visit(FuncDef node) {
         FuncType ft = new FuncType(node.retType);
-        ft.args = node.funcParams;
+        ft.args = new LinkedHashMap<>(node.funcParams);
         if (curClass == null)
             gScope.addFunc(node.funcName, ft, node.pos);
         else

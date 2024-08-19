@@ -5,14 +5,14 @@ import src.IR.IRBlock;
 public class Jmp extends terminalInst {
     // unconditional branch
 
-    public IRBlock dest;
+    public IRBlock irBlock;
 
-    public Jmp(IRBlock dest) {
-        this.dest = dest;
+    public Jmp(IRBlock irBlock) {
+        this.irBlock = irBlock;
     }
 
     @Override
     public void print() {
-        System.out.print("  br label " + dest.label.label + "\n");
+        System.out.print("  br label " + irBlock.label.label + "\n");
     }
 }

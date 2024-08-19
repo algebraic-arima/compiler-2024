@@ -6,16 +6,15 @@ import src.utils.IRType.IRType;
 public class Alloca extends Inst {
 
     public IRType irType;
-    public Register ptr;
 
-    public Alloca(IRType irType, Register ptr) {
+    public Alloca(IRType irType, Register dest) {
         this.irType = irType;
-        this.ptr = ptr;
+        this.dest = dest;
     }
 
     @Override
     public void print() {
-        System.out.print("  "+ptr.name+" = alloca ");
+        System.out.print("  " + dest.name + " = alloca ");
         irType.print();
         System.out.print("\n");
     }

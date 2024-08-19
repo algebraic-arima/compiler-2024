@@ -9,7 +9,6 @@ import java.util.ArrayList;
 
 public class Phi extends Inst {
 
-    public Register dest;
     public IRType irType;
     public ArrayList<Pair<Entity, String>> valList;
 
@@ -30,7 +29,7 @@ public class Phi extends Inst {
         System.out.print(" phi ");
         irType.print();
         for (int i = 0; i < valList.size(); ++i) {
-            System.out.print(" [ ");
+            System.out.print(" [");
             valList.get(i).a.print();
             System.out.print(", ");
             System.out.print(valList.get(i).b);

@@ -6,7 +6,7 @@ import src.utils.IRType.IRType;
 public class Load extends Inst {
 
     public IRType irType;
-    public Register src, dest;
+    public Register src;
 
     public Load(IRType irType, Register src, Register dest) {
         this.irType = irType;

@@ -7,7 +7,6 @@ import src.utils.Entity.Register;
 
 public class Binary extends Inst {
 
-    public Register dest;
     public Entity lhs, rhs;
     public String op;
 

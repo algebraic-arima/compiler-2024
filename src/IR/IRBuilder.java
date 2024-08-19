@@ -35,10 +35,9 @@ public class IRBuilder implements __ASTVisitor {
 
     public IRProg irProg;
     public HashSet<String> globalVar;
-    public IRFuncDef mainFunc;
     GlobalScope gScope;
     Scope curScope;
-    public HashMap<Register, String> entityMap;
+    //    public HashMap<Register, String> entityMap;
     // temporary register to name
     // the address of variable `a` is stored in %a.addr
     // name to the register name that stores the variable address
@@ -56,7 +55,10 @@ public class IRBuilder implements __ASTVisitor {
     public IRBuilder(GlobalScope gScope) {
         irProg = new IRProg();
         globalVar = new HashSet<>();
-        entityMap = new HashMap<>();
+        for (Map.Entry<String, Type> e : gScope.VarList.entrySet()) {
+            globalVar.add(e.getKey());
+        }
+//        entityMap = new HashMap<>();
         varCnt = 0;
         curBlock = null;
         this.gScope = gScope;
@@ -74,12 +76,17 @@ public class IRBuilder implements __ASTVisitor {
         IRFuncDef f = new IRFuncDef("@" + node.funcName);
         irProg.addFuncDef(f);
         f.retType = new IRType(node.retType);
+        curBlock = new IRBlock("entry");
+        curFunc = f;
         for (Map.Entry<String, Type> entry : node.funcParams.entrySet()) {
             f.paramTypes.add(new IRType(entry.getValue()));
-            f.paramNames.add("%" + entry.getKey());
+            f.paramNames.add("%" + entry.getKey() + ".val");
+            Register r = new Register("%" + entry.getKey());
+            curBlock.addInst(new Alloca(new IRType(entry.getValue()), r));
+            curBlock.addInst(new Store(new IRType(entry.getValue()),
+                    new Register("%" + entry.getKey() + ".val"), r));
         }
-        curBlock = f.entry;
-        curFunc = f;
+
         curScope = new Scope(curScope);
         curScope.VarList = curScope.getFunc(node.funcName).args;
 
@@ -89,8 +96,7 @@ public class IRBuilder implements __ASTVisitor {
             curBlock.addInst(new Ret());
         }
         curScope = curScope.parent;
-        if (curBlock != f.entry)
-            curFunc.addBlock(curBlock);
+        curFunc.addBlock(curBlock);
     }
 
     @Override
@@ -108,7 +114,7 @@ public class IRBuilder implements __ASTVisitor {
             for (Map.Entry<String, Expr> entry : node.initVals.entrySet()) {
                 IRGlobalVarDef g = new IRGlobalVarDef();
                 Register addr = new Register(node.type, "@" + entry.getKey());
-                entityMap.put(addr, "@" + entry.getKey());
+//                entityMap.put(addr, "@" + entry.getKey());
                 g.irType = typeI32;
                 g.name = "@" + entry.getKey();
                 if (entry.getValue() instanceof IntLiteralExpr) {
@@ -116,8 +122,12 @@ public class IRBuilder implements __ASTVisitor {
                 } else {
                     g.value = 0;
                     IRFuncDef init = new IRFuncDef("@__init_global_" + entry.getKey());
-                    curBlock = init.entry;
-                    // complete init function
+                    curBlock = new IRBlock("entry");
+                    curFunc = init;
+                    entry.getValue().accept(this);
+                    curBlock.addInst(new Store(new IRType(node.type), entry.getValue().entity, new Register(g.name)));
+                    curBlock.addInst(new Ret());
+                    curFunc.addBlock(curBlock);
                     irProg.addFuncDef(init);
                 }
                 irProg.addGVarDef(g);
@@ -125,7 +135,7 @@ public class IRBuilder implements __ASTVisitor {
         } else {
             for (Map.Entry<String, Expr> entry : node.initVals.entrySet()) {
                 Register addr = new Register(node.type, "%" + entry.getKey());
-                entityMap.put(addr, "%" + entry.getKey());
+//                entityMap.put(addr, "%" + entry.getKey());
 
                 if (entry.getValue() != null) {
                     entry.getValue().accept(this);
@@ -305,7 +315,7 @@ public class IRBuilder implements __ASTVisitor {
         node.lhs.accept(this);
         node.rhs.accept(this);
         Register res = new Register(node.type, "%t" + varCnt);
-        entityMap.put(res, "%t" + varCnt);
+//        entityMap.put(res, "%t" + varCnt);
         varCnt++;
         if (node.lhs.type.isInt() && node.rhs.type.isInt()) {
             if (node.op == ADD || node.op == SUB || node.op == MUL || node.op == DIV || node.op == MOD
@@ -350,7 +360,7 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(BinaryLogicExpr node) {
         Register res = new Register(node.type, "%t" + varCnt);
-        entityMap.put(res, "%t" + varCnt);
+//        entityMap.put(res, "%t" + varCnt);
         varCnt++;
         if (node.op == AND) {
             Phi p = new Phi(res, boolType);
@@ -468,6 +478,7 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(TernaryBranchExpr node) {
+        node.cond.accept(this);
 
     }
 
@@ -480,7 +491,7 @@ public class IRBuilder implements __ASTVisitor {
     public void visit(UnaryArithExpr node) {
         node.expr.accept(this);
         Register res = new Register(node.type, "%t" + varCnt);
-        entityMap.put(res, "%t" + varCnt);
+//        entityMap.put(res, "%t" + varCnt);
         varCnt++;
         if (node.op == NEG) {
             Binary n = new Binary("-");
@@ -517,7 +528,7 @@ public class IRBuilder implements __ASTVisitor {
     public void visit(UnaryLogicExpr node) {
         node.expr.accept(this);
         Register res = new Register(node.type, "%t" + varCnt);
-        entityMap.put(res, "%t" + varCnt);
+//        entityMap.put(res, "%t" + varCnt);
         varCnt++;
         Binary n = new Binary("^");
         n.dest = res;
@@ -530,9 +541,14 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(VarExpr node) {
         Register res = new Register(node.type, "%t" + varCnt);
-        entityMap.put(res, "%t" + varCnt);
+//        entityMap.put(res, "%t" + varCnt);
         varCnt++;
-        Load l = new Load(new IRType(node.type), new Register(node.varName), res);
+        boolean isg = false;
+        if (globalVar.contains(node.varName)) {
+            isg = true;
+        }
+        Load l = new Load(new IRType(node.type), new Register((isg ? "@" : "%") + node.varName), res);
+        // the value of variable `i` is stored in the position that @i/%i points
         node.entity = res;
         curBlock.insts.add(l);
     }

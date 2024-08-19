@@ -14,6 +14,7 @@ import src.utils.type.FuncType;
 import src.utils.type.Type;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -63,8 +64,22 @@ public class SemanticChecker implements __ASTVisitor {
 //                throw new UndefinedIdentifier(node.pos);
             }
         }
-        curScope.VarList = curScope.getFunc(node.funcName).args;
-        node.funcBody.accept(this);
+        LinkedHashMap<String, Type> f = curScope.getFunc(node.funcName).args;
+        for (Map.Entry<String, Type> e : f.entrySet()) {
+            if (varCount.containsKey(e.getKey())) {
+                int ind = varCount.get(e.getKey());
+                varCount.put(e.getKey(), ind + 1);
+                curScope.renameVarMap.put(e.getKey(), e.getKey() + ind);
+                node.funcParams.put(e.getKey() + ind, e.getValue());
+                node.funcParams.remove(e.getKey());// if put after remove,
+                // the value will be deleted
+            } else {
+                varCount.put(e.getKey(), 1);
+            }
+        }
+
+        curScope.VarList = f;
+        node.funcBody.stmts.forEach(d -> d.accept(this));
         if (!node.retType.isVoid() && !hasReturn && !node.funcName.equals("main")) {
             throw new error("non-void non-main function must have a return statement", node.pos);
 //            throw new MissingReturnStmt(node.pos);
@@ -402,7 +417,6 @@ public class SemanticChecker implements __ASTVisitor {
 
     @Override
     public void visit(BinaryLogicExpr node) {
-        /// todo: how to support short circuit
         node.lhs.accept(this);
         node.rhs.accept(this);
         if (!node.lhs.type.isBool() || !node.rhs.type.isBool()) {
