@@ -24,6 +24,7 @@ public class IRProg{
     }
 
     public void print(){
+        classDefs.forEach(IRClassDef::print);
         strDef.print();
         gVarDefs.forEach(IRGlobalVarDef::print);
         funcDefs.forEach(IRFuncDef::print);

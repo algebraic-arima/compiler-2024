@@ -1,5 +1,7 @@
 package src.utils.Entity;
 
+import src.IR.IRBuilder;
+import src.utils.IRType.IRType;
 import src.utils.type.Type;
 
 public class Register extends Entity {

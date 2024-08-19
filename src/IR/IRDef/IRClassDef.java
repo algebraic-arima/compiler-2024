@@ -1,30 +1,32 @@
 package src.IR.IRDef;
 
 import src.AST.Def.VarDef;
+import src.utils.IRType.IRType;
 
 import java.util.ArrayList;
 
 public class IRClassDef extends IRDef {
 
     public String className;
-    public int fieldNum;
-    public ArrayList<VarDef> fields;
+    public ArrayList<IRType> fields;
 
     public IRClassDef (String className){
-        this.className = "%class-" + className;
-        this.fieldNum = 0;
+        this.className = "%class." + className;
         this.fields = new ArrayList<>();
     }
 
-    public IRClassDef(String className, ArrayList<VarDef> fields) {
-        this.className = "%class-" + className;
-        this.fieldNum = fields.size();
-        this.fields = fields;
+    public int getFieldNum(){
+        return fields.size();
     }
 
-
     @Override
-    void print() {
-
+    public void print() {
+        System.out.print(className + " = type {");
+        for (int i = 0; i < fields.size(); ++i) {
+            fields.get(i).print();
+            if (i != fields.size() - 1)
+                System.out.print(", ");
+        }
+        System.out.println("}");
     }
 }

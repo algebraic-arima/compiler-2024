@@ -64,7 +64,7 @@ public class IRType {
                 size = -1;
                 break;
             default:
-                typeName = "%Class-" + s;// on how to interpret a ptr
+                typeName = "%class." + s;// on how to interpret a ptr
                 size = 0;
                 break;
         }

@@ -64,14 +64,16 @@ public class SemanticChecker implements __ASTVisitor {
 //                throw new UndefinedIdentifier(node.pos);
             }
         }
-        LinkedHashMap<String, Type> f = curScope.getFunc(node.funcName).args;
+
+        LinkedHashMap<String, Type> f = new LinkedHashMap<>(curScope.getFunc(node.funcName).args);
         for (Map.Entry<String, Type> e : f.entrySet()) {
             if (varCount.containsKey(e.getKey())) {
                 int ind = varCount.get(e.getKey());
                 varCount.put(e.getKey(), ind + 1);
                 curScope.renameVarMap.put(e.getKey(), e.getKey() + ind);
                 node.funcParams.put(e.getKey() + ind, e.getValue());
-                node.funcParams.remove(e.getKey());// if put after remove,
+                node.funcParams.remove(e.getKey());
+                // if put after remove,
                 // the value will be deleted
             } else {
                 varCount.put(e.getKey(), 1);
@@ -84,7 +86,7 @@ public class SemanticChecker implements __ASTVisitor {
             throw new error("non-void non-main function must have a return statement", node.pos);
 //            throw new MissingReturnStmt(node.pos);
         }
-        if (node.funcName.equals("main")) {
+        if (cur_c == null && node.funcName.equals("main")) {
             if (!node.retType.isInt()) {
                 throw new error("main function must return int type", node.pos);
 //                throw new FunctionMainError(node.pos);
@@ -107,7 +109,10 @@ public class SemanticChecker implements __ASTVisitor {
         String res = cur_c;
         cur_c = node.className;
         curScope = new Scope(curScope);
-        curScope.VarList = gScope.getClass(node.className).fields;
+        curScope.VarList = new HashMap<>(gScope.getClass(node.className).fields);
+        for (Map.Entry<String, Type> entry : curScope.VarList.entrySet()) {
+            curScope.renameVarMap.put(entry.getKey(), node.className + "::" + entry.getKey());
+        }
         curScope.addVar("this", new Type(node.className), node.pos);
         curScope.FuncList = gScope.getClass(node.className).methods;
         if (node.constructor != null) node.constructor.accept(this);
