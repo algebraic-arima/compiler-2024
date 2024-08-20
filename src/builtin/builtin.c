@@ -105,6 +105,12 @@ int array_size(void *arr) {
   return ((int*)arr)[-1];
 }
 
+void *array_malloc(int n) {
+  int *arr = malloc(4 * (n + 1));
+  arr[0] = n;
+  return arr + 1;
+}
+
 void *_malloc(int n){
   return malloc((size_t)(4 * n));
 }

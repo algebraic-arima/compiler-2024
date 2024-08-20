@@ -45,8 +45,12 @@ public class IRType {
         }
     }
 
-    public IRType(String s){
+    public IRType(String s) {
         switch (s) {
+            case "ptr", "string":
+                typeName = "ptr";
+                size = 32;
+                break;
             case "int":
                 typeName = "i32";
                 size = 32;
@@ -54,10 +58,6 @@ public class IRType {
             case "bool":
                 typeName = "i1";
                 size = 1;
-                break;
-            case "string":
-                typeName = "ptr";
-                size = 32;
                 break;
             case "void":
                 typeName = "void";

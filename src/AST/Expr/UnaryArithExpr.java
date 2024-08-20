@@ -2,6 +2,7 @@ package src.AST.Expr;
 
 import src.AST.ASTVisitor;
 import src.AST.__ASTVisitor;
+import src.utils.Entity.Register;
 import src.utils.pos.Position;
 
 public class UnaryArithExpr extends Expr {
@@ -12,6 +13,7 @@ public class UnaryArithExpr extends Expr {
 
     public Expr expr;
     public UArithOp op;
+    public Register addr;
 
     public UnaryArithExpr(Position p, Expr e, String o, boolean isLeft) {
         super(p);

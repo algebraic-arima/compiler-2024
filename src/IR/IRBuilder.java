@@ -21,9 +21,7 @@ import src.utils.Scope.Scope;
 import src.utils.type.FuncType;
 import src.utils.type.Type;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 import static src.AST.Expr.BinaryArithExpr.BArithOp.*;
 import static src.AST.Expr.BinaryLogicExpr.BLogicOp.*;
@@ -105,6 +103,9 @@ public class IRBuilder implements __ASTVisitor {
 
             if (node.retType.isVoid()) {
                 curBlock.addInst(new Ret());
+            }
+            if (Objects.equals(node.funcName, "main")) {
+                curBlock.addInst(new Ret(typeI32, new Constant(0)));
             }
 
             curFunc.addBlock(curBlock);
@@ -234,10 +235,10 @@ public class IRBuilder implements __ASTVisitor {
                     Alloca a = new Alloca(typeI32, addr);
                     curBlock.addInst(a);
                     if (entry.getValue() != null) {
-                        Store s = new Store(typeI32, entry.getValue().entity, addr);
+                        Store s = new Store(node.type.isInt() ? typeI32 : typeI1, entry.getValue().entity, addr);
                         curBlock.addInst(s);
                     }
-                } else if (node.type.isClass() || node.type.isString()) {
+                } else if (node.type.isClass() || node.type.isString() || node.type.isArray()) {
                     Alloca a = new Alloca(typePtr, addr);
                     curBlock.addInst(a);
                     if (entry.getValue() != null) {
@@ -270,7 +271,7 @@ public class IRBuilder implements __ASTVisitor {
     public void visit(ReturnStmt node) {
         if (node.retExpr != null) {
             node.retExpr.accept(this);
-            Ret r = new Ret(node.retExpr.entity.type, node.retExpr.entity);
+            Ret r = new Ret(new IRType(node.retExpr.type), node.retExpr.entity);
             curBlock.insts.add(r);
         } else {
             Ret r = new Ret();
@@ -399,13 +400,93 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(ArrayAccessExpr node) {
+        node.array.accept(this);
+        node.index.accept(this);
+        Register res = new Register(node.type, "%t" + varCnt);
+        varCnt++;
+        Register res_offset_addr = new Register(node.type, "%t" + varCnt);
+        varCnt++;
 
+        GetElePtr g = new GetElePtr(node.array.type.typeName, node.type.typeName,
+                (Register) node.array.entity, res,
+                node.index.entity, -1);
+
+        Load l = new Load(new IRType(node.type), res, res_offset_addr);
+
+        curBlock.addInst(g);
+        curBlock.addInst(l);
+        node.entity = res_offset_addr;
+        node.addr = res;
     }
 
     @Override
     public void visit(ArrayLiteralExpr node) {
-
+        node.elements.forEach(e -> e.accept(this));
+        Register res = new Register(node.type, "%t" + varCnt);
+        varCnt++;
+        Call c = new Call("@array_malloc", typePtr, res);
+        c.args.add(new Constant(node.elements.size() + 1));
+        if (node.elements.getFirst() instanceof ArrayLiteralExpr) {
+            c.argTypes.add(typePtr);
+        } else {
+            c.argTypes.add(typeI32);
+        }
+        node.entity = res;
+        for(Expr e : node.elements) {
+            /// todo: store the values into the array
+            // a geteleptr and a store
+        }
+        curBlock.addInst(c);
     }
+
+    /*
+        int[][][] a = new int[][][]{
+            {
+                {1, 2, 3},
+                {4, 5, 6}
+            },
+            {
+                {7, 8, 9},
+                {10, 11, 12}
+            }
+        };
+
+
+        %t1 = @array_malloc(%s1)
+        br na1.cond
+
+        na1.cond:
+            %tmp1 = phi i32 [0 , %entry], [%inc1 , na2.end]
+            %cmp1 = icmp slt i32 %tmp1, %s1
+            br i1 %cmp1, na1.body, na1.end
+
+        na1.body:
+            %p1 = getelementptr ptr, ptr %t1, i32 %tmp1
+            %t2 = @array_malloc(%s2)
+            store ptr %t2, ptr %p1
+            %inc1 = add i32 %tmp1, 1
+            br na2.cond
+
+            na2.cond
+                %tmp2 = phi i32 [0 , na1.body], [%inc2 , na2.body]
+                %cmp2 = icmp slt i32 %tmp2, %s2
+                br i1 %cmp2, na2.body, na2.end
+
+            na2.body:
+                %p2 = getelementptr ptr, ptr %t2, i32 %tmp2
+                %t3 = @array_malloc(%s3)
+                store ptr %t3, ptr %p2
+                %inc2 = add i32 %tmp2, 1
+                br na2.cond
+
+            na2.end:
+                br na1.cond
+
+        na1.end:
+
+
+
+     */
 
     @Override
     public void visit(AssignExpr node) {
@@ -413,13 +494,19 @@ public class IRBuilder implements __ASTVisitor {
 //        Entity n = node.entity;
         Entity val = node.value.entity;
         if (node.var instanceof VarExpr) {
-            boolean isg = globalVar.contains(((VarExpr) node.var).varName);
+            node.var.accept(this);
             Store s = new Store(new IRType(node.var.type), val,
-                    new Register((isg ? "@" : "%") + ((VarExpr) node.var).varName));
+                    ((VarExpr) node.var).addr);
             curBlock.addInst(s);
         } else if (node.var instanceof MemberObjAccessExpr) {
             node.var.accept(this);
-            Store s = new Store(new IRType(node.var.type), val, (Register) node.var.entity);
+            Store s = new Store(new IRType(node.var.type), val,
+                    ((MemberObjAccessExpr) node.var).addr);
+            curBlock.addInst(s);
+        } else if (node.var instanceof ArrayAccessExpr) {
+            node.var.accept(this);
+            Store s = new Store(new IRType(node.var.type), val,
+                    ((ArrayAccessExpr) node.var).addr);
             curBlock.addInst(s);
         }
     }
@@ -457,11 +544,26 @@ public class IRBuilder implements __ASTVisitor {
                 c.argTypes.add(new IRType(node.rhs.type));
                 node.entity = res;
                 node.entity.type = c.retType;
-                curBlock.insts.add(c);
+                curBlock.addInst(c);
             } else if (node.op == EQ || node.op == NE
                     || node.op == LT || node.op == GT
                     || node.op == LE || node.op == GE) {
-
+                Call c = switch (node.op) {
+                    case EQ -> new Call("string.eq", node.lhs.type, res);
+                    case NE -> new Call("string.ne", node.lhs.type, res);
+                    case LT -> new Call("string.lt", node.lhs.type, res);
+                    case GT -> new Call("string.gt", node.lhs.type, res);
+                    case LE -> new Call("string.le", node.lhs.type, res);
+                    case GE -> new Call("string.ge", node.lhs.type, res);
+                    default -> null;
+                };
+                c.args.add(node.lhs.entity);
+                c.args.add(node.rhs.entity);
+                c.argTypes.add(typePtr);
+                c.argTypes.add(typePtr);
+                node.entity = res;
+                node.entity.type = c.retType;
+                curBlock.addInst(c);
             }
         } else if (node.lhs.type.isNull() || node.rhs.type.isNull()) {
             Icmp n = new Icmp(node.op);
@@ -525,6 +627,7 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(BoolLiteralExpr node) {
         node.entity = new Constant(node.value ? 1 : 0);
+        node.entity.type = typeI1;
     }
 
     @Override
@@ -536,7 +639,7 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(FuncCallExpr node) {
         FuncType ft = gScope.getFunc(node.funcName);
-
+        node.args.exps.forEach(e -> e.accept(this));
         Call c = null;
         if (node.type.isVoid()) {
             c = new Call(node.funcName, ft.retType, null);
@@ -548,7 +651,6 @@ public class IRBuilder implements __ASTVisitor {
             node.entity = res;
         }
         for (Expr e : node.args.exps) {
-            e.accept(this);
             c.args.add(e.entity);
             c.argTypes.add(new IRType(e.type));
         }
@@ -558,6 +660,7 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(IntLiteralExpr node) {
         node.entity = new Constant(node.value);
+        node.entity.type = typeI32;
     }
 
     @Override
@@ -573,6 +676,9 @@ public class IRBuilder implements __ASTVisitor {
             varCnt++;
             node.entity = res;
         }
+        node.obj.accept(this);
+        c.args.add(node.obj.entity);
+        c.argTypes.add(typePtr);
         for (Expr e : node.args.exps) {
             e.accept(this);
             c.args.add(e.entity);
@@ -590,7 +696,6 @@ public class IRBuilder implements __ASTVisitor {
         varCnt++;
 
 //        Register res_member = new Register(node.type, "%" + node.obj.type.typeName + "." + node.member);
-//
 //        // res stores the address of the object
 //        varCnt++;
 //        Load l = new Load(new IRType(node.type), (Register) node.obj.entity, res);
@@ -602,21 +707,134 @@ public class IRBuilder implements __ASTVisitor {
         Load ll = new Load(new IRType(node.type.typeName), res_offset_addr, res);
         curBlock.addInst(ll);
         node.entity = res;
+        node.addr = res_offset_addr;
     }
 
     @Override
     public void visit(NewArrayExpr node) {
+        node.len.forEach(e -> e.accept(this));
+        int dim = node.type.dim;
+        int loop = node.len.size();
+        ArrayList<Entity> e = new ArrayList<>();
+        node.len.forEach(ed -> e.add(ed.entity));
 
+        if (loop == 0) {
+            return;
+        } else if (loop == 1) {
+            Call c = new Call("@array_malloc", node.type, new Register("%t" + varCnt));
+            c.args.add(e.getFirst());
+            c.argTypes.add(typeI32);
+            curBlock.addInst(c);
+            node.entity = c.dest;
+            return;
+        }
+        IRBlock[] condBlocks = new IRBlock[loop * 3 - 3];
+        for (int i = 0; i < loop - 1; ++i) {
+            condBlocks[2 * i] = new IRBlock(node.pos.row + "." + node.pos.column + ".na.cond" + i);
+            condBlocks[2 * i + 1] = new IRBlock(node.pos.row + "." + node.pos.column + ".na.body" + i);
+            condBlocks[loop * 3 - 4 - i] = new IRBlock(node.pos.row + "." + node.pos.column + ".na.end" + i);
+        }
+        for (int i = 0; i < loop - 1; ++i) {
+            Register tmp1 = new Register("%na." + node.pos.row + "." + node.pos.column + ".tmp" + i);
+            Register cmp1 = new Register("%na." + node.pos.row + "." + node.pos.column + ".cmp" + i);
+            Register inc1 = new Register("%na." + node.pos.row + "." + node.pos.column + ".inc" + i);
+            Phi p = new Phi(tmp1, typeI32);
+            p.addList(new Constant(0), i == 0 ? curBlock.label.label : condBlocks[2 * i - 1].label.label);
+            p.addList(inc1, condBlocks[loop * 3 - 5 - i].label.label);
+            condBlocks[2 * i].addInst(p);
+            condBlocks[2 * i].addInst(new Icmp("<", tmp1, e.get(i), cmp1));
+            condBlocks[2 * i].addInst(new Br(cmp1, condBlocks[2 * i + 1], condBlocks[loop * 3 - 4 - i]));
+
+            Register p1 = new Register("%na." + node.pos.row + "." + node.pos.column + ".p" + i);
+            Register t1 = new Register("%na." + node.pos.row + "." + node.pos.column + ".t" + (i));
+            Register t2 = new Register("%na." + node.pos.row + "." + node.pos.column + ".t" + (i + 1));
+            condBlocks[2 * i + 1].addInst(new GetElePtr("ptr",
+                    node.type.typeName, t1, p1, tmp1, -1));
+            Call c = new Call("@array_malloc", typePtr, t2);
+            c.args.add(e.get(i + 1));
+            c.argTypes.add(typeI32);
+            condBlocks[2 * i + 1].addInst(c);
+            condBlocks[2 * i + 1].addInst(new Store(typePtr, t2, p1));
+            condBlocks[2 * i + 1].addInst(new Binary("+", tmp1, new Constant(1), inc1));
+            condBlocks[2 * i + 1].addInst(new Jmp((i == loop - 2) ? condBlocks[2 * i] : condBlocks[2 * i + 2]));
+
+            if (i != 0) {
+                condBlocks[loop * 3 - 4 - i].addInst(new Jmp(condBlocks[2 * i - 2]));
+            }
+        }
+        Call c = new Call("@array_malloc", node.type,
+                new Register("%na." + node.pos.row + "." + node.pos.column + ".t" + 1));
+        c.args.add(e.getFirst());
+        c.argTypes.add(typeI32);
+        curBlock.addInst(c);
+        node.entity = c.dest;
+        curBlock.addInst(new Jmp(condBlocks[0]));
+        curFunc.addBlock(curBlock);
+        for (int i = 0; i < loop * 3 - 4; ++i) {
+            curFunc.addBlock(condBlocks[i]);
+        }
+        curBlock = condBlocks[loop * 3 - 4];
     }
+
+    /*
+        int[][][] a = new int[x + y][x - y][6 * z];
+        %s1, %s2, %s3, ...
+
+        %t1 = @array_malloc(%s1)
+        br na1.cond
+
+        na1.cond:
+            %tmp1 = phi i32 [0 , %entry], [%inc1 , na2.end]
+            %cmp1 = icmp slt i32 %tmp1, %s1
+            br i1 %cmp1, na1.body, na1.end
+
+        na1.body:
+            %p1 = getelementptr ptr, ptr %t1, i32 %tmp1
+            %t2 = @array_malloc(%s2)
+            store ptr %t2, ptr %p1
+            %inc1 = add i32 %tmp1, 1
+            br na2.cond
+
+            na2.cond
+                %tmp2 = phi i32 [0 , na1.body], [%inc2 , na2.body]
+                %cmp2 = icmp slt i32 %tmp2, %s2
+                br i1 %cmp2, na2.body, na2.end
+
+            na2.body:
+                %p2 = getelementptr ptr, ptr %t2, i32 %tmp2
+                %t3 = @array_malloc(%s3)
+                store ptr %t3, ptr %p2
+                %inc2 = add i32 %tmp2, 1
+                br na2.cond
+
+            na2.end:
+                br na1.cond
+
+        na1.end:
+
+
+
+     */
 
     @Override
     public void visit(NewArrayInitExpr node) {
-
+        node.init.accept(this);
+        node.entity = node.init.entity;
     }
 
     @Override
     public void visit(NewTypeExpr node) {
-
+        irProg.classDefs.forEach(c -> {
+            if (c.className.substring(7).equals(node.type.typeName)) {
+                Register res = new Register("%t" + varCnt);
+                varCnt++;
+                node.entity = res;
+                Call c1 = new Call("@_malloc", node.type, res);
+                c1.args.add(new Constant(c.fields.size() * 4L));
+                c1.argTypes.add(typeI32);
+                curBlock.addInst(c1);
+            }
+        });
     }
 
     @Override
@@ -701,12 +919,26 @@ public class IRBuilder implements __ASTVisitor {
             n.setLhs(node.expr.entity);
             n.setRhs(1);
             node.entity = res;
+            Register addr = null;
+            if (node.expr instanceof VarExpr) {
+                addr = ((VarExpr) node.expr).addr;
+            } else if (node.expr instanceof MemberObjAccessExpr) {
+                addr = ((MemberObjAccessExpr) node.expr).addr;
+            } else if (node.expr instanceof ArrayAccessExpr) {
+                addr = ((ArrayAccessExpr) node.expr).addr;
+            } else if (node.expr instanceof UnaryArithExpr) {
+                addr = ((UnaryArithExpr) node.expr).addr;
+            }
             Store s = new Store(new IRType(node.expr.type),
-                    res, (Register) node.expr.entity);
-            node.entity = ((node.op == LINC || node.op == LDEC) ?
+                    res, addr);
+            // bug--store in the original address
+            node.entity = ((!(node.op == LINC || node.op == LDEC)) ?
                     (Register) node.expr.entity : res);
             curBlock.insts.add(n);
             curBlock.insts.add(s);
+            if (node.op == LINC || node.op == LDEC) {
+                node.addr = addr;
+            }
         }
 
     }
@@ -731,9 +963,11 @@ public class IRBuilder implements __ASTVisitor {
 //        entityMap.put(res, "%t" + varCnt);
         varCnt++;
         boolean isg = globalVar.contains(node.varName);
-        Load l = new Load(new IRType(node.type), new Register((isg ? "@" : "%") + node.varName), res);
+        Register addr = new Register(node.type, (isg ? "@" : "%") + node.varName);
+        Load l = new Load(new IRType(node.type), addr, res);
         // the value of variable `i` is stored in the position that @i/%i points
         node.entity = res;
+        node.addr = addr;
         curBlock.insts.add(l);
     }
 }

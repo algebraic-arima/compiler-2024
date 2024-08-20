@@ -36,6 +36,21 @@ public class Icmp extends Inst {
         };
     }
 
+    public Icmp(String op, Entity lhs, Entity rhs,Register dest) {
+        this.op = switch (op) {
+            case "<" -> "slt";
+            case "<=" -> "sle";
+            case ">" -> "sgt";
+            case ">=" -> "sge";
+            case "==" -> "eq";
+            case "!=" -> "ne";
+            default -> null;
+        };
+        this.lhs = lhs;
+        this.rhs = rhs;
+        this.dest = dest;
+    }
+
     public void setLhs(Register register) {
         this.lhs = register;
     }

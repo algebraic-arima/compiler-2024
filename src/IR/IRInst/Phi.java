@@ -18,6 +18,12 @@ public class Phi extends Inst {
         valList = new ArrayList<>();
     }
 
+    public Phi(Register dest, IRType type) {
+        this.dest = dest;
+        this.irType = type;
+        valList = new ArrayList<>();
+    }
+
     public void addList(Entity val, String label) {
         valList.add(new Pair<>(val, label));
     }
@@ -26,7 +32,7 @@ public class Phi extends Inst {
     public void print() {
         System.out.print("  ");
         dest.print();
-        System.out.print(" phi ");
+        System.out.print(" =  phi ");
         irType.print();
         for (int i = 0; i < valList.size(); ++i) {
             System.out.print(" [");

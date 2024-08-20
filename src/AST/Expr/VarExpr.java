@@ -2,10 +2,13 @@ package src.AST.Expr;
 
 import src.AST.ASTVisitor;
 import src.AST.__ASTVisitor;
+import src.utils.Entity.Register;
 import src.utils.pos.Position;
 
 public class VarExpr extends Expr {
     public String varName;
+    public Register addr;
+
 //    public Type type;
 
     public VarExpr(Position p, String v) {

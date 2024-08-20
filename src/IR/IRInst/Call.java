@@ -21,6 +21,13 @@ public class Call extends Inst {
         retType = new IRType(type);
         this.dest = dest;
     }
+    public Call(String name, IRType type, Register dest) {
+        args = new ArrayList<>();
+        argTypes = new ArrayList<>();
+        funcName = name;
+        retType = type;
+        this.dest = dest;
+    }
 
     @Override
     public void print() {

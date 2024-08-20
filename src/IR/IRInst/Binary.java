@@ -43,6 +43,25 @@ public class Binary extends Inst {
         };
     }
 
+    public Binary(String op, Entity lhs, Entity rhs, Register dest) {
+        this.op = switch (op) {
+            case "+" -> "add";
+            case "-" -> "sub";
+            case "*" -> "mul";
+            case "/" -> "sdiv";
+            case "%" -> "srem";
+            case "<<" -> "shl";
+            case ">>" -> "ashr";
+            case "&" -> "and";
+            case "|" -> "or";
+            case "^" -> "xor";
+            default -> null;
+        };
+        this.lhs = lhs;
+        this.rhs = rhs;
+        this.dest = dest;
+    }
+
     public void setLhs(long value) {
         this.lhs = new Constant(value);
     }
