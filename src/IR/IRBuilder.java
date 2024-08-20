@@ -178,7 +178,7 @@ public class IRBuilder implements __ASTVisitor {
 
         for (VarDef v : node.classMem) {
             for (Map.Entry<String, Expr> entry : v.initVals.entrySet()) {
-                cd.fields.add(new IRType(v.type.typeName));
+                cd.fields.add(new IRType(v.type));
                 if (entry.getValue() != null) {
                     Register reg = new Register("%" + node.className + "::" + entry.getKey());
                     entry.getValue().accept(this);
@@ -237,22 +237,12 @@ public class IRBuilder implements __ASTVisitor {
                         Store s = new Store(typeI32, entry.getValue().entity, addr);
                         curBlock.addInst(s);
                     }
-                } else if (node.type.isClass()) {
-                    Register res = new Register(node.type, "%" + entry.getKey() + ".addr");
-                    Alloca a = new Alloca(new IRType(node.type.typeName), res);
-                    // res stores the address of the object
-                    Alloca aa = new Alloca(typePtr, addr);
-                    // addr stores the address of the address of the object
-                    Store ss = new Store(typePtr, res, addr);
-                    // the address of the object is stored in the address of the address of the object
+                } else if (node.type.isClass() || node.type.isString()) {
+                    Alloca a = new Alloca(typePtr, addr);
                     curBlock.addInst(a);
-                    curBlock.addInst(aa);
-                    curBlock.addInst(ss);
                     if (entry.getValue() != null) {
-                        entry.getValue().accept(this);
-                        Store s = new Store(new IRType(node.type.typeName), entry.getValue().entity, res);
+                        Store s = new Store(typePtr, entry.getValue().entity, addr);
                         curBlock.addInst(s);
-
                     }
                 }
             }
@@ -420,17 +410,18 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(AssignExpr node) {
         node.value.accept(this);
-        Entity n = node.entity;
+//        Entity n = node.entity;
         Entity val = node.value.entity;
         if (node.var instanceof VarExpr) {
             boolean isg = globalVar.contains(((VarExpr) node.var).varName);
             Store s = new Store(new IRType(node.var.type), val,
                     new Register((isg ? "@" : "%") + ((VarExpr) node.var).varName));
-            curBlock.insts.add(s);
+            curBlock.addInst(s);
         } else if (node.var instanceof MemberObjAccessExpr) {
-
+            node.var.accept(this);
+            Store s = new Store(new IRType(node.var.type), val, (Register) node.var.entity);
+            curBlock.addInst(s);
         }
-
     }
 
     @Override
@@ -459,11 +450,18 @@ public class IRBuilder implements __ASTVisitor {
             }
         } else if (node.lhs.type.isString() && node.rhs.type.isString()) {
             if (node.op == ADD) {
-                // call strcat
+                Call c = new Call("string.add", node.lhs.type, res);
+                c.args.add(node.lhs.entity);
+                c.args.add(node.rhs.entity);
+                c.argTypes.add(new IRType(node.lhs.type));
+                c.argTypes.add(new IRType(node.rhs.type));
+                node.entity = res;
+                node.entity.type = c.retType;
+                curBlock.insts.add(c);
             } else if (node.op == EQ || node.op == NE
                     || node.op == LT || node.op == GT
                     || node.op == LE || node.op == GE) {
-                // call strcmp
+
             }
         } else if (node.lhs.type.isNull() || node.rhs.type.isNull()) {
             Icmp n = new Icmp(node.op);
@@ -575,7 +573,6 @@ public class IRBuilder implements __ASTVisitor {
             varCnt++;
             node.entity = res;
         }
-
         for (Expr e : node.args.exps) {
             e.accept(this);
             c.args.add(e.entity);
@@ -587,22 +584,24 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(MemberObjAccessExpr node) {
         node.obj.accept(this);
-        Register res = new Register(node.type, "%t" + varCnt);
-        varCnt++;
         Register res_offset_addr = new Register(node.type, "%t" + varCnt);
         varCnt++;
-        Register res_member = new Register(node.type, "%" + node.obj.type.typeName + "." + node.member);
-
-        // res stores the address of the object
+        Register res = new Register(node.type, "%t" + varCnt);
         varCnt++;
-        Load l = new Load(new IRType(node.type), (Register) node.obj.entity, res);
-        curBlock.addInst(l);
-        GetElePtr g = new GetElePtr(node.obj.type.typeName, node.type.typeName, res, res_offset_addr,
+
+//        Register res_member = new Register(node.type, "%" + node.obj.type.typeName + "." + node.member);
+//
+//        // res stores the address of the object
+//        varCnt++;
+//        Load l = new Load(new IRType(node.type), (Register) node.obj.entity, res);
+//        curBlock.addInst(l);
+
+        GetElePtr g = new GetElePtr(node.obj.type.typeName, node.type.typeName, (Register) node.obj.entity, res_offset_addr,
                 0, gScope.getClass(node.obj.type.typeName).getMemberOffset(node.member));
         curBlock.addInst(g);
-        Load ll = new Load(new IRType(node.type.typeName), res_offset_addr, res_member);
+        Load ll = new Load(new IRType(node.type.typeName), res_offset_addr, res);
         curBlock.addInst(ll);
-        node.entity = res_member;
+        node.entity = res;
     }
 
     @Override
@@ -639,13 +638,35 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(StringLiteralExpr node) {
-
+        int index = gScope.strLiteral.indexOf(node.value);
+        node.entity = new Register("@constStr-" + index);
     }
 
     @Override
     public void visit(TernaryBranchExpr node) {
         node.cond.accept(this);
-
+        IRBlock trueBlock = new IRBlock(node.pos.row + "." + node.pos.column + ".ternary.true");
+        IRBlock falseBlock = new IRBlock(node.pos.row + "." + node.pos.column + ".ternary.false");
+        IRBlock endBlock = new IRBlock(node.pos.row + "." + node.pos.column + ".ternary.end");
+        Br b = new Br(node.cond.entity, trueBlock, falseBlock);
+        curBlock.addInst(b);
+        curFunc.addBlock(curBlock);
+        curBlock = trueBlock;
+        node.trueBranch.accept(this);
+        Jmp j = new Jmp(endBlock);
+        curBlock.addInst(j);
+        curFunc.addBlock(curBlock);
+        curBlock = falseBlock;
+        node.falseBranch.accept(this);
+        curBlock.addInst(j);
+        curFunc.addBlock(curBlock);
+        curBlock = endBlock;
+        node.entity = new Register(node.type, "%t" + varCnt);
+        varCnt++;
+        Phi p = new Phi((Register) node.entity, node.type);
+        p.addList(node.trueBranch.entity, trueBlock.label.label);
+        p.addList(node.falseBranch.entity, falseBlock.label.label);
+        curBlock.addInst(p);
     }
 
     @Override
