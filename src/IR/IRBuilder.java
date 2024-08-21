@@ -44,6 +44,7 @@ public class IRBuilder implements __ASTVisitor {
     public String curClassDef = null;
     public IRBlock curBlock;
     public IRFuncDef curFunc;
+    public ArrayList<IRFuncDef> initFunc;
 
     public IRBlock breakBlock = null, contBlock = null;
 
@@ -69,6 +70,7 @@ public class IRBuilder implements __ASTVisitor {
 //        entityMap = new HashMap<>();
         varCnt = 0;
         curBlock = null;
+        initFunc = new ArrayList<>();
         this.gScope = gScope;
         this.curScope = gScope;
         gScope.strLiteral.forEach(s -> irProg.strDef.push(s));
@@ -77,6 +79,16 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(Prog node) {
         node.defs.forEach(d -> d.accept(this));
+        IRFuncDef initGlob = new IRFuncDef("@.init");
+        irProg.addFuncDef(initGlob);
+        initGlob.retType = new IRType();
+        curBlock = new IRBlock("entry");
+        curFunc = initGlob;
+        for (IRFuncDef e : initFunc) {
+            curBlock.addInst(new Call(e.name, new IRType(), null));
+        }
+        curBlock.addInst(new Ret());
+        curFunc.addBlock(curBlock);
     }
 
     @Override
@@ -87,6 +99,9 @@ public class IRBuilder implements __ASTVisitor {
             f.retType = new IRType(node.retType);
             curBlock = new IRBlock("entry");
             curFunc = f;
+            if (node.funcName.equals("main")) {
+                curBlock.addInst(new Call("@.init", new IRType(), null));
+            }
             for (Map.Entry<String, Type> entry : node.funcParams.entrySet()) {
                 f.paramTypes.add(new IRType(entry.getValue()));
                 f.paramNames.add("%" + entry.getKey() + ".val");
@@ -211,13 +226,14 @@ public class IRBuilder implements __ASTVisitor {
                     g.value = ((IntLiteralExpr) entry.getValue()).value;
                 } else {
                     g.value = 0;
-                    IRFuncDef init = new IRFuncDef("@__init_global_" + entry.getKey());
+                    IRFuncDef init = new IRFuncDef("@.init.global." + entry.getKey());
                     curBlock = new IRBlock("entry");
                     curFunc = init;
                     entry.getValue().accept(this);
                     curBlock.addInst(new Store(new IRType(node.type), entry.getValue().entity, new Register(g.name)));
                     curBlock.addInst(new Ret());
                     curFunc.addBlock(curBlock);
+                    initFunc.add(init);
                     irProg.addFuncDef(init);
                 }
                 irProg.addGVarDef(g);
@@ -424,7 +440,7 @@ public class IRBuilder implements __ASTVisitor {
         node.elements.forEach(e -> e.accept(this));
         Register res = new Register(node.type, "%t" + varCnt);
         varCnt++;
-        Call c = new Call("@array_malloc", typePtr, res);
+        Call c = new Call("@array::malloc", typePtr, res);
         c.args.add(new Constant(node.elements.size()));
         if (node.elements.getFirst() instanceof ArrayLiteralExpr) {
             c.argTypes.add(typePtr);
@@ -459,41 +475,6 @@ public class IRBuilder implements __ASTVisitor {
                 {10, 11, 12}
             }
         };
-
-
-        %t1 = @array_malloc(%s1)
-        br na1.cond
-
-        na1.cond:
-            %tmp1 = phi i32 [0 , %entry], [%inc1 , na2.end]
-            %cmp1 = icmp slt i32 %tmp1, %s1
-            br i1 %cmp1, na1.body, na1.end
-
-        na1.body:
-            %p1 = getelementptr ptr, ptr %t1, i32 %tmp1
-            %t2 = @array_malloc(%s2)
-            store ptr %t2, ptr %p1
-            %inc1 = add i32 %tmp1, 1
-            br na2.cond
-
-            na2.cond
-                %tmp2 = phi i32 [0 , na1.body], [%inc2 , na2.body]
-                %cmp2 = icmp slt i32 %tmp2, %s2
-                br i1 %cmp2, na2.body, na2.end
-
-            na2.body:
-                %p2 = getelementptr ptr, ptr %t2, i32 %tmp2
-                %t3 = @array_malloc(%s3)
-                store ptr %t3, ptr %p2
-                %inc2 = add i32 %tmp2, 1
-                br na2.cond
-
-            na2.end:
-                br na1.cond
-
-        na1.end:
-
-
 
      */
 
@@ -546,7 +527,7 @@ public class IRBuilder implements __ASTVisitor {
             }
         } else if (node.lhs.type.isString() && node.rhs.type.isString()) {
             if (node.op == ADD) {
-                Call c = new Call("string.add", node.lhs.type, res);
+                Call c = new Call("@string::add", node.lhs.type, res);
                 c.args.add(node.lhs.entity);
                 c.args.add(node.rhs.entity);
                 c.argTypes.add(new IRType(node.lhs.type));
@@ -674,6 +655,19 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(MemberFuncCallExpr node) {
+        node.obj.accept(this);
+        node.args.exps.forEach(e -> e.accept(this));
+
+        if (node.obj.type.isArray()) {
+            Call c = new Call("@array::size", typeI32, new Register("%t" + varCnt));
+            ++varCnt;
+            c.args.add(node.obj.entity);
+            c.argTypes.add(typePtr);
+            curBlock.insts.add(c);
+            node.entity = c.dest;
+            return;
+        }
+
         FuncType ft = gScope.getClass(node.obj.type.typeName).methods.get(node.funcName);
         Call c = null;
         if (node.type.isVoid()) {
@@ -685,11 +679,10 @@ public class IRBuilder implements __ASTVisitor {
             varCnt++;
             node.entity = res;
         }
-        node.obj.accept(this);
+
         c.args.add(node.obj.entity);
         c.argTypes.add(typePtr);
         for (Expr e : node.args.exps) {
-            e.accept(this);
             c.args.add(e.entity);
             c.argTypes.add(new IRType(e.type));
         }
@@ -730,7 +723,7 @@ public class IRBuilder implements __ASTVisitor {
         if (loop == 0) {
             return;
         } else if (loop == 1) {
-            Call c = new Call("@array_malloc", node.type, new Register("%t" + varCnt));
+            Call c = new Call("@array::malloc", node.type, new Register("%t" + varCnt));
             c.args.add(e.getFirst());
             c.argTypes.add(typeI32);
             curBlock.addInst(c);
@@ -759,7 +752,7 @@ public class IRBuilder implements __ASTVisitor {
             Register t2 = new Register("%na." + node.pos.row + "." + node.pos.column + ".t" + (i + 1));
             condBlocks[2 * i + 1].addInst(new GetElePtr("ptr",
                     node.type.typeName, t1, p1, tmp1, -1));
-            Call c = new Call("@array_malloc", typePtr, t2);
+            Call c = new Call("@array::malloc", typePtr, t2);
             c.args.add(e.get(i + 1));
             c.argTypes.add(typeI32);
             condBlocks[2 * i + 1].addInst(c);
@@ -771,7 +764,7 @@ public class IRBuilder implements __ASTVisitor {
                 condBlocks[loop * 3 - 4 - i].addInst(new Jmp(condBlocks[2 * i - 2]));
             }
         }
-        Call c = new Call("@array_malloc", node.type,
+        Call c = new Call("@array::malloc", node.type,
                 new Register("%na." + node.pos.row + "." + node.pos.column + ".t" + 1));
         c.args.add(e.getFirst());
         c.argTypes.add(typeI32);
@@ -789,7 +782,7 @@ public class IRBuilder implements __ASTVisitor {
         int[][][] a = new int[x + y][x - y][6 * z];
         %s1, %s2, %s3, ...
 
-        %t1 = @array_malloc(%s1)
+        %t1 = @array::malloc(%s1)
         br na1.cond
 
         na1.cond:
@@ -799,7 +792,7 @@ public class IRBuilder implements __ASTVisitor {
 
         na1.body:
             %p1 = getelementptr ptr, ptr %t1, i32 %tmp1
-            %t2 = @array_malloc(%s2)
+            %t2 = @array::malloc(%s2)
             store ptr %t2, ptr %p1
             %inc1 = add i32 %tmp1, 1
             br na2.cond
@@ -811,7 +804,7 @@ public class IRBuilder implements __ASTVisitor {
 
             na2.body:
                 %p2 = getelementptr ptr, ptr %t2, i32 %tmp2
-                %t3 = @array_malloc(%s3)
+                %t3 = @array::malloc(%s3)
                 store ptr %t3, ptr %p2
                 %inc2 = add i32 %tmp2, 1
                 br na2.cond
@@ -820,8 +813,6 @@ public class IRBuilder implements __ASTVisitor {
                 br na1.cond
 
         na1.end:
-
-
 
      */
 
@@ -835,13 +826,18 @@ public class IRBuilder implements __ASTVisitor {
     public void visit(NewTypeExpr node) {
         irProg.classDefs.forEach(c -> {
             if (c.className.substring(7).equals(node.type.typeName)) {
+                String cn = node.type.typeName;
                 Register res = new Register("%t" + varCnt);
                 varCnt++;
                 node.entity = res;
-                Call c1 = new Call("@_malloc", node.type, res);
+                Call c1 = new Call("@class::malloc", node.type, res);
                 c1.args.add(new Constant(c.fields.size() * 4L));
                 c1.argTypes.add(typeI32);
                 curBlock.addInst(c1);
+                Call c2 = new Call("@" + cn + "::" + cn, new IRType(), null);
+                c2.args.add(res);
+                c2.argTypes.add(typePtr);
+                curBlock.addInst(c2);
             }
         });
     }
