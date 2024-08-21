@@ -638,6 +638,9 @@ public class SemanticChecker implements __ASTVisitor {
             // can match null
         }
         node.type = node.trueBranch.type;
+        if (node.trueBranch.type.isNull()) {
+            node.type = node.falseBranch.type;
+        }
         node.isLvalue = false;
     }
 

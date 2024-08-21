@@ -22,6 +22,11 @@ public class Register extends Entity {
     }
 
     public Register(Type type, String name) {
+        super(new IRType(type));
+        this.name = name;
+    }
+
+    public Register(IRType type, String name) {
         super(type);
         this.name = name;
     }

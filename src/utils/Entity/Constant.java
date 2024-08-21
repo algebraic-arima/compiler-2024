@@ -1,5 +1,7 @@
 package src.utils.Entity;
 
+import src.utils.IRType.IRType;
+
 public class Constant extends Entity {
     public long value;
 
@@ -11,5 +13,6 @@ public class Constant extends Entity {
     public Constant(long d) {
         super();
         value = d;
+        type = new IRType("int");
     }
 }

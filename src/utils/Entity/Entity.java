@@ -10,8 +10,8 @@ abstract public class Entity {
         this.type = new IRType();
     }
 
-    public Entity(Type type) {
-        this.type = new IRType(type);
+    public Entity(IRType type) {
+        this.type = type;
     }
 
     abstract public void print();

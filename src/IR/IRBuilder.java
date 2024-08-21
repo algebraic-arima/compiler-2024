@@ -12,6 +12,7 @@ import src.IR.IRDef.IRClassDef;
 import src.IR.IRDef.IRFuncDef;
 import src.IR.IRDef.IRGlobalVarDef;
 import src.IR.IRInst.*;
+import src.utils.Entity.AnonReg;
 import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
@@ -39,7 +40,6 @@ public class IRBuilder implements __ASTVisitor {
     // the address of variable `a` is stored in %a.addr
     // name to the register name that stores the variable address
     // for change of field, update and restore the map
-    public int varCnt;
     public String curClassDef = null;
     public IRBlock curBlock;
     public IRFuncDef curFunc;
@@ -63,7 +63,6 @@ public class IRBuilder implements __ASTVisitor {
     public IRBuilder(GlobalScope gScope) {
         irProg = new IRProg();
 //        entityMap = new HashMap<>();
-        varCnt = 0;
         curBlock = null;
         initFunc = new ArrayList<>();
         this.gScope = gScope;
@@ -420,10 +419,8 @@ public class IRBuilder implements __ASTVisitor {
     public void visit(ArrayAccessExpr node) {
         node.array.accept(this);
         node.index.accept(this);
-        Register res = new Register(node.type, "%." + varCnt);
-        varCnt++;
-        Register res_offset_addr = new Register(node.type, "%." + varCnt);
-        varCnt++;
+        Register res = new AnonReg(typePtr);
+        Register res_offset_addr = new AnonReg(node.type.isArray() ? typePtr : typeI32);
 
         GetElePtr g = new GetElePtr(node.array.type.typeName, node.type.typeName,
                 (Register) node.array.entity, res,
@@ -440,8 +437,7 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(ArrayLiteralExpr node) {
         node.elements.forEach(e -> e.accept(this));
-        Register res = new Register(node.type, "%." + varCnt);
-        varCnt++;
+        Register res = new AnonReg(typePtr);
         Call c = new Call("@array..malloc", typePtr, res);
         c.args.add(new Constant(node.elements.size()));
         if (node.elements.getFirst() instanceof ArrayLiteralExpr) {
@@ -455,8 +451,7 @@ public class IRBuilder implements __ASTVisitor {
         for (Expr e : node.elements) {
             /// todo: store the values into the array
             // a geteleptr and a store
-            Register offset = new Register("%." + varCnt);
-            varCnt++;
+            Register offset = new AnonReg(typePtr);
             GetElePtr g = new GetElePtr(node.type.typeName,
                     "ptr", res, offset, cnt, -1);
             curBlock.addInst(g);
@@ -483,7 +478,6 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(AssignExpr node) {
         node.value.accept(this);
-//        Entity n = node.entity;
         Entity val = node.value.entity;
         if (node.var instanceof VarExpr) {
             node.var.accept(this);
@@ -507,10 +501,8 @@ public class IRBuilder implements __ASTVisitor {
     public void visit(BinaryArithExpr node) {
         node.lhs.accept(this);
         node.rhs.accept(this);
-        Register res = new Register(node.type, "%." + varCnt);
-//        entityMap.put(res, "%." + varCnt);
-        varCnt++;
         if (node.lhs.type.isInt() && node.rhs.type.isInt()) {
+            Register res = new AnonReg(typeI32);
             if (node.op == ADD || node.op == SUB || node.op == MUL || node.op == DIV || node.op == MOD
                     || node.op == BLS || node.op == BRS || node.op == BAND || node.op == BOR || node.op == BXOR) {
                 Binary n = new Binary(node.op);
@@ -531,6 +523,7 @@ public class IRBuilder implements __ASTVisitor {
             }
         } else if (node.lhs.type.isString() && node.rhs.type.isString()) {
             if (node.op == ADD) {
+                Register res = new AnonReg(typePtr);
                 Call c = new Call("@string..add", node.lhs.type, res);
                 c.args.add(node.lhs.entity);
                 c.args.add(node.rhs.entity);
@@ -542,6 +535,7 @@ public class IRBuilder implements __ASTVisitor {
             } else if (node.op == EQ || node.op == NE
                     || node.op == LT || node.op == GT
                     || node.op == LE || node.op == GE) {
+                Register res = new AnonReg(typeI1);
                 Call c = switch (node.op) {
                     case EQ -> new Call("string.eq", node.lhs.type, res);
                     case NE -> new Call("string.ne", node.lhs.type, res);
@@ -560,6 +554,7 @@ public class IRBuilder implements __ASTVisitor {
                 curBlock.addInst(c);
             }
         } else if (node.lhs.type.isNull() || node.rhs.type.isNull()) {
+            Register res = new AnonReg(typeI1);
             Icmp n = new Icmp(node.op);
             n.dest = res;
             if (node.lhs.type.isNull()) {
@@ -577,9 +572,7 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(BinaryLogicExpr node) {
-        Register res = new Register(node.type, "%." + varCnt);
-//        entityMap.put(res, "%." + varCnt);
-        varCnt++;
+        Register res = new AnonReg(typeI1);
         if (node.op == AND) {
             Phi p = new Phi(res, boolType);
             IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-and-rhs");
@@ -621,7 +614,6 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(BoolLiteralExpr node) {
         node.entity = new Constant(node.value ? 1 : 0);
-        node.entity.type = typeI1;
     }
 
     @Override
@@ -645,9 +637,8 @@ public class IRBuilder implements __ASTVisitor {
             if (node.type.isVoid()) {
                 c = new Call("@" + curClassDef + ".." + node.funcName, cft.retType, null);
             } else {
-                Register res = new Register(node.type, "%." + varCnt);
+                Register res = new AnonReg((node.type.isInt() || node.type.isBool()) ? typeI32 : typePtr);
                 c = new Call("@" + curClassDef + ".." + node.funcName, cft.retType, res);
-                varCnt++;
                 node.entity = res;
             }
         } else {
@@ -656,9 +647,8 @@ public class IRBuilder implements __ASTVisitor {
                 c = new Call("@" + node.funcName, gft.retType, null);
                 node.entity = null;
             } else {
-                Register res = new Register(node.type, "%." + varCnt);
+                Register res = new AnonReg((node.type.isInt() || node.type.isBool()) ? typeI32 : typePtr);
                 c = new Call("@" + node.funcName, gft.retType, res);
-                varCnt++;
                 node.entity = res;
             }
         }
@@ -672,7 +662,6 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(IntLiteralExpr node) {
         node.entity = new Constant(node.value);
-        node.entity.type = typeI32;
     }
 
     @Override
@@ -681,8 +670,7 @@ public class IRBuilder implements __ASTVisitor {
         node.args.exps.forEach(e -> e.accept(this));
 
         if (node.obj.type.isArray()) {
-            Call c = new Call("@array..size", typeI32, new Register("%." + varCnt));
-            ++varCnt;
+            Call c = new Call("@array..size", typeI32, new AnonReg(typeI32));
             c.args.add(node.obj.entity);
             c.argTypes.add(typePtr);
             curBlock.insts.add(c);
@@ -696,9 +684,8 @@ public class IRBuilder implements __ASTVisitor {
             c = new Call("@" + node.obj.type.typeName + ".." + node.funcName, ft.retType, null);
             node.entity = null;
         } else {
-            Register res = new Register(node.type, "%." + varCnt);
+            Register res = new AnonReg((node.type.isInt() || node.type.isBool()) ? typeI32 : typePtr);
             c = new Call("@" + node.obj.type.typeName + ".." + node.funcName, ft.retType, res);
-            varCnt++;
             node.entity = res;
         }
 
@@ -714,14 +701,11 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(MemberObjAccessExpr node) {
         node.obj.accept(this);
-        Register res_offset_addr = new Register(node.type, "%." + varCnt);
-        varCnt++;
-        Register res = new Register(node.type, "%." + varCnt);
-        varCnt++;
+        Register res_offset_addr = new AnonReg(typePtr);
+        Register res = new AnonReg((node.type.isInt() || node.type.isBool()) ? typeI32 : typePtr);
 
 //        Register res_member = new Register(node.type, "%" + node.obj.type.typeName + "-" + node.member);
 //        // res stores the address of the object
-//        varCnt++;
 //        Load l = new Load(new IRType(node.type), (Register) node.obj.entity, res);
 //        curBlock.addInst(l);
 
@@ -736,6 +720,7 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(NewArrayExpr node) {
+        /// todo: use null or 0 to initialize the array
         node.len.forEach(e -> e.accept(this));
         int dim = node.type.dim;
         int loop = node.len.size();
@@ -745,8 +730,7 @@ public class IRBuilder implements __ASTVisitor {
         if (loop == 0) {
             return;
         } else if (loop == 1) {
-            Call c = new Call("@array..malloc", node.type, new Register("%." + varCnt));
-            varCnt++;
+            Call c = new Call("@array..malloc", node.type, new AnonReg(typePtr));
             c.args.add(e.getFirst());
             c.argTypes.add(typeI32);
             curBlock.addInst(c);
@@ -850,8 +834,7 @@ public class IRBuilder implements __ASTVisitor {
         irProg.classDefs.forEach(c -> {
             if (c.className.substring(7).equals(node.type.typeName)) {
                 String cn = node.type.typeName;
-                Register res = new Register("%." + varCnt);
-                varCnt++;
+                Register res = new AnonReg(typePtr);
                 node.entity = res;
                 Call c1 = new Call("@..malloc", node.type, res);
                 c1.args.add(new Constant(c.fields.size() * 4L));
@@ -874,6 +857,15 @@ public class IRBuilder implements __ASTVisitor {
     public void visit(ParenthesesExpr node) {
         node.exp.accept(this);
         node.entity = node.exp.entity;
+        if (node.exp instanceof VarExpr) {
+            node.addr = ((VarExpr) node.exp).addr;
+        } else if (node.exp instanceof MemberObjAccessExpr) {
+            node.addr = ((MemberObjAccessExpr) node.exp).addr;
+        } else if (node.exp instanceof ArrayAccessExpr) {
+            node.addr = ((ArrayAccessExpr) node.exp).addr;
+        } else if (node.exp instanceof UnaryArithExpr) {
+            node.addr = ((UnaryArithExpr) node.exp).addr;
+        }
     }
 
     @Override
@@ -884,7 +876,7 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(StringLiteralExpr node) {
-        node.entity = new Register(irProg.strDef.getString(node.value));
+        node.entity = new Register(typePtr, irProg.strDef.getString(node.value));
     }
 
     @Override
@@ -906,8 +898,11 @@ public class IRBuilder implements __ASTVisitor {
         curBlock.addInst(j);
         curFunc.addBlock(curBlock);
         curBlock = endBlock;
-        node.entity = new Register(node.type, "%." + varCnt);
-        varCnt++;
+        if (node.type.isInt() || node.type.isBool()) {
+            node.entity = new AnonReg(typeI32);
+        } else {
+            node.entity = new AnonReg(typePtr);
+        }
         Phi p = new Phi((Register) node.entity, node.type);
         p.addList(node.trueBranch.entity, trueBlock.label.label);
         p.addList(node.falseBranch.entity, falseBlock.label.label);
@@ -916,15 +911,13 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(ThisPtrExpr node) {
-        node.entity = new Register("%this1");
+        node.entity = new Register(typePtr, "%this1");
     }
 
     @Override
     public void visit(UnaryArithExpr node) {
         node.expr.accept(this);
-        Register res = new Register(node.type, "%." + varCnt);
-//        entityMap.put(res, "%." + varCnt);
-        varCnt++;
+        Register res = new AnonReg(typeI32);
         if (node.op == NEG) {
             Binary n = new Binary("-");
             n.dest = res;
@@ -976,9 +969,7 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(UnaryLogicExpr node) {
         node.expr.accept(this);
-        Register res = new Register(node.type, "%." + varCnt);
-//        entityMap.put(res, "%." + varCnt);
-        varCnt++;
+        Register res = new AnonReg(typeI1);
         Binary n = new Binary("^");
         n.dest = res;
         n.setLhs(1);
@@ -990,9 +981,7 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(VarExpr node) {
-        Register res = new Register(node.type, "%." + varCnt);
-//        entityMap.put(res, "%." + varCnt);
-        varCnt++;
+        Register res = new AnonReg((node.type.isInt() || node.type.isBool()) ? typeI32 : typePtr);
         boolean isg = gScope.VarList.containsKey(node.varName);
         Register addr = new Register(node.type, (isg ? "@" : "%") + node.varName);
         Load l = new Load(new IRType(node.type), addr, res);
