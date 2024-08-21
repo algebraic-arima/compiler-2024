@@ -11,12 +11,19 @@ public class IRStrDef extends IRDef {
         strMap = new LinkedHashMap<>();
     }
 
-    public String push(String s) {
-        if (strMap.containsKey((s))) {
+    public String getString(String s) {
+        if (!strMap.containsKey((s))) {
             return null;
         } else {
+            return "@constStr-" + (strMap.get(s));
+        }
+    }
+
+    public void push(String s) {
+        if (strMap.containsKey((s))) {
+            return;
+        } else {
             strMap.put(s, strMap.size());
-            return "@constStr-" + (strMap.size() - 1);
         }
     }
 
@@ -26,9 +33,13 @@ public class IRStrDef extends IRDef {
             System.out.print("@constStr-");
             System.out.print(e.getValue());
             System.out.print(" = private unnamed_addr constant [");
-            System.out.print(e.getKey().length()+1);
+            System.out.print(e.getKey().length() + 1);
             System.out.print(" x i8] c\"");
-            System.out.print(e.getKey());
+            String s = e.getKey();
+            s = s.replace("\\", "\\\\");
+            s = s.replace("\"", "\\22");
+            s = s.replace("\n", "\\0A");
+            System.out.print(s);
             /// todo: translate \n to \0A, \ to \\, \" to \22
             System.out.print("\\00\"\n");
         }

@@ -21,6 +21,13 @@ public class IRGlobalVarDef extends IRDef {
 
     @Override
     public void print() {
-        System.out.print(name + " = dso_local global " + irType.typeName + " " + value + "\n");
+        System.out.print(name + " = dso_local global " + irType.typeName + " ");
+        if (irType.typeName.equals("i32")) {
+            System.out.print(value + "\n");
+        } else if (irType.typeName.equals("ptr") && value == 0) {
+            System.out.print("null\n");
+        } else if (irType.typeName.equals("i1")) {
+            System.out.print(value != 0 ? "true\n" : "false\n");
+        }
     }
 }

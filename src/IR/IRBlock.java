@@ -9,8 +9,15 @@ import java.util.ArrayList;
 public class IRBlock {
     public Label label = null;
     public ArrayList<Inst> insts = new ArrayList<>();
+    public int index;
+    static public int blockCnt;
 
     public IRBlock(String s) {
+        index = blockCnt;
+        ++blockCnt;
+        if (!s.equals("entry")) {
+            s = "l-" + index + "-" + s;
+        }
         label = new Label(s);
     }
 
@@ -19,6 +26,7 @@ public class IRBlock {
     }
 
     public void print() {
+        if (insts.isEmpty()) return;
         StringBuilder s = new StringBuilder();
         s.append(label.label).append(":\n");
         insts.forEach(d -> s.append(d.str()));

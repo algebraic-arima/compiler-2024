@@ -4,11 +4,13 @@ import src.AST.Expr.BinaryArithExpr;
 import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
+import src.utils.IRType.IRType;
 
 public class Binary extends Inst {
 
     public Entity lhs, rhs;
     public String op;
+    public IRType type;
 
     public Binary(BinaryArithExpr.BArithOp op) {
         this.op = switch (op) {
@@ -43,7 +45,7 @@ public class Binary extends Inst {
         };
     }
 
-    public Binary(String op, Entity lhs, Entity rhs, Register dest) {
+    public Binary(String op, Entity lhs, Entity rhs, Register dest, IRType type) {
         this.op = switch (op) {
             case "+" -> "add";
             case "-" -> "sub";
@@ -60,6 +62,7 @@ public class Binary extends Inst {
         this.lhs = lhs;
         this.rhs = rhs;
         this.dest = dest;
+        this.type = type;
     }
 
     public void setLhs(long value) {
@@ -88,7 +91,9 @@ public class Binary extends Inst {
 
     @Override
     public void print() {
-        System.out.print("  " + dest.name + " = " + op + " i32 ");
+        System.out.print("  " + dest.name + " = " + op + " ");
+        type.print();
+        System.out.print(" ");
         lhs.print();
         System.out.print(", ");
         rhs.print();

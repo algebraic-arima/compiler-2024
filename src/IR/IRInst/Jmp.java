@@ -13,6 +13,6 @@ public class Jmp extends terminalInst {
 
     @Override
     public void print() {
-        System.out.print("  br label " + irBlock.label.label + "\n");
+        System.out.print("  br label %" + irBlock.label.label + "\n");
     }
 }

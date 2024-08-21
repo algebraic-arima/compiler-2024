@@ -111,7 +111,7 @@ public class SemanticChecker implements __ASTVisitor {
         curScope = new Scope(curScope);
         curScope.VarList = new HashMap<>(gScope.getClass(node.className).fields);
         for (Map.Entry<String, Type> entry : curScope.VarList.entrySet()) {
-            curScope.renameVarMap.put(entry.getKey(), node.className + "::" + entry.getKey());
+            curScope.renameVarMap.put(entry.getKey(), node.className + ".." + entry.getKey());
         }
         curScope.addVar("this", new Type(node.className), node.pos);
         curScope.FuncList = gScope.getClass(node.className).methods;

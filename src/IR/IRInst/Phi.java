@@ -38,7 +38,7 @@ public class Phi extends Inst {
             System.out.print(" [");
             valList.get(i).a.print();
             System.out.print(", ");
-            System.out.print(valList.get(i).b);
+            System.out.print("%" + valList.get(i).b);
             System.out.print("]");
             if (i != valList.size() - 1) {
                 System.out.print(",");

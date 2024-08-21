@@ -336,6 +336,9 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         if (ctx.STRINGCONST() != null) {
             String val = ctx.STRINGCONST().getText();
             val = val.substring(1, val.length() - 1);
+            val = val.replace("\\\\", "\\");
+            val = val.replace("\\\"", "\"");
+            val = val.replace("\\n", "\n");
             return new StringLiteralExpr(new Position(ctx), val, stringType);
         }
         if (ctx.NULL() != null) {
@@ -371,10 +374,14 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     @Override
     public BaseASTNode visitFmtstr(Mx.FmtstrContext ctx) {
         if (ctx.FMTSTRPURE() != null) {
-            String p = ctx.FMTSTRPURE().getText();
-            p = p.substring(1, p.length() - 1);
-            p = p.replace("$$", "$");
-            return new StringLiteralExpr(new Position(ctx), p, stringType);
+            String val = ctx.FMTSTRPURE().getText();
+            val = val.substring(1, val.length() - 1);
+            val = val.replace("$$", "$");
+
+            val = val.replace("\\\\", "\\");
+            val = val.replace("\\\"", "\"");
+            val = val.replace("\\n", "\n");
+            return new StringLiteralExpr(new Position(ctx), val, stringType);
         }
         // with expr
         FmtStrLiteralExpr f = new FmtStrLiteralExpr(new Position(ctx), stringType);
@@ -385,6 +392,10 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
         for (int i = 0; i < ctx.FMTSTRBODY().size(); ++i) {
             String body = ctx.FMTSTRBODY(i).getText();
             body = body.substring(1, body.length() - 1);
+
+            body = body.replace("\\\\", "\\");
+            body = body.replace("\\\"", "\"");
+            body = body.replace("\\n", "\n");
             body = body.replace("$$", "$");
             f.strs.add(body);
         }

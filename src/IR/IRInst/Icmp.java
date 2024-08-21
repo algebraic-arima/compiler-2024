@@ -36,7 +36,7 @@ public class Icmp extends Inst {
         };
     }
 
-    public Icmp(String op, Entity lhs, Entity rhs,Register dest) {
+    public Icmp(String op, Entity lhs, Entity rhs, Register dest) {
         this.op = switch (op) {
             case "<" -> "slt";
             case "<=" -> "sle";
@@ -79,10 +79,20 @@ public class Icmp extends Inst {
     public void print() {
         System.out.print("  ");
         dest.print();
-        System.out.print(" = icmp " + op + " i32 ");
-        lhs.print();
+        System.out.print(" = icmp " + op + " ");
+        type.print();
+        System.out.print(" ");
+        if (lhs == null) {
+            System.out.print("null");
+        } else {
+            lhs.print();
+        }
         System.out.print(", ");
-        rhs.print();
+        if (rhs == null) {
+            System.out.print("null");
+        } else {
+            rhs.print();
+        }
         System.out.print("\n");
     }
 }

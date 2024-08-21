@@ -8,3 +8,4 @@ tools
 log
 *.class
 bin.src
+*.py

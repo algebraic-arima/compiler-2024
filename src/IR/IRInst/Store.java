@@ -21,7 +21,11 @@ public class Store extends Inst {
         System.out.print("  store ");
         irType.print();
         System.out.print(" ");
-        value.print();
+        if (value == null) {
+            System.out.print("null");
+        } else {
+            value.print();
+        }
         System.out.print(", ptr ");
         dest.print();
         System.out.print("\n");
