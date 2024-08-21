@@ -425,18 +425,27 @@ public class IRBuilder implements __ASTVisitor {
         Register res = new Register(node.type, "%t" + varCnt);
         varCnt++;
         Call c = new Call("@array_malloc", typePtr, res);
-        c.args.add(new Constant(node.elements.size() + 1));
+        c.args.add(new Constant(node.elements.size()));
         if (node.elements.getFirst() instanceof ArrayLiteralExpr) {
             c.argTypes.add(typePtr);
         } else {
             c.argTypes.add(typeI32);
         }
         node.entity = res;
-        for(Expr e : node.elements) {
+        curBlock.addInst(c);
+        int cnt = 0;
+        for (Expr e : node.elements) {
             /// todo: store the values into the array
             // a geteleptr and a store
+            Register offset = new Register("%t" + varCnt);
+            varCnt++;
+            GetElePtr g = new GetElePtr(node.type.typeName,
+                    "ptr", res, offset, cnt, -1);
+            curBlock.addInst(g);
+            Store s = new Store(new IRType(e.type), e.entity, offset);
+            curBlock.addInst(s);
+            ++cnt;
         }
-        curBlock.addInst(c);
     }
 
     /*
