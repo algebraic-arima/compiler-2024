@@ -36,7 +36,7 @@ public class Icmp extends Inst {
         };
     }
 
-    public Icmp(String op, Entity lhs, Entity rhs, Register dest) {
+    public Icmp(String op, Entity lhs, Entity rhs, Register dest, IRType type) {
         this.op = switch (op) {
             case "<" -> "slt";
             case "<=" -> "sle";
@@ -49,6 +49,7 @@ public class Icmp extends Inst {
         this.lhs = lhs;
         this.rhs = rhs;
         this.dest = dest;
+        this.type = type;
     }
 
     public void setLhs(Register register) {

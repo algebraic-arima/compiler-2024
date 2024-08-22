@@ -553,14 +553,26 @@ public class IRBuilder implements __ASTVisitor {
                 node.entity.type = c.retType;
                 curBlock.addInst(c);
             }
-        } else if (node.lhs.type.isNull() || node.rhs.type.isNull()) {
+        } else if (node.lhs.type.isArray() || node.rhs.type.isArray()) {
             Register res = new AnonReg(typeI1);
             Icmp n = new Icmp(node.op);
             n.dest = res;
             if (node.lhs.type.isNull()) {
-                n.setLhs(node.rhs.entity);
+                n.setRhs(node.rhs.entity);
             } else {
-                n.setRhs(node.lhs.entity);
+                n.setLhs(node.lhs.entity);
+            }
+            node.entity = res;
+            n.type = typePtr;
+            curBlock.insts.add(n);
+        } else if (node.lhs.type.isClass() || node.rhs.type.isClass()) {
+            Register res = new AnonReg(typeI1);
+            Icmp n = new Icmp(node.op);
+            n.dest = res;
+            if (node.lhs.type.isNull()) {
+                n.setRhs(node.rhs.entity);
+            } else {
+                n.setLhs(node.lhs.entity);
             }
             node.entity = res;
             n.type = typePtr;
@@ -751,7 +763,7 @@ public class IRBuilder implements __ASTVisitor {
             p.addList(new Constant(0), i == 0 ? curBlock.label.label : condBlocks[2 * i - 1].label.label);
             p.addList(inc1, condBlocks[loop * 3 - 5 - i].label.label);
             condBlocks[2 * i].addInst(p);
-            condBlocks[2 * i].addInst(new Icmp("<", tmp1, e.get(i), cmp1));
+            condBlocks[2 * i].addInst(new Icmp("<", tmp1, e.get(i), cmp1, typeI32));
             condBlocks[2 * i].addInst(new Br(cmp1, condBlocks[2 * i + 1], condBlocks[loop * 3 - 4 - i]));
 
             Register p1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-p" + i);
