@@ -9,3 +9,4 @@ log
 *.class
 bin.src
 *.py
+*.txt

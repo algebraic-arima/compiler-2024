@@ -66,19 +66,30 @@ public class SemanticChecker implements __ASTVisitor {
         }
 
         LinkedHashMap<String, Type> f = new LinkedHashMap<>(curScope.getFunc(node.funcName).args);
+        HashMap<String, String> tmp_rename = new HashMap<>();
         for (Map.Entry<String, Type> e : f.entrySet()) {
             if (varCount.containsKey(e.getKey())) {
                 int ind = varCount.get(e.getKey());
                 varCount.put(e.getKey(), ind + 1);
                 curScope.renameVarMap.put(e.getKey(), e.getKey() + ind);
-                node.funcParams.put(e.getKey() + ind, e.getValue());
-                node.funcParams.remove(e.getKey());
+                tmp_rename.put(e.getKey(), e.getKey() + ind);
                 // if put after remove,
                 // the value will be deleted
             } else {
                 varCount.put(e.getKey(), 1);
             }
         }
+
+        LinkedHashMap<String, Type> newFuncParams = new LinkedHashMap<>();
+        for (Map.Entry<String, Type> e : node.funcParams.entrySet()) {
+            if (tmp_rename.containsKey(e.getKey())) {
+                newFuncParams.put(tmp_rename.get(e.getKey()), e.getValue());
+            } else {
+                newFuncParams.put(e.getKey(), e.getValue());
+            }
+        }
+        node.funcParams = newFuncParams;
+
 
         curScope.VarList = f;
         node.funcBody.stmts.forEach(d -> d.accept(this));
