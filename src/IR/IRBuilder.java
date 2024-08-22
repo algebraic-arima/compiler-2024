@@ -427,7 +427,8 @@ public class IRBuilder implements __ASTVisitor {
         Register res = new AnonReg(typePtr);
         Register res_offset_addr = new AnonReg(node.type.isArray() ? typePtr : typeI32);
 
-        GetElePtr g = new GetElePtr(node.array.type.typeName, node.type.typeName,
+        GetElePtr g = new GetElePtr((node.array.type.hasClass()) ? "ptr" : node.array.type.typeName,
+                node.type.typeName,
                 (Register) node.array.entity, res,
                 node.index.entity, -1);
 
@@ -542,12 +543,12 @@ public class IRBuilder implements __ASTVisitor {
                     || node.op == LE || node.op == GE) {
                 Register res = new AnonReg(typeI1);
                 Call c = switch (node.op) {
-                    case EQ -> new Call("string.eq", node.lhs.type, res);
-                    case NE -> new Call("string.ne", node.lhs.type, res);
-                    case LT -> new Call("string.lt", node.lhs.type, res);
-                    case GT -> new Call("string.gt", node.lhs.type, res);
-                    case LE -> new Call("string.le", node.lhs.type, res);
-                    case GE -> new Call("string.ge", node.lhs.type, res);
+                    case EQ -> new Call("@string..eq", typeI1, res);
+                    case NE -> new Call("@string..ne", typeI1, res);
+                    case LT -> new Call("@string..lt", typeI1, res);
+                    case GT -> new Call("@string..gt", typeI1, res);
+                    case LE -> new Call("@string..le", typeI1, res);
+                    case GE -> new Call("@string..ge", typeI1, res);
                     default -> null;
                 };
                 c.args.add(node.lhs.entity);
@@ -901,6 +902,13 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(TernaryBranchExpr node) {
         node.cond.accept(this);
+        if (node.type.isInt() || node.type.isBool()) {
+            node.entity = new AnonReg(typeI32);
+        } else {
+            node.entity = new AnonReg(typePtr);
+        }
+        Phi p = new Phi((Register) node.entity, node.type);
+
         IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-true");
         IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-false");
         IRBlock endBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-end");
@@ -912,20 +920,15 @@ public class IRBuilder implements __ASTVisitor {
         Jmp j = new Jmp(endBlock);
         curBlock.addInst(j);
         curFunc.addBlock(curBlock);
+        p.addList(node.trueBranch.entity, curBlock.label.label);
         curBlock = falseBlock;
         node.falseBranch.accept(this);
         curBlock.addInst(j);
         curFunc.addBlock(curBlock);
+        p.addList(node.falseBranch.entity, curBlock.label.label);
         curBlock = endBlock;
-        if (node.type.isInt() || node.type.isBool()) {
-            node.entity = new AnonReg(typeI32);
-        } else {
-            node.entity = new AnonReg(typePtr);
-        }
-        Phi p = new Phi((Register) node.entity, node.type);
-        p.addList(node.trueBranch.entity, trueBlock.label.label);
-        p.addList(node.falseBranch.entity, falseBlock.label.label);
-        curBlock.addInst(p);
+        if (!node.trueBranch.type.isVoid() || !node.falseBranch.type.isVoid())
+            curBlock.addInst(p);
     }
 
     @Override
