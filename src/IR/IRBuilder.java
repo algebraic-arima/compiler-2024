@@ -442,20 +442,19 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(ArrayLiteralExpr node) {
+        if (node.elements.isEmpty()) {
+            node.entity = null;
+            return;
+        }
         node.elements.forEach(e -> e.accept(this));
         Register res = new AnonReg(typePtr);
         Call c = new Call("@array..malloc", typePtr, res);
         c.args.add(new Constant(node.elements.size()));
-        if (node.elements.getFirst() instanceof ArrayLiteralExpr) {
-            c.argTypes.add(typePtr);
-        } else {
-            c.argTypes.add(typeI32);
-        }
+        c.argTypes.add(typeI32);
         node.entity = res;
         curBlock.addInst(c);
         int cnt = 0;
         for (Expr e : node.elements) {
-            /// todo: store the values into the array
             // a geteleptr and a store
             Register offset = new AnonReg(typePtr);
             GetElePtr g = new GetElePtr(node.type.typeName,
@@ -674,7 +673,8 @@ public class IRBuilder implements __ASTVisitor {
         }
         for (Expr e : node.args.exps) {
             c.args.add(e.entity);
-            c.argTypes.add(new IRType(e.type));
+            if (e.entity != null) c.argTypes.add(new IRType(e.type));
+            else c.argTypes.add(null);
         }
         curBlock.insts.add(c);
     }
@@ -713,7 +713,11 @@ public class IRBuilder implements __ASTVisitor {
         c.argTypes.add(typePtr);
         for (Expr e : node.args.exps) {
             c.args.add(e.entity);
-            c.argTypes.add(new IRType(e.type));
+            if (e.entity != null) {
+                c.argTypes.add(new IRType(e.type));
+            } else {
+                c.argTypes.add(null);
+            }
         }
         curBlock.insts.add(c);
     }
@@ -740,7 +744,7 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(NewArrayExpr node) {
-        /// todo: use null or 0 to initialize the array
+        /// no need to use null or 0 to initialize the array
         node.len.forEach(e -> e.accept(this));
         int dim = node.type.dim;
         int loop = node.len.size();
@@ -767,24 +771,30 @@ public class IRBuilder implements __ASTVisitor {
             Register tmp1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-tmp" + i);
             Register cmp1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-cmp" + i);
             Register inc1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-inc" + i);
-            Phi p = new Phi(tmp1, typeI32);
-            p.addList(new Constant(0), i == 0 ? curBlock.label.label : condBlocks[2 * i - 1].label.label);
-            p.addList(inc1, condBlocks[loop * 3 - 5 - i].label.label);
-            condBlocks[2 * i].addInst(p);
+            Register addr1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-addr" + i);
+            Register addr2 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-addr" + (i + 1));
+
+            condBlocks[2 * i].addInst(new Load(typeI32, addr1, tmp1));
             condBlocks[2 * i].addInst(new Icmp("<", tmp1, e.get(i), cmp1, typeI32));
             condBlocks[2 * i].addInst(new Br(cmp1, condBlocks[2 * i + 1], condBlocks[loop * 3 - 4 - i]));
 
             Register p1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-p" + i);
             Register t1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i));
             Register t2 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i + 1));
-            condBlocks[2 * i + 1].addInst(new GetElePtr("ptr",
-                    node.type.typeName, t1, p1, tmp1, -1));
             Call c = new Call("@array..malloc", typePtr, t2);
             c.args.add(e.get(i + 1));
             c.argTypes.add(typeI32);
+            condBlocks[2 * i + 1].addInst(new GetElePtr("ptr",
+                    node.type.typeName, t1, p1, tmp1, -1));
+
             condBlocks[2 * i + 1].addInst(c);
             condBlocks[2 * i + 1].addInst(new Store(typePtr, t2, p1));
             condBlocks[2 * i + 1].addInst(new Binary("+", tmp1, new Constant(1), inc1, typeI32));
+            condBlocks[2 * i + 1].addInst(new Store(typeI32, inc1, addr1));
+            if (i != loop - 2) {
+                condBlocks[2 * i + 1].addInst(new Alloca(typeI32, addr2));
+                condBlocks[2 * i + 1].addInst(new Store(typeI32, new Constant(0), addr2));
+            }
             condBlocks[2 * i + 1].addInst(new Jmp((i == loop - 2) ? condBlocks[2 * i] : condBlocks[2 * i + 2]));
 
             if (i != 0) {
@@ -796,6 +806,11 @@ public class IRBuilder implements __ASTVisitor {
         c.args.add(e.getFirst());
         c.argTypes.add(typeI32);
         curBlock.addInst(c);
+        Register addr = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-addr" + 0);
+        curBlock.addInst(new Alloca(typeI32, addr));
+        curBlock.addInst(new Store(typeI32, new Constant(0), addr));
+
+
         node.entity = c.dest;
         curBlock.addInst(new Jmp(condBlocks[0]));
         curFunc.addBlock(curBlock);
@@ -834,6 +849,56 @@ public class IRBuilder implements __ASTVisitor {
                 %t3 = @array..malloc(%s3)
                 store ptr %t3, ptr %p2
                 %inc2 = add i32 %tmp2, 1
+                br na2.cond
+
+            na2.end:
+                br na1.cond
+
+        na1.end:
+
+     */
+
+    /*
+        without phi stmt ver. :
+
+        int[][][] a = new int[x + y][x - y][6 * z];
+        %s1, %s2, %s3, ...
+
+
+
+        %t1 = @array..malloc(%s1)
+        %addr1 = alloca i32
+        store i32 0, ptr %addr1
+        br na1.cond
+
+        na1.cond:
+            %tmp1 = load i32, ptr %addr1
+            %cmp1 = icmp slt i32 %tmp1, %s1
+            br i1 %cmp1, na1.body, na1.end
+
+        na1.body:
+            %p1 = getelementptr ptr, ptr %t1, i32 %tmp1
+            %t2 = @array..malloc(%s2)
+            store ptr %t2, ptr %p1
+            %inc1 = add i32 %tmp1, 1
+            store i32 %inc1, ptr %addr1
+            %addr2 = alloca i32
+            store i32 0, ptr %addr2
+            br na2.cond
+
+            na2.cond
+                %tmp2 = load i32, ptr %addr2
+                %cmp2 = icmp slt i32 %tmp2, %s2
+                br i1 %cmp2, na2.body, na2.end
+
+            na2.body:
+                %p2 = getelementptr ptr, ptr %t2, i32 %tmp2
+                %t3 = @array..malloc(%s3)
+                store ptr %t3, ptr %p2
+                %inc2 = add i32 %tmp2, 1
+                store i32 %inc2, ptr %addr2
+                %addr3 = alloca i32 ; redundant
+                store i32 0, ptr %addr3 ; redundant
                 br na2.cond
 
             na2.end:

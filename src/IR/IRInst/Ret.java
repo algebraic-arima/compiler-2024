@@ -20,7 +20,11 @@ public class Ret extends terminalInst {
 
     @Override
     public void print() {
-        if (value == null) {
+        if (type.typeName == null) {
+            System.out.print("  ret ptr null\n");
+            // in irtype, typename=null: null
+            // in other cases, typename can be i32,i1,ptr and void
+        } else if (type.typeName.equals("void")) {
             System.out.print("  ret void\n");
         } else {
             System.out.print("  ret ");

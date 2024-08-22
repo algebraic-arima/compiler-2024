@@ -40,7 +40,6 @@ public class IRStrDef extends IRDef {
             s = s.replace("\"", "\\22");
             s = s.replace("\n", "\\0A");
             System.out.print(s);
-            /// todo: translate \n to \0A, \ to \\, \" to \22
             System.out.print("\\00\"\n");
         }
     }

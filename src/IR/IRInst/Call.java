@@ -21,6 +21,7 @@ public class Call extends Inst {
         retType = new IRType(type);
         this.dest = dest;
     }
+
     public Call(String name, IRType type, Register dest) {
         args = new ArrayList<>();
         argTypes = new ArrayList<>();
@@ -42,9 +43,17 @@ public class Call extends Inst {
         System.out.print(funcName);
         System.out.print("(");
         for (int i = 0; i < args.size(); i++) {
-            argTypes.get(i).print();
+            if (argTypes.get(i) != null) {
+                argTypes.get(i).print();
+            } else {
+                System.out.print("ptr");
+            }
             System.out.print(" ");
-            args.get(i).print();
+            if (args.get(i) != null) {
+                args.get(i).print();
+            } else {
+                System.out.print("null");
+            }
             if (i != args.size() - 1) {
                 System.out.print(", ");
             }

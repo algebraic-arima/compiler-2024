@@ -71,8 +71,8 @@ public class SemanticChecker implements __ASTVisitor {
             if (varCount.containsKey(e.getKey())) {
                 int ind = varCount.get(e.getKey());
                 varCount.put(e.getKey(), ind + 1);
-                curScope.renameVarMap.put(e.getKey(), e.getKey() + ind);
-                tmp_rename.put(e.getKey(), e.getKey() + ind);
+                curScope.renameVarMap.put(e.getKey(), e.getKey() +"."+ ind);
+                tmp_rename.put(e.getKey(), e.getKey()+"." + ind);
                 // if put after remove,
                 // the value will be deleted
             } else {
@@ -168,8 +168,8 @@ public class SemanticChecker implements __ASTVisitor {
             if (varCount.containsKey(entry.getKey())) {
                 int ind = varCount.get(entry.getKey());
                 varCount.put(entry.getKey(), ind + 1);
-                curScope.renameVarMap.put(entry.getKey(), entry.getKey() + ind);
-                changes.put(entry.getKey(), entry.getKey() + ind);
+                curScope.renameVarMap.put(entry.getKey(), entry.getKey()+"." + ind);
+                changes.put(entry.getKey(), entry.getKey()+"." + ind);
             } else {
                 varCount.put(entry.getKey(), 1);
             }
