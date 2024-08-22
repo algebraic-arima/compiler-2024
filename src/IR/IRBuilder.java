@@ -366,10 +366,11 @@ public class IRBuilder implements __ASTVisitor {
         }
         IRBlock condBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-for-cond");
         IRBlock bodyBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-for-body");
+        IRBlock stepBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-for-step");
         IRBlock endBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-for-end");
         IRBlock tmpBreak = breakBlock, tmpCont = contBlock;
         breakBlock = endBlock;
-        contBlock = condBlock;
+        contBlock = (node.update == null) ? condBlock : stepBlock;
 
         Jmp j = new Jmp(condBlock);
         curBlock.addInst(j);
@@ -384,6 +385,10 @@ public class IRBuilder implements __ASTVisitor {
         }
         node.body.accept(this);
         if (node.update != null) {
+            Jmp jj = new Jmp(stepBlock);
+            curBlock.addInst(jj);
+            curFunc.addBlock(curBlock);
+            curBlock = stepBlock;
             node.update.accept(this);
         }
         curBlock.addInst(j);
@@ -653,6 +658,8 @@ public class IRBuilder implements __ASTVisitor {
                 c = new Call("@" + curClassDef + ".." + node.funcName, cft.retType, res);
                 node.entity = res;
             }
+            c.args.add(new Register("%this1"));
+            c.argTypes.add(typePtr);
         } else {
             node.args.exps.forEach(e -> e.accept(this));
             if (node.type.isVoid()) {
