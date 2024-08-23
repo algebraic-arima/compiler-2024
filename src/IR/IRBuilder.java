@@ -448,7 +448,7 @@ public class IRBuilder implements __ASTVisitor {
         Register res = new AnonReg(typePtr);
         Register res_offset_addr = new AnonReg(node.type.isArray() ? typePtr : typeI32);
 
-        GetElePtr g = new GetElePtr((node.array.type.hasClass()) ? "ptr" : node.array.type.typeName,
+        GetElePtr g = new GetElePtr((node.array.type.hasClass()||node.array.type.dim>1) ? "ptr" : node.array.type.typeName,
                 node.type.typeName,
                 (Register) node.array.entity, res,
                 node.index.entity, -1);
