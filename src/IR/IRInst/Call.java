@@ -1,5 +1,6 @@
 package src.IR.IRInst;
 
+import src.IR.IRVisitor;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
@@ -7,7 +8,7 @@ import src.utils.type.Type;
 
 import java.util.ArrayList;
 
-public class Call extends Inst {
+public class Call extends IRInst {
 
     public IRType retType;
     public String funcName;
@@ -59,5 +60,10 @@ public class Call extends Inst {
             }
         }
         System.out.println(")");
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

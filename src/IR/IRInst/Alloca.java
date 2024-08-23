@@ -1,9 +1,10 @@
 package src.IR.IRInst;
 
+import src.IR.IRVisitor;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
-public class Alloca extends Inst {
+public class Alloca extends IRInst {
 
     public IRType irType;
 
@@ -17,5 +18,10 @@ public class Alloca extends Inst {
         System.out.print("  " + dest.name + " = alloca ");
         irType.print();
         System.out.print("\n");
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

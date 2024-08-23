@@ -1,14 +1,14 @@
-package src.IR;
+package src.IR.IRDef;
 
-import src.IR.IRInst.Inst;
+import src.IR.IRInst.IRInst;
 import src.IR.IRInst.Label;
-import src.IR.IRInst.terminalInst;
+import src.IR.IRInst.terminalIRInst;
 
 import java.util.ArrayList;
 
 public class IRBlock {
     public Label label = null;
-    public ArrayList<Inst> insts = new ArrayList<>();
+    public ArrayList<IRInst> IRInsts = new ArrayList<>();
     public int index;
     static public int blockCnt;
 
@@ -21,24 +21,22 @@ public class IRBlock {
         label = new Label(s);
     }
 
-    public void addInst(Inst inst) {
-        insts.add(inst);
+    public void addInst(IRInst IRInst) {
+        IRInsts.add(IRInst);
     }
 
     public void print() {
-        if (insts.isEmpty()) return;
-        StringBuilder s = new StringBuilder();
-        s.append(label.label).append(":\n");
-        insts.forEach(d -> s.append(d.str()));
-//        s.append(tInst.str());
-        s.append("\n");
+        if (IRInsts.isEmpty()) return;
         System.out.print(label.label + ":\n");
-        for (Inst inst : insts) {
-            inst.print();
-            if (inst instanceof terminalInst) {
+        ArrayList<IRInst> newIRInsts = new ArrayList<>();
+        for (IRInst IRInst : IRInsts) {
+            IRInst.print();
+            newIRInsts.add(IRInst);
+            if (IRInst instanceof terminalIRInst) {
                 break;
             }
         }
+        IRInsts = newIRInsts;
         // indent in inst::print()
 //        tInst.print();
         System.out.print("\n");

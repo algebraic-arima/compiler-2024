@@ -1,9 +1,10 @@
 package src.IR.IRInst;
 
+import src.IR.IRVisitor;
 import src.utils.Entity.Entity;
 import src.utils.IRType.IRType;
 
-public class Ret extends terminalInst {
+public class Ret extends terminalIRInst {
 
     public IRType type;
     public Entity value;
@@ -16,6 +17,11 @@ public class Ret extends terminalInst {
     public Ret() {
         this.type = new IRType();
         this.value = null;
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

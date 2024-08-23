@@ -1,6 +1,7 @@
 package src.IR.IRDef;
 
 import src.AST.Def.VarDef;
+import src.IR.IRVisitor;
 import src.utils.IRType.IRType;
 
 import java.util.ArrayList;
@@ -9,6 +10,11 @@ public class IRClassDef extends IRDef {
 
     public String className;
     public ArrayList<IRType> fields;
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
+    }
 
     public IRClassDef (String className){
         this.className = "%class." + className;

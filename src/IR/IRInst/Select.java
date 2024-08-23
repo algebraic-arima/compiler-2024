@@ -1,10 +1,11 @@
 package src.IR.IRInst;
 
+import src.IR.IRVisitor;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
-public class Select extends Inst {
+public class Select extends IRInst {
 
     public Entity cond;
     public IRType type;
@@ -33,5 +34,10 @@ public class Select extends Inst {
         System.out.print(" ");
         falseVal.print();
         System.out.print("\n");
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

@@ -1,12 +1,13 @@
 package src.IR.IRInst;
 
 import src.AST.Expr.BinaryArithExpr;
+import src.IR.IRVisitor;
 import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
-public class Icmp extends Inst {
+public class Icmp extends IRInst {
     public String op;
     public IRType type;
     public Entity lhs = null, rhs = null;
@@ -95,6 +96,11 @@ public class Icmp extends Inst {
             rhs.print();
         }
         System.out.print("\n");
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }
 

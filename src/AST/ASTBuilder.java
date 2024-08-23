@@ -375,7 +375,7 @@ public class ASTBuilder extends MxBaseVisitor<BaseASTNode> {
     public BaseASTNode visitFmtstr(Mx.FmtstrContext ctx) {
         if (ctx.FMTSTRPURE() != null) {
             String val = ctx.FMTSTRPURE().getText();
-            val = val.substring(1, val.length() - 1);
+            val = val.substring(2, val.length() - 1);
             val = val.replace("$$", "$");
 
             val = val.replace("\\\\", "\\");

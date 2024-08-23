@@ -1,6 +1,6 @@
 package src.IR.IRDef;
 
-import src.IR.IRBlock;
+import src.IR.IRVisitor;
 import src.utils.IRType.IRType;
 import src.IR.IRInst.Alloca;
 
@@ -32,7 +32,7 @@ public class IRFuncDef extends IRDef {
         regCollector.addInst(a);
     }
 
-
+    @Override
     public void print() {
         System.out.print("\ndefine dso_local " + retType.typeName + " " + name + "(");
         for (int i = 0; i < paramNames.size(); ++i) {
@@ -44,5 +44,10 @@ public class IRFuncDef extends IRDef {
         System.out.print(") {\n");
         blocks.forEach(IRBlock::print);
         System.out.print("}\n");
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

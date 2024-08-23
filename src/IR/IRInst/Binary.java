@@ -1,16 +1,22 @@
 package src.IR.IRInst;
 
 import src.AST.Expr.BinaryArithExpr;
+import src.IR.IRVisitor;
 import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
-public class Binary extends Inst {
+public class Binary extends IRInst {
 
     public Entity lhs, rhs;
     public String op;
     public IRType type;
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
+    }
 
     public Binary(BinaryArithExpr.BArithOp op) {
         this.op = switch (op) {

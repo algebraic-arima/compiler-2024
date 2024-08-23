@@ -8,6 +8,7 @@ import src.AST.Stmt.JumpStmt.*;
 import src.AST.Stmt.LoopStmt.*;
 import src.AST.Stmt.VarDefStmt;
 import src.AST.__ASTVisitor;
+import src.IR.IRDef.IRBlock;
 import src.IR.IRDef.IRClassDef;
 import src.IR.IRDef.IRFuncDef;
 import src.IR.IRDef.IRGlobalVarDef;
@@ -123,7 +124,7 @@ public class IRBuilder implements __ASTVisitor {
 
             curFunc.addBlock(curBlock);
 
-            for (Inst i : curFunc.blocks.getFirst().insts) {
+            for (IRInst i : curFunc.blocks.getFirst().IRInsts) {
                 curFunc.regCollector.addInst(i);
             }
             curFunc.blocks.set(0, curFunc.regCollector);
@@ -170,7 +171,7 @@ public class IRBuilder implements __ASTVisitor {
 
             curFunc.addBlock(curBlock);
 
-            for (Inst i : curFunc.blocks.getFirst().insts) {
+            for (IRInst i : curFunc.blocks.getFirst().IRInsts) {
                 curFunc.regCollector.addInst(i);
             }
             curFunc.blocks.set(0, curFunc.regCollector);
@@ -218,7 +219,7 @@ public class IRBuilder implements __ASTVisitor {
         curBlock.addInst(new Ret());
         curFunc.addBlock(curBlock);
 
-        for (Inst i : curFunc.blocks.getFirst().insts) {
+        for (IRInst i : curFunc.blocks.getFirst().IRInsts) {
             curFunc.regCollector.addInst(i);
         }
         curFunc.blocks.set(0, curFunc.regCollector);
@@ -251,7 +252,7 @@ public class IRBuilder implements __ASTVisitor {
                         curBlock.addInst(new Store(new IRType(node.type), entry.getValue().entity, new Register(g.name)));
                         curBlock.addInst(new Ret());
                         curFunc.addBlock(curBlock);
-                        for (Inst i : curFunc.blocks.getFirst().insts) {
+                        for (IRInst i : curFunc.blocks.getFirst().IRInsts) {
                             curFunc.regCollector.addInst(i);
                         }
                         curFunc.blocks.set(0, curFunc.regCollector);
@@ -295,13 +296,13 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(BreakStmt node) {
         Jmp j = new Jmp(breakBlock);
-        curBlock.insts.add(j);
+        curBlock.IRInsts.add(j);
     }
 
     @Override
     public void visit(ContinueStmt node) {
         Jmp j = new Jmp(contBlock);
-        curBlock.insts.add(j);
+        curBlock.IRInsts.add(j);
     }
 
     @Override
@@ -309,10 +310,10 @@ public class IRBuilder implements __ASTVisitor {
         if (node.retExpr != null) {
             node.retExpr.accept(this);
             Ret r = new Ret(new IRType(node.retExpr.type), node.retExpr.entity);
-            curBlock.insts.add(r);
+            curBlock.IRInsts.add(r);
         } else {
             Ret r = new Ret();
-            curBlock.insts.add(r);
+            curBlock.IRInsts.add(r);
         }
     }
 
@@ -323,12 +324,12 @@ public class IRBuilder implements __ASTVisitor {
             IRBlock thenBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-if-then");
             IRBlock endBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-if-end");
             Br b = new Br(node.condition.entity, thenBlock, endBlock);
-            curBlock.insts.add(b);
+            curBlock.IRInsts.add(b);
             curFunc.addBlock(curBlock);
             curBlock = thenBlock;
             node.trueStmt.accept(this);
             Jmp j = new Jmp(endBlock);
-            curBlock.insts.add(j);
+            curBlock.IRInsts.add(j);
             curFunc.addBlock(curBlock);
             curBlock = endBlock;
         } else {
@@ -336,17 +337,17 @@ public class IRBuilder implements __ASTVisitor {
             IRBlock elseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-if-else");
             IRBlock endBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-if-end");
             Br b = new Br(node.condition.entity, thenBlock, elseBlock);
-            curBlock.insts.add(b);
+            curBlock.IRInsts.add(b);
             curFunc.addBlock(curBlock);
             curBlock = thenBlock;
             node.trueStmt.accept(this);
             Jmp j = new Jmp(endBlock);
-            curBlock.insts.add(j);
+            curBlock.IRInsts.add(j);
             curFunc.addBlock(curBlock);
             curBlock = elseBlock;
             node.falseStmt.accept(this);
             j = new Jmp(endBlock);
-            curBlock.insts.add(j);
+            curBlock.IRInsts.add(j);
             curFunc.addBlock(curBlock);
             curBlock = endBlock;
         }
@@ -536,7 +537,7 @@ public class IRBuilder implements __ASTVisitor {
                 n.setRhs(node.rhs.entity);
                 n.type = typeI32;
                 node.entity = res;
-                curBlock.insts.add(n);
+                curBlock.IRInsts.add(n);
             } else {
                 Icmp n = new Icmp(node.op);
                 n.dest = res;
@@ -544,7 +545,7 @@ public class IRBuilder implements __ASTVisitor {
                 n.setRhs(node.rhs.entity);
                 n.type = typeI32;
                 node.entity = res;
-                curBlock.insts.add(n);
+                curBlock.IRInsts.add(n);
             }
         } else if (node.lhs.type.isString() && node.rhs.type.isString()) {
             if (node.op == ADD) {
@@ -589,7 +590,7 @@ public class IRBuilder implements __ASTVisitor {
             }
             node.entity = res;
             n.type = typePtr;
-            curBlock.insts.add(n);
+            curBlock.IRInsts.add(n);
         } else if (node.lhs.type.isClass() || node.rhs.type.isClass()) {
             Register res = new AnonReg(typeI1);
             Icmp n = new Icmp(node.op);
@@ -601,9 +602,8 @@ public class IRBuilder implements __ASTVisitor {
             }
             node.entity = res;
             n.type = typePtr;
-            curBlock.insts.add(n);
+            curBlock.IRInsts.add(n);
         }
-
     }
 
 
@@ -617,13 +617,13 @@ public class IRBuilder implements __ASTVisitor {
             IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-and-end");
             node.lhs.accept(this);
             Br b = new Br(node.lhs.entity, trueBlock, falseBlock);
-            curBlock.insts.add(b);
+            curBlock.IRInsts.add(b);
             curFunc.addBlock(curBlock);
             curBlock = trueBlock;
             curBlock.addInst(new Store(typeI1, new Constant(1), brAddr));
             node.rhs.accept(this);
             Jmp j = new Jmp(falseBlock);
-            curBlock.insts.add(j);
+            curBlock.IRInsts.add(j);
             curFunc.addBlock(curBlock);
             curBlock = falseBlock;
             Register br = new AnonReg(typeI1);
@@ -639,13 +639,13 @@ public class IRBuilder implements __ASTVisitor {
             IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-or-rhs");
             node.lhs.accept(this);
             Br b = new Br(node.lhs.entity, trueBlock, falseBlock);
-            curBlock.insts.add(b);
+            curBlock.IRInsts.add(b);
             curFunc.addBlock(curBlock);
             curBlock = falseBlock;
             curBlock.addInst(new Store(typeI1, new Constant(1), brAddr));
             node.rhs.accept(this);
             Jmp j = new Jmp(trueBlock);
-            curBlock.insts.add(j);
+            curBlock.IRInsts.add(j);
             curFunc.addBlock(curBlock);
             curBlock = trueBlock;
             Register br = new AnonReg(typeI1);
@@ -664,7 +664,7 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(FmtStrLiteralExpr node) {
         node.exprs.forEach(e -> e.accept(this));
-        /// todo: call printf to print all the expr values
+        /// todo: call strcat to align all the expr values
     }
 
     @Override
@@ -704,7 +704,7 @@ public class IRBuilder implements __ASTVisitor {
             if (e.entity != null) c.argTypes.add(new IRType(e.type));
             else c.argTypes.add(null);
         }
-        curBlock.insts.add(c);
+        curBlock.IRInsts.add(c);
     }
 
     @Override
@@ -721,7 +721,7 @@ public class IRBuilder implements __ASTVisitor {
             Call c = new Call("@array..size", typeI32, new AnonReg(typeI32));
             c.args.add(node.obj.entity);
             c.argTypes.add(typePtr);
-            curBlock.insts.add(c);
+            curBlock.IRInsts.add(c);
             node.entity = c.dest;
             return;
         }
@@ -747,7 +747,7 @@ public class IRBuilder implements __ASTVisitor {
                 c.argTypes.add(null);
             }
         }
-        curBlock.insts.add(c);
+        curBlock.IRInsts.add(c);
     }
 
     @Override
@@ -1039,7 +1039,7 @@ public class IRBuilder implements __ASTVisitor {
             n.setRhs(node.expr.entity);
             n.type = typeI32;
             node.entity = res;
-            curBlock.insts.add(n);
+            curBlock.IRInsts.add(n);
         } else if (node.op == BNOT) {
             Binary n = new Binary("^");
             n.dest = res;
@@ -1047,7 +1047,7 @@ public class IRBuilder implements __ASTVisitor {
             n.type = typeI32;
             n.setLhs(node.expr.entity);
             node.entity = res;
-            curBlock.insts.add(n);
+            curBlock.IRInsts.add(n);
         } else if (node.op == LINC || node.op == LDEC
                 || node.op == RINC || node.op == RDEC) {
             Binary n = new Binary((node.op == LINC || node.op == RINC) ? "+" : "-");
@@ -1071,8 +1071,8 @@ public class IRBuilder implements __ASTVisitor {
             // bug--store in the original address
             node.entity = ((!(node.op == LINC || node.op == LDEC)) ?
                     (Register) node.expr.entity : res);
-            curBlock.insts.add(n);
-            curBlock.insts.add(s);
+            curBlock.IRInsts.add(n);
+            curBlock.IRInsts.add(s);
             if (node.op == LINC || node.op == LDEC) {
                 node.addr = addr;
             }
@@ -1090,7 +1090,7 @@ public class IRBuilder implements __ASTVisitor {
         n.setRhs(node.expr.entity);
         n.type = typeI1;
         node.entity = res;
-        curBlock.insts.add(n);
+        curBlock.IRInsts.add(n);
     }
 
     @Override
@@ -1102,6 +1102,6 @@ public class IRBuilder implements __ASTVisitor {
         // the value of variable `i` is stored in the position that @i/%i points
         node.entity = res;
         node.addr = addr;
-        curBlock.insts.add(l);
+        curBlock.IRInsts.add(l);
     }
 }

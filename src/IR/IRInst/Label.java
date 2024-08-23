@@ -1,6 +1,8 @@
 package src.IR.IRInst;
 
-public class Label extends Inst {
+import src.IR.IRVisitor;
+
+public class Label extends IRInst {
 
     public String label;
 
@@ -11,5 +13,10 @@ public class Label extends Inst {
     @Override
     public void print() {
         System.out.print(label + "\n");
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

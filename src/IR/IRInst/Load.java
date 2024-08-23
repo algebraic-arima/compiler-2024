@@ -1,12 +1,18 @@
 package src.IR.IRInst;
 
+import src.IR.IRVisitor;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
-public class Load extends Inst {
+public class Load extends IRInst {
 
     public IRType irType;
     public Register src;
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
+    }
 
     public Load(IRType irType, Register src, Register dest) {
         this.irType = irType;

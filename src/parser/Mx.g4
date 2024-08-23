@@ -54,8 +54,7 @@ expr:
     | expr op=(SDEC|SINC) # RUnaryExp
     | op=(SDEC|SINC) expr # LUnaryExp
     | op=(SUB|NOT|BNOT) expr # LUnaryExp
-    | expr op=(DIV|MUL) expr # BinaryExp
-    | expr op=MOD expr # BinaryExp
+    | expr op=(DIV|MUL|MOD) expr # BinaryExp
     | expr op=(ADD|SUB) expr # BinaryExp
     | expr op=(BLS|BRS) expr # BinaryExp
     | expr op=(LT|GT|LEQ|GEQ) expr # BinaryExp

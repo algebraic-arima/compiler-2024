@@ -1,16 +1,22 @@
 package src.IR.IRInst;
 
+import src.IR.IRVisitor;
 import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
-public class GetElePtr extends Inst {
+public class GetElePtr extends IRInst {
 
     public IRType ptrType, destType;
     public Register ptr;
     public Entity offset;
     public int fieldInd;
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
+    }
 
     public GetElePtr(String ptrType, String destType, Register ptr, Register dest, int offset, int fieldInd) {
         this.ptrType = new IRType(ptrType);

@@ -1,5 +1,7 @@
 package src.IR.IRDef;
 
+import src.IR.IRVisitor;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -42,5 +44,10 @@ public class IRStrDef extends IRDef {
             System.out.print(s);
             System.out.print("\\00\"\n");
         }
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

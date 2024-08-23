@@ -1,10 +1,11 @@
 package src.IR.IRInst;
 
+import src.IR.IRVisitor;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
-public class Store extends Inst {
+public class Store extends IRInst {
 
     public IRType irType;
     public Entity value;
@@ -14,6 +15,11 @@ public class Store extends Inst {
         this.irType = irType;
         this.value = value;
         this.dest = dest;
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

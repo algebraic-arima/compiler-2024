@@ -1,5 +1,6 @@
 package src.IR.IRDef;
 
+import src.IR.IRVisitor;
 import src.utils.IRType.IRType;
 import src.utils.type.Type;
 
@@ -29,5 +30,10 @@ public class IRGlobalVarDef extends IRDef {
         } else if (irType.typeName.equals("i1")) {
             System.out.print(value != 0 ? "true\n" : "false\n");
         }
+    }
+
+    @Override
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }
