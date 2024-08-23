@@ -589,43 +589,51 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(BinaryLogicExpr node) {
-        Register res = new AnonReg(typeI1);
         if (node.op == AND) {
-            Phi p = new Phi(res, boolType);
+            Register brAddr = new AnonReg(typeI1);
+            curBlock.addInst(new Alloca(typeI1, brAddr));
+            curBlock.addInst(new Store(typeI1, new Constant(0), brAddr));
             IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-and-rhs");
             IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-and-end");
             node.lhs.accept(this);
-            p.addList(new Constant(0), curBlock.label.label);
             Br b = new Br(node.lhs.entity, trueBlock, falseBlock);
             curBlock.insts.add(b);
             curFunc.addBlock(curBlock);
             curBlock = trueBlock;
+            curBlock.addInst(new Store(typeI1, new Constant(1), brAddr));
             node.rhs.accept(this);
-            p.addList(node.rhs.entity, curBlock.label.label);
             Jmp j = new Jmp(falseBlock);
             curBlock.insts.add(j);
             curFunc.addBlock(curBlock);
             curBlock = falseBlock;
-            curBlock.addInst(p);
+            Register br = new AnonReg(typeI1);
+            curBlock.addInst(new Load(typeI1, brAddr, br));
+            Register res = new AnonReg(typeI1);
+            curBlock.addInst(new Select(br, typeI1, node.rhs.entity, new Constant(0), res));
+            node.entity = res;
         } else if (node.op == OR) {
-            Phi p = new Phi(res, boolType);
+            Register brAddr = new AnonReg(typeI1);
+            curBlock.addInst(new Alloca(typeI1, brAddr));
+            curBlock.addInst(new Store(typeI1, new Constant(0), brAddr));
             IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-or-end");
             IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-or-rhs");
             node.lhs.accept(this);
-            p.addList(new Constant(1), curBlock.label.label);
             Br b = new Br(node.lhs.entity, trueBlock, falseBlock);
             curBlock.insts.add(b);
             curFunc.addBlock(curBlock);
             curBlock = falseBlock;
+            curBlock.addInst(new Store(typeI1, new Constant(1), brAddr));
             node.rhs.accept(this);
-            p.addList(node.rhs.entity, curBlock.label.label);
             Jmp j = new Jmp(trueBlock);
             curBlock.insts.add(j);
             curFunc.addBlock(curBlock);
             curBlock = trueBlock;
-            curBlock.addInst(p);
+            Register br = new AnonReg(typeI1);
+            curBlock.addInst(new Load(typeI1, brAddr, br));
+            Register res = new AnonReg(typeI1);
+            curBlock.addInst(new Select(br, typeI1, node.rhs.entity, new Constant(1), res));
+            node.entity = res;
         }
-        node.entity = res;
     }
 
     @Override
@@ -967,13 +975,12 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(TernaryBranchExpr node) {
         node.cond.accept(this);
+        Register res;
         if (node.type.isInt() || node.type.isBool()) {
-            node.entity = new AnonReg(typeI32);
+            res = new AnonReg(typeI32);
         } else {
-            node.entity = new AnonReg(typePtr);
+            res = new AnonReg(typePtr);
         }
-        Phi p = new Phi((Register) node.entity, node.type);
-
         IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-true");
         IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-false");
         IRBlock endBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-end");
@@ -985,15 +992,15 @@ public class IRBuilder implements __ASTVisitor {
         Jmp j = new Jmp(endBlock);
         curBlock.addInst(j);
         curFunc.addBlock(curBlock);
-        p.addList(node.trueBranch.entity, curBlock.label.label);
         curBlock = falseBlock;
         node.falseBranch.accept(this);
         curBlock.addInst(j);
         curFunc.addBlock(curBlock);
-        p.addList(node.falseBranch.entity, curBlock.label.label);
         curBlock = endBlock;
-        if (!node.trueBranch.type.isVoid() || !node.falseBranch.type.isVoid())
-            curBlock.addInst(p);
+        if (!node.trueBranch.type.isVoid() || !node.falseBranch.type.isVoid()) {
+            curBlock.addInst(new Select(node.cond.entity, new IRType(node.type), node.trueBranch.entity, node.falseBranch.entity, res));
+        }
+        node.entity = res;
     }
 
     @Override
