@@ -2,6 +2,7 @@ package src.IR.IRDef;
 
 import src.IR.IRBlock;
 import src.utils.IRType.IRType;
+import src.IR.IRInst.Alloca;
 
 import java.util.ArrayList;
 
@@ -11,6 +12,7 @@ public class IRFuncDef extends IRDef {
     public String name;
     public ArrayList<IRType> paramTypes;
     public ArrayList<String> paramNames;
+    public IRBlock regCollector;
     public ArrayList<IRBlock> blocks;
 
     public IRFuncDef(String name) {
@@ -19,10 +21,15 @@ public class IRFuncDef extends IRDef {
         paramTypes = new ArrayList<>();
         paramNames = new ArrayList<>();
         blocks = new ArrayList<>();
+        regCollector = new IRBlock("entry");
     }
 
     public void addBlock(IRBlock e) {
         blocks.add(e);
+    }
+
+    public void addAlloca(Alloca a){
+        regCollector.addInst(a);
     }
 
 
