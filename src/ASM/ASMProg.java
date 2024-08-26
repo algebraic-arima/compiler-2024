@@ -22,9 +22,9 @@ public class ASMProg extends ASMNode {
     public void print() {
         System.out.println("  .section .text");
         funcDefs.forEach(ASMFuncDef::print);
-        System.out.println("  .section .data");
+        System.out.println("\n  .section .data");
         gVarDefs.forEach(ASMGVarDef::print);
-        System.out.println("  .section .rodata");
+        System.out.println("\n  .section .rodata");
         gStrDefs.forEach(ASMGStrDef::print);
     }
 }

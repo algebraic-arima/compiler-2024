@@ -13,6 +13,6 @@ public class SW extends ASMInst {
     }
 
     public void print() {
-        System.out.println("  sw " + rs2.toString() + " " + offset + "(" + rs1.toString() + ")");
+        System.out.println("  sw " + rs2.toString() + ", " + offset + "(" + rs1.toString() + ")");
     }
 }

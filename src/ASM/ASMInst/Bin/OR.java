@@ -6,6 +6,6 @@ public class OR extends BinInst {
     }
 
     public void print() {
-        System.out.println("  or " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  or " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

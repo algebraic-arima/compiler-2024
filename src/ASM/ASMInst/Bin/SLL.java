@@ -6,6 +6,6 @@ public class SLL extends BinInst{
     }
 
     public void print() {
-        System.out.println("  sll " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  sll " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

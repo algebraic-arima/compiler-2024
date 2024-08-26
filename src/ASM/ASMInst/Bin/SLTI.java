@@ -6,6 +6,6 @@ public class SLTI extends BinInst {
     }
 
     public void print() {
-        System.out.println("  slti " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  slti " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

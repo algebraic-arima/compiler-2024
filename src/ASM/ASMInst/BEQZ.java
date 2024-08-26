@@ -9,7 +9,7 @@ public class BEQZ extends ASMInst {
 
     public BEQZ(String rs_, String label_) {
         rs = new PhyReg(rs_);
-        label = label_;
+        label = label_.replace("-", "_");
     }
 
     public void print() {

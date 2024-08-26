@@ -40,7 +40,7 @@ public class ASMBuilder implements IRVisitor {
         node.strDef.accept(this);
         node.funcDefs.forEach(x -> x.accept(this));
         for (Map.Entry<String, Integer> entry : regPos.entrySet()) {
-            System.out.println(entry.getKey() + " " + entry.getValue());
+            System.out.println("; " + entry.getKey() + " " + entry.getValue());
         }
     }
 
@@ -88,7 +88,8 @@ public class ASMBuilder implements IRVisitor {
             bn = curFunc.name;
         }
         if (!curBlock.label.equals(bn)) {
-            curBlock = new ASMBlock(node.label.label);
+            bn = bn.replace("-", "_");
+            curBlock = new ASMBlock(bn);
             curFunc.blocks.add(curBlock);
         }
         node.IRInsts.forEach(x -> x.accept(this));

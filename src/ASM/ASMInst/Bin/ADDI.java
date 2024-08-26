@@ -6,6 +6,6 @@ public class ADDI extends BinInst {
     }
 
     public void print() {
-        System.out.println("  addi " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  addi " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

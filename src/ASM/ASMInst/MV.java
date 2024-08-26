@@ -12,6 +12,6 @@ public class MV extends ASMInst {
     }
 
     public void print() {
-        System.out.println("  mv " + dest.toString() + " " + src.toString());
+        System.out.println("  mv " + dest.toString() + ", " + src.toString());
     }
 }

@@ -6,6 +6,6 @@ public class SUB extends BinInst{
     }
 
     public void print() {
-        System.out.println("  sub " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  sub " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

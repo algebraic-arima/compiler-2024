@@ -10,3 +10,5 @@ log
 bin.src
 *.py
 *.txt
+*.ll
+*.s

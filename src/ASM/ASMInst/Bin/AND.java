@@ -6,6 +6,6 @@ public class AND extends BinInst{
     }
 
     public void print() {
-        System.out.println("  and "+ dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  and "+ dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

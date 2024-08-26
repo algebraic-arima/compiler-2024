@@ -6,6 +6,6 @@ public class MUL extends BinInst {
     }
 
     public void print() {
-        System.out.println("  mul " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  mul " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

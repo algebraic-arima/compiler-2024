@@ -6,6 +6,6 @@ public class XORI extends BinInst {
     }
 
     public void print() {
-        System.out.println("  xori " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  xori " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

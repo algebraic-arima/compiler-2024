@@ -6,6 +6,6 @@ public class DIV extends BinInst{
     }
 
     public void print() {
-        System.out.println("  div " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  div " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

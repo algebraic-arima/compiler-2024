@@ -13,6 +13,6 @@ public class LW extends ASMInst {
     }
 
     public void print() {
-        System.out.println("  lw " + rd.toString() + " " + offset + "(" + rs1.toString() + ")");
+        System.out.println("  lw " + rd.toString() + ", " + offset + "(" + rs1.toString() + ")");
     }
 }

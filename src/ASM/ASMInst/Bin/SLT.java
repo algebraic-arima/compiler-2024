@@ -6,6 +6,6 @@ public class SLT extends BinInst{
     }
 
     public void print() {
-        System.out.println("  slt " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  slt " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

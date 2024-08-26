@@ -6,6 +6,6 @@ public class SRAI extends BinInst {
     }
 
     public void print() {
-        System.out.println("  srai " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  srai " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

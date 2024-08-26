@@ -6,6 +6,6 @@ public class SLLI extends BinInst {
     }
 
     public void print() {
-        System.out.println("  slli " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  slli " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

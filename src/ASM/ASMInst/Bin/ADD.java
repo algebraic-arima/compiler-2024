@@ -6,7 +6,7 @@ public class ADD extends BinInst {
     }
 
     public void print() {
-        System.out.println("  add " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  add " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 
 }

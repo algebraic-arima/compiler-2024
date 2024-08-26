@@ -6,6 +6,6 @@ public class REM extends BinInst {
     }
 
     public void print() {
-        System.out.println("  rem "+ dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  rem "+ dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }

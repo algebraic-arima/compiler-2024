@@ -12,6 +12,6 @@ public class LWL extends ASMInst {
     }
 
     public void print() {
-        System.out.println("  lw " + rd.toString() + " " + fromLabel);
+        System.out.println("  lw " + rd.toString() + ", " + fromLabel);
     }
 }

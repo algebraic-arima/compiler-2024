@@ -1,6 +1,6 @@
 package src.ASM.Operand;
 
-public class PhyReg extends Reg{
+public class PhyReg extends Reg {
     public int index;
     public String name;
 
@@ -54,12 +54,12 @@ public class PhyReg extends Reg{
             s8, s9, s10, s11, t3, t4, t5, t6
     };
 
-    public PhyReg(int ind){
+    public PhyReg(int ind) {
         this.index = ind;
         this.name = phyRegs[ind].name;
     }
 
-    public PhyReg(String str){
+    public PhyReg(String str) {
         switch (str) {
             case "zero":
                 this.index = 0;

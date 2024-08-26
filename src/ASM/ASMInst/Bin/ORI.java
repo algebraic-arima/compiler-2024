@@ -6,6 +6,6 @@ public class ORI extends BinInst {
     }
 
     public void print() {
-        System.out.println("  ori " + dest.toString() + " " + lhs.toString() + " " + rhs.toString());
+        System.out.println("  ori " + dest.toString() + ", " + lhs.toString() + ", " + rhs.toString());
     }
 }
