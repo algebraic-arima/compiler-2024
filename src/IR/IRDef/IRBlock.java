@@ -1,8 +1,6 @@
 package src.IR.IRDef;
 
-import src.IR.IRInst.IRInst;
-import src.IR.IRInst.Label;
-import src.IR.IRInst.terminalIRInst;
+import src.IR.IRInst.*;
 import src.IR.IRVisitor;
 
 import java.util.ArrayList;
@@ -12,6 +10,8 @@ public class IRBlock {
     public ArrayList<IRInst> IRInsts = new ArrayList<>();
     public int index;
     static public int blockCnt;
+    public int regNum = 0;
+    public int funcParamMax = 0;
 
     public IRBlock(String s) {
         index = blockCnt;
@@ -30,10 +30,24 @@ public class IRBlock {
         if (IRInsts.isEmpty()) return;
         System.out.print(label.label + ":\n");
         ArrayList<IRInst> newIRInsts = new ArrayList<>();
-        for (IRInst IRInst : IRInsts) {
-            IRInst.print();
-            newIRInsts.add(IRInst);
-            if (IRInst instanceof terminalIRInst) {
+        for (IRInst i : IRInsts) {
+            i.print();
+            newIRInsts.add(i);
+            if (i instanceof Binary || i instanceof Select
+                    || i instanceof Load || i instanceof GetElePtr
+                    || i instanceof Icmp || i instanceof Phi) {
+                regNum++;
+            } else if (i instanceof Call) {
+                if (i.dest != null && !((Call) i).retType.typeName.equals("void")) {
+                    regNum++;
+                }
+                if (((Call) i).args.size() > funcParamMax) {
+                    funcParamMax = ((Call) i).args.size();
+                }
+            } else if (i instanceof Alloca) {
+                regNum += 2;
+            }
+            if (i instanceof terminalIRInst) {
                 break;
             }
         }

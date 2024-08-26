@@ -122,7 +122,6 @@ public class IRBuilder implements __ASTVisitor {
             }
 
             curFunc.addBlock(curBlock);
-            curFunc.regNum = curFunc.regCollector.IRInsts.size();
 
             for (IRInst i : curFunc.blocks.getFirst().IRInsts) {
                 curFunc.regCollector.addInst(i);

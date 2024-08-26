@@ -39,7 +39,7 @@ public class ASMBuilder implements IRVisitor {
         node.gVarDefs.forEach(x -> x.accept(this));
         node.strDef.accept(this);
         node.funcDefs.forEach(x -> x.accept(this));
-        for(Map.Entry<String, Integer> entry : regPos.entrySet()){
+        for (Map.Entry<String, Integer> entry : regPos.entrySet()) {
             System.out.println(entry.getKey() + " " + entry.getValue());
         }
     }
@@ -58,13 +58,11 @@ public class ASMBuilder implements IRVisitor {
         ASMBlock in = new ASMBlock(node.name.substring(1));
         curFunc.blocks.add(in);
         curBlock = in;
+        int stackSize = 4 * (node.regNum + (node.funcParamMax > 8 ? node.funcParamMax - 8 : 0) + 1);
+        curFunc.stackSize = (stackSize / 16 + 1) * 16;
         in.addInst(new ADDI("sp", "sp", -curFunc.stackSize));
-        in.addInst(new SW("ra", curFunc.stackSize - 4, "sp"));
-        /// todo: move sp & generate map from reg to stack index
-        /// todo: then
-        /// in irbuilder, count the number of alloca
-        /// now we put all the reg in the stack
-
+        occSP = 4;
+        in.addInst(new SW("ra", curFunc.stackSize - occSP, "sp"));
 
         node.blocks.forEach(x -> x.accept(this));
         curIRFuncDef = null;
@@ -99,8 +97,8 @@ public class ASMBuilder implements IRVisitor {
     @Override
     public void visit(Alloca node) {
         occSP += 8;
-        regPos.put(node.dest.name, occSP);
-        curBlock.addInst(new ADDI("t0", "sp", occSP - 4));
+        regPos.put(node.dest.name, curFunc.stackSize - occSP);
+        curBlock.addInst(new ADDI("t0", "sp", curFunc.stackSize - occSP + 4));
         curBlock.addInst(new SW("t0", regPos.get(node.dest.name), "sp"));
     }
 
@@ -275,8 +273,8 @@ public class ASMBuilder implements IRVisitor {
         }
         String rdn = node.dest.name;
         occSP += 4;
-        regPos.put(rdn, occSP);
-        curBlock.addInst(new SW("t0", occSP, "sp"));
+        regPos.put(rdn, curFunc.stackSize - occSP);
+        curBlock.addInst(new SW("t0", curFunc.stackSize - occSP, "sp"));
     }
 
     @Override
@@ -309,8 +307,8 @@ public class ASMBuilder implements IRVisitor {
             curBlock.addInst(new CALL(node.funcName.substring(1)));
             if (node.dest != null && !node.retType.typeName.equals("void")) {
                 occSP += 4;
-                regPos.put(node.dest.name, occSP);
-                curBlock.addInst(new SW("a0", occSP, "sp"));
+                regPos.put(node.dest.name, curFunc.stackSize - occSP);
+                curBlock.addInst(new SW("a0", curFunc.stackSize - occSP, "sp"));
             }
         }
     }
@@ -395,8 +393,8 @@ public class ASMBuilder implements IRVisitor {
         }
         String rdn = node.dest.name;
         occSP += 4;
-        regPos.put(rdn, occSP);
-        curBlock.addInst(new SW("t0", occSP, "sp"));
+        regPos.put(rdn, curFunc.stackSize - occSP);
+        curBlock.addInst(new SW("t0", curFunc.stackSize - occSP, "sp"));
     }
 
     @Override
@@ -417,8 +415,8 @@ public class ASMBuilder implements IRVisitor {
             curBlock.addInst(new LW("t0", regPos.get(node.src.name), "sp"));
             curBlock.addInst(new LW("t0", 0, "t0"));
             occSP += 4;
-            regPos.put(node.dest.name, occSP);
-            curBlock.addInst(new SW("t0", occSP, "sp"));
+            regPos.put(node.dest.name, curFunc.stackSize - occSP);
+            curBlock.addInst(new SW("t0", curFunc.stackSize - occSP, "sp"));
         }
     }
 

@@ -15,6 +15,7 @@ public class IRFuncDef extends IRDef {
     public IRBlock regCollector;
     public ArrayList<IRBlock> blocks;
     public int regNum = 0;
+    public int funcParamMax = 0;
 
     public IRFuncDef(String name) {
         retType = new IRType();
@@ -29,7 +30,7 @@ public class IRFuncDef extends IRDef {
         blocks.add(e);
     }
 
-    public void addAlloca(Alloca a){
+    public void addAlloca(Alloca a) {
         regCollector.addInst(a);
     }
 
@@ -44,7 +45,15 @@ public class IRFuncDef extends IRDef {
         }
         System.out.print(") {\n");
         blocks.forEach(IRBlock::print);
+        blocks.forEach(e -> {
+            regNum += e.regNum;
+            if (e.funcParamMax > funcParamMax) {
+                funcParamMax = e.funcParamMax;
+            }
+        });
         System.out.print("}\n");
+        System.out.print("; " + regNum + " * 4 stack memory used\n");
+        System.out.print("; at most " + funcParamMax + " * 4 function parameters\n");
     }
 
     @Override
