@@ -3,16 +3,16 @@ package src.ASM.ASMInst;
 import src.ASM.Operand.PhyReg;
 
 public class SW extends ASMInst {
-    public PhyReg srcAddr, dest;
+    public PhyReg rs2, rs1;
     public long offset;
 
-    public SW(String srcAddr_, long offset_, String dest_) {
-        srcAddr = new PhyReg(srcAddr_);
+    public SW(String src_, long offset_, String destAddr_) {
+        rs2 = new PhyReg(src_);
         offset = offset_;
-        dest = new PhyReg(dest_);
+        rs1 = new PhyReg(destAddr_);
     }
 
     public void print() {
-        System.out.println("  sw " + dest.toString() + " " + offset + "(" + srcAddr.toString() + ")");
+        System.out.println("  sw " + rs2.toString() + " " + offset + "(" + rs1.toString() + ")");
     }
 }

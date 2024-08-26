@@ -11,8 +11,13 @@ public class ASMBlock extends ASMNode {
     public String label;
     public ArrayList<ASMInst> insts;
 
-    public ASMBlock(){
+    public ASMBlock(String str){
         insts = new ArrayList<>();
+        label = str;
+    }
+
+    public void addInst(ASMInst inst){
+        insts.add(inst);
     }
 
     @Override

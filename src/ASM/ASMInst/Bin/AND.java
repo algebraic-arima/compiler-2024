@@ -1,7 +1,7 @@
 package src.ASM.ASMInst.Bin;
 
 public class AND extends BinInst{
-    public AND(String lhs_, String rhs_, String dest_) {
+    public AND(String dest_, String lhs_, String rhs_) {
         super(lhs_, rhs_, dest_);
     }
 

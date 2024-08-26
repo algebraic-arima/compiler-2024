@@ -1,7 +1,7 @@
 package src.ASM.ASMInst.Bin;
 
 public class DIV extends BinInst{
-    public DIV(String lhs_, String rhs_, String dest_) {
+    public DIV(String dest_, String lhs_, String rhs_) {
         super(lhs_, rhs_, dest_);
     }
 

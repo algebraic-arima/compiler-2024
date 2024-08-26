@@ -2,8 +2,14 @@ package src.ASM;
 
 public class ASMPrinter {
 
-    public void print(ASMNode node) {
-        node.print();
+    ASMProg prog;
+
+    public ASMPrinter(ASMProg prog) {
+        this.prog = prog;
+    }
+
+    public void print() {
+        prog.print();
     }
 
 }

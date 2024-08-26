@@ -15,7 +15,6 @@ public class ASMGStrDef extends ASMNode {
 
     @Override
     public void print() {
-        System.out.println("  .section .rodata");
         System.out.println(name + ":");
         System.out.println("  .ascii \"" + value + "\"");
         System.out.println("  .size " + name + ", " + value.length() + "\n");

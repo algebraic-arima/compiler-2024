@@ -14,6 +14,7 @@ public class IRFuncDef extends IRDef {
     public ArrayList<String> paramNames;
     public IRBlock regCollector;
     public ArrayList<IRBlock> blocks;
+    public int regNum = 0;
 
     public IRFuncDef(String name) {
         retType = new IRType();

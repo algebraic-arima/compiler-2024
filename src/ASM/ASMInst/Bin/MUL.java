@@ -1,7 +1,7 @@
 package src.ASM.ASMInst.Bin;
 
 public class MUL extends BinInst {
-    public MUL(String lhs_, String rhs_, String dest_) {
+    public MUL(String dest_, String lhs_, String rhs_) {
         super(lhs_, rhs_, dest_);
     }
 

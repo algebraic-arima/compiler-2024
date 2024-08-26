@@ -1,7 +1,7 @@
 package src.ASM.ASMInst.Bin;
 
 public class SRA extends BinInst{
-    public SRA(String lhs_, String rhs_, String dest_) {
+    public SRA(String dest_, String lhs_, String rhs_) {
         super(lhs_, rhs_, dest_);
     }
 

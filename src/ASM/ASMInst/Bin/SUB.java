@@ -1,7 +1,7 @@
 package src.ASM.ASMInst.Bin;
 
 public class SUB extends BinInst{
-    public SUB(String lhs_, String rhs_, String dest_) {
+    public SUB(String dest_, String lhs_, String rhs_) {
         super(lhs_, rhs_, dest_);
     }
 

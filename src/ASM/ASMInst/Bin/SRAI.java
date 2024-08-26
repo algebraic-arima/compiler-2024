@@ -1,7 +1,7 @@
 package src.ASM.ASMInst.Bin;
 
 public class SRAI extends BinInst {
-    public SRAI(String lhs_, long rhs_, String dest_) {
+    public SRAI(String dest_, String lhs_, long rhs_) {
         super(lhs_, rhs_, dest_);
     }
 

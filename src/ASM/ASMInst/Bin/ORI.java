@@ -1,7 +1,7 @@
 package src.ASM.ASMInst.Bin;
 
 public class ORI extends BinInst {
-    public ORI(String lhs_, long rhs_, String dest_) {
+    public ORI(String dest_, String lhs_, long rhs_) {
         super(lhs_, rhs_, dest_);
     }
 

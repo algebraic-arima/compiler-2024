@@ -1,7 +1,7 @@
 package src.ASM.ASMInst.Bin;
 
 public class SLTI extends BinInst {
-    public SLTI(String lhs_, long rhs_, String dest_) {
+    public SLTI(String dest_, String lhs_, long rhs_) {
         super(lhs_, rhs_, dest_);
     }
 

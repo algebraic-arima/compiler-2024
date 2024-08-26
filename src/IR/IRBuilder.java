@@ -36,7 +36,6 @@ public class IRBuilder implements __ASTVisitor {
     public IRProg irProg;
     GlobalScope gScope;
     Scope curScope;
-    //    public HashMap<Register, String> entityMap;
     // temporary register to name
     // the address of variable `a` is stored in %a.addr
     // name to the register name that stores the variable address
@@ -123,6 +122,7 @@ public class IRBuilder implements __ASTVisitor {
             }
 
             curFunc.addBlock(curBlock);
+            curFunc.regNum = curFunc.regCollector.IRInsts.size();
 
             for (IRInst i : curFunc.blocks.getFirst().IRInsts) {
                 curFunc.regCollector.addInst(i);

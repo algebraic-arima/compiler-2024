@@ -3,6 +3,7 @@ package src.IR.IRDef;
 import src.IR.IRInst.IRInst;
 import src.IR.IRInst.Label;
 import src.IR.IRInst.terminalIRInst;
+import src.IR.IRVisitor;
 
 import java.util.ArrayList;
 
@@ -40,5 +41,9 @@ public class IRBlock {
         // indent in inst::print()
 //        tInst.print();
         System.out.print("\n");
+    }
+
+    public void accept(IRVisitor visitor) {
+        visitor.visit(this);
     }
 }

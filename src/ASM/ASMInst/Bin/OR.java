@@ -1,7 +1,7 @@
 package src.ASM.ASMInst.Bin;
 
 public class OR extends BinInst {
-    public OR(String lhs_, String rhs_, String dest_) {
+    public OR(String dest_, String lhs_, String rhs_) {
         super(lhs_, rhs_, dest_);
     }
 

@@ -6,16 +6,25 @@ import src.ASM.ASMDef.ASMGVarDef;
 
 import java.util.ArrayList;
 
-public class ASMProg extends ASMNode{
+public class ASMProg extends ASMNode {
 
     ArrayList<ASMFuncDef> funcDefs;
     ArrayList<ASMGStrDef> gStrDefs;
     ArrayList<ASMGVarDef> gVarDefs;
 
+    public ASMProg() {
+        funcDefs = new ArrayList<>();
+        gStrDefs = new ArrayList<>();
+        gVarDefs = new ArrayList<>();
+    }
+
     @Override
     public void print() {
+        System.out.println("  .section .text");
         funcDefs.forEach(ASMFuncDef::print);
-        gStrDefs.forEach(ASMGStrDef::print);
+        System.out.println("  .section .data");
         gVarDefs.forEach(ASMGVarDef::print);
+        System.out.println("  .section .rodata");
+        gStrDefs.forEach(ASMGStrDef::print);
     }
 }

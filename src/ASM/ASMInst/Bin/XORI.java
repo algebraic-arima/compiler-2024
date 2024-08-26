@@ -1,7 +1,7 @@
 package src.ASM.ASMInst.Bin;
 
 public class XORI extends BinInst {
-    public XORI(String lhs_, long rhs_, String dest_) {
+    public XORI(String dest_, String lhs_, long rhs_) {
         super(lhs_, rhs_, dest_);
     }
 

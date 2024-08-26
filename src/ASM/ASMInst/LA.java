@@ -3,8 +3,8 @@ package src.ASM.ASMInst;
 import src.ASM.Operand.PhyReg;
 
 public class LA extends ASMInst{
-    PhyReg rd;
-    String fromLabel;
+    public PhyReg rd;
+    public String fromLabel;
 
     public LA(String rd_, String fromLabel_) {
         rd = new PhyReg(rd_);

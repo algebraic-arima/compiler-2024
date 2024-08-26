@@ -1,7 +1,7 @@
 package src.ASM.ASMInst.Bin;
 
 public class ANDI extends BinInst {
-    public ANDI(String lhs_, long rhs_, String dest_) {
+    public ANDI(String dest_, String lhs_, long rhs_) {
         super(lhs_, rhs_, dest_);
     }
 
