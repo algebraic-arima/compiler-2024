@@ -295,22 +295,32 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(Call node) {
-        if (node.args.size() < 8) {
-            int cnt = 0;
-            for (Entity e : node.args) {
+        int cnt = 0;
+        for (Entity e : node.args) {
+            if (cnt < 8) {
                 if (e instanceof Constant) {
                     curBlock.addInst(new LI("a" + cnt, ((Constant) e).value));
                 } else {
                     curBlock.addInst(new LW("a" + cnt, regPos.get(((Register) e).name), "sp"));
                 }
+            } else {
+                if (e instanceof Constant) {
+                    curBlock.addInst(new LI("t0", ((Constant) e).value));
+                    curBlock.addInst(new SW("t0", curFunc.stackSize + (cnt - 8) * 4L, "sp"));
+                } else {
+                    curBlock.addInst(new LW("t0", regPos.get(((Register) e).name), "sp"));
+                    curBlock.addInst(new SW("t0", curFunc.stackSize + (cnt - 8) * 4L, "sp"));
+                }
             }
-            curBlock.addInst(new CALL(node.funcName.substring(1)));
-            if (node.dest != null && !node.retType.typeName.equals("void")) {
-                occSP += 4;
-                regPos.put(node.dest.name, curFunc.stackSize - occSP);
-                curBlock.addInst(new SW("a0", curFunc.stackSize - occSP, "sp"));
-            }
+            ++cnt;
         }
+        curBlock.addInst(new CALL(node.funcName.substring(1)));
+        if (node.dest != null && !node.retType.typeName.equals("void")) {
+            occSP += 4;
+            regPos.put(node.dest.name, curFunc.stackSize - occSP);
+            curBlock.addInst(new SW("a0", curFunc.stackSize - occSP, "sp"));
+        }
+
     }
 
     @Override
