@@ -611,47 +611,44 @@ public class IRBuilder implements __ASTVisitor {
         if (node.op == AND) {
             Register brAddr = new AnonReg(typeI1);
             curFunc.addAlloca(new Alloca(typeI1, brAddr));
-            curBlock.addInst(new Store(typeI1, new Constant(0), brAddr));
             IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-and-rhs");
             IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-and-end");
             node.lhs.accept(this);
+            curBlock.addInst(new Store(typeI1, node.lhs.entity, brAddr));
             Br b = new Br(node.lhs.entity, trueBlock, falseBlock);
             curBlock.IRInsts.add(b);
             curFunc.addBlock(curBlock);
             curBlock = trueBlock;
             curBlock.addInst(new Store(typeI1, new Constant(1), brAddr));
             node.rhs.accept(this);
+            curBlock.addInst(new Store(typeI1, node.rhs.entity, brAddr));
             Jmp j = new Jmp(falseBlock);
             curBlock.IRInsts.add(j);
             curFunc.addBlock(curBlock);
             curBlock = falseBlock;
             Register br = new AnonReg(typeI1);
             curBlock.addInst(new Load(typeI1, brAddr, br));
-            Register res = new AnonReg(typeI1);
-            curBlock.addInst(new Select(br, typeI1, node.rhs.entity, new Constant(0), res));
-            node.entity = res;
+            node.entity = br;
         } else if (node.op == OR) {
             Register brAddr = new AnonReg(typeI1);
             curFunc.addAlloca(new Alloca(typeI1, brAddr));
-            curBlock.addInst(new Store(typeI1, new Constant(0), brAddr));
             IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-or-end");
             IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-or-rhs");
             node.lhs.accept(this);
+            curBlock.addInst(new Store(typeI1, node.lhs.entity, brAddr));
             Br b = new Br(node.lhs.entity, trueBlock, falseBlock);
             curBlock.IRInsts.add(b);
             curFunc.addBlock(curBlock);
             curBlock = falseBlock;
-            curBlock.addInst(new Store(typeI1, new Constant(1), brAddr));
             node.rhs.accept(this);
+            curBlock.addInst(new Store(typeI1, node.rhs.entity, brAddr));
             Jmp j = new Jmp(trueBlock);
             curBlock.IRInsts.add(j);
             curFunc.addBlock(curBlock);
             curBlock = trueBlock;
             Register br = new AnonReg(typeI1);
             curBlock.addInst(new Load(typeI1, brAddr, br));
-            Register res = new AnonReg(typeI1);
-            curBlock.addInst(new Select(br, typeI1, node.rhs.entity, new Constant(1), res));
-            node.entity = res;
+            node.entity = br;
         }
     }
 

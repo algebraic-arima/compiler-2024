@@ -77,7 +77,7 @@ public class ASMBuilder implements IRVisitor {
     @Override
     public void visit(IRStrDef node) {
         node.strMap.forEach((k, v) -> {
-            asmProg.gStrDefs.add(new ASMGStrDef(k, "@constStr-" + v));
+            asmProg.gStrDefs.add(new ASMGStrDef("@constStr-" + v, k));
         });
     }
 
@@ -302,7 +302,11 @@ public class ASMBuilder implements IRVisitor {
                 if (e instanceof Constant) {
                     curBlock.addInst(new LI("a" + cnt, ((Constant) e).value));
                 } else {
-                    curBlock.addInst(new LW("a" + cnt, regPos.get(((Register) e).name), "sp"));
+                    if (((Register) e).name.startsWith("%")) {
+                        curBlock.addInst(new LW("a" + cnt, regPos.get(((Register) e).name), "sp"));
+                    } else {
+                        curBlock.addInst(new LA("a" + cnt, ((Register) e).name.substring(1)));
+                    }
                 }
             } else {
                 if (e instanceof Constant) {
@@ -326,7 +330,25 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(GetElePtr node) {
-
+        curBlock.addInst(new LW("t0", regPos.get(node.ptr.name), "sp"));
+        Integer csize = classDefs.get(node.ptrType.typeName);
+        if (csize == null) {
+            csize = 1;
+        }
+        if (node.offset instanceof Constant) {
+            curBlock.addInst(new ADDI("t0", "t0", ((Constant) node.offset).value * csize * 32));
+        } else {
+            curBlock.addInst(new LW("t1", regPos.get(((Register) node.offset).name), "sp"));
+            curBlock.addInst(new LI("t2", csize));
+            curBlock.addInst(new MUL("t1", "t1", "t2"));
+            curBlock.addInst(new ADD("t0", "t0", "t1"));
+        }
+        if (node.fieldInd != -1) {
+            curBlock.addInst(new ADDI("t0", "t0", node.fieldInd * 32L));
+        }
+        occSP += 4;
+        regPos.put(node.dest.name, curFunc.stackSize - occSP);
+        curBlock.addInst(new SW("t0", curFunc.stackSize - occSP, "sp"));
     }
 
     @Override
@@ -480,7 +502,9 @@ public class ASMBuilder implements IRVisitor {
             } else {
                 curBlock.addInst(new LW("t2", regPos.get(((Register) node.falseVal).name), "sp"));
             }
-            /// todo: add select inst
+            occSP += 4;
+            regPos.put(node.dest.name, curFunc.stackSize - occSP);
+            // omitted
         }
 
     }
