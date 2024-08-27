@@ -19,11 +19,12 @@ import java.io.*;
 
 public class Main {
     public static void main(String[] args) throws Exception {
+        SemanticJudge sj = new SemanticJudge();
         try {
 //            String file = "/home/limike/Git/compiler-2024/t.mx";
-            String file = "/home/limike/Git/compiler-2024/src/testcases/codegen/test/t1.mx";
-            InputStream in = new FileInputStream(file);
-//            InputStream in = System.in;
+//            String file = "/home/limike/Git/compiler-2024/src/testcases/sema/basic-package/basic-71.mx";
+//            InputStream in = new FileInputStream(file);
+            InputStream in = System.in;
             Lex lexer = new Lex(CharStreams.fromStream(in));
             lexer.removeErrorListeners();
             lexer.addErrorListener(new MxErrorListener());
@@ -43,7 +44,7 @@ public class Main {
             irBuilder.visit(ASTRoot);
             IRPrinter irPrinter = new IRPrinter(irBuilder.irProg);
             boolean printIR = false;
-            if(printIR){
+            if (printIR) {
                 FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/test.ll");
                 PrintStream printStream = new PrintStream(fileOutputStream);
                 System.setOut(printStream);
@@ -51,7 +52,7 @@ public class Main {
             irPrinter.print(printIR);
 
 
-            ASMBuilder asmBuilder = new ASMBuilder(irBuilder.irProg,printIR);
+            ASMBuilder asmBuilder = new ASMBuilder(irBuilder.irProg, printIR);
             ASMPrinter asmPrinter = new ASMPrinter(asmBuilder.asmProg);
 //            PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
 //            System.setOut(consolePrintStream);
@@ -63,7 +64,8 @@ public class Main {
 //            asmPrinter.print();
             System.exit(0);
         } catch (error e) {
-            System.err.println(e.pos.row + ":" + e.pos.column + " " + e.message);
+//            System.err.println(e.pos.row + ":" + e.pos.column + " " + e.message);
+            sj.catPrint(e);
             System.exit(1); // if judge
         }
     }

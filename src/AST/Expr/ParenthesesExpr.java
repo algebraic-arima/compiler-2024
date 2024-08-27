@@ -7,12 +7,12 @@ import src.utils.pos.Position;
 
 public class ParenthesesExpr extends Expr {
 
-    public Expr exp;
+    public Expr expr;
     public Register addr;
 
     public ParenthesesExpr(Position p, Expr e) {
         super(p);
-        exp = e;
+        expr = e;
     }
 
     @Override

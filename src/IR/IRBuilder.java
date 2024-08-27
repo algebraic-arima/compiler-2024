@@ -1,6 +1,5 @@
 package src.IR;
 
-import org.stringtemplate.v4.ST;
 import src.AST.Def.*;
 import src.AST.Expr.*;
 import src.AST.Prog;
@@ -21,6 +20,7 @@ import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 import src.utils.Scope.GlobalScope;
 import src.utils.Scope.Scope;
+import src.utils.type.ClassType;
 import src.utils.type.FuncType;
 import src.utils.type.Type;
 
@@ -45,6 +45,7 @@ public class IRBuilder implements __ASTVisitor {
     public IRBlock curBlock;
     public IRFuncDef curFunc;
     public ArrayList<IRFuncDef> initFunc;
+    public HashMap<String, Integer> tmpClass;
 
     public IRBlock breakBlock = null, contBlock = null;
 
@@ -63,7 +64,6 @@ public class IRBuilder implements __ASTVisitor {
 
     public IRBuilder(GlobalScope gScope) {
         irProg = new IRProg();
-//        entityMap = new HashMap<>();
         curBlock = null;
         initFunc = new ArrayList<>();
         this.gScope = gScope;
@@ -72,6 +72,10 @@ public class IRBuilder implements __ASTVisitor {
         for (Map.Entry<String, String> e : gScope.renameVarMap.entrySet()) {
             gScope.VarList.put(e.getValue(), gScope.VarList.get(e.getKey()));
             gScope.VarList.remove(e.getKey());
+        }
+        tmpClass = new HashMap<>();
+        for (Map.Entry<String, ClassType> e : gScope.ClassList.entrySet()) {
+            tmpClass.put(e.getKey(), e.getValue().fields.size());
         }
     }
 
@@ -579,7 +583,7 @@ public class IRBuilder implements __ASTVisitor {
                 node.entity.type = c.retType;
                 curBlock.addInst(c);
             }
-        } else if (node.lhs.type.isArray() || node.rhs.type.isArray()) {
+        } else if ((node.lhs.type.isArray() || node.rhs.type.isArray()) || (node.lhs.type.isClass() || node.rhs.type.isClass())) {
             Register res = new AnonReg(typeI1);
             Icmp n = new Icmp(node.op);
             n.dest = res;
@@ -591,17 +595,16 @@ public class IRBuilder implements __ASTVisitor {
             node.entity = res;
             n.type = typePtr;
             curBlock.IRInsts.add(n);
-        } else if (node.lhs.type.isClass() || node.rhs.type.isClass()) {
+        } else if (node.lhs.type.isNull() && node.rhs.type.isNull()) {
+            node.entity = new Constant(1);
+        } else if (node.lhs.type.isBool() && node.rhs.type.isBool()) {
             Register res = new AnonReg(typeI1);
             Icmp n = new Icmp(node.op);
-            n.dest = res;
-            if (node.lhs.type.isNull()) {
-                n.setRhs(node.rhs.entity);
-            } else {
-                n.setLhs(node.lhs.entity);
-            }
+            n.setLhs(node.lhs.entity);
+            n.setRhs(node.rhs.entity);
             node.entity = res;
-            n.type = typePtr;
+            n.dest = res;
+            n.type = typeI1;
             curBlock.IRInsts.add(n);
         }
     }
@@ -980,13 +983,13 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(NewTypeExpr node) {
-        irProg.classDefs.forEach(c -> {
-            if (c.className.substring(7).equals(node.type.typeName)) {
+        for (Map.Entry<String, Integer> c : tmpClass.entrySet()) {
+            if (c.getKey().equals(node.type.typeName)) {
                 String cn = node.type.typeName;
                 Register res = new AnonReg(typePtr);
                 node.entity = res;
                 Call c1 = new Call("@..malloc", node.type, res);
-                c1.args.add(new Constant(c.fields.size() * 4L));
+                c1.args.add(new Constant(c.getValue() * 4L));
                 c1.argTypes.add(typeI32);
                 curBlock.addInst(c1);
                 Call c2 = new Call("@" + cn + ".." + cn, new IRType(), null);
@@ -994,7 +997,7 @@ public class IRBuilder implements __ASTVisitor {
                 c2.argTypes.add(typePtr);
                 curBlock.addInst(c2);
             }
-        });
+        }
     }
 
     @Override
@@ -1004,16 +1007,18 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(ParenthesesExpr node) {
-        node.exp.accept(this);
-        node.entity = node.exp.entity;
-        if (node.exp instanceof VarExpr) {
-            node.addr = ((VarExpr) node.exp).addr;
-        } else if (node.exp instanceof MemberObjAccessExpr) {
-            node.addr = ((MemberObjAccessExpr) node.exp).addr;
-        } else if (node.exp instanceof ArrayAccessExpr) {
-            node.addr = ((ArrayAccessExpr) node.exp).addr;
-        } else if (node.exp instanceof UnaryArithExpr) {
-            node.addr = ((UnaryArithExpr) node.exp).addr;
+        node.expr.accept(this);
+        node.entity = node.expr.entity;
+        if (node.expr instanceof VarExpr) {
+            node.addr = ((VarExpr) node.expr).addr;
+        } else if (node.expr instanceof MemberObjAccessExpr) {
+            node.addr = ((MemberObjAccessExpr) node.expr).addr;
+        } else if (node.expr instanceof ArrayAccessExpr) {
+            node.addr = ((ArrayAccessExpr) node.expr).addr;
+        } else if (node.expr instanceof UnaryArithExpr) {
+            node.addr = ((UnaryArithExpr) node.expr).addr;
+        } else if (node.expr instanceof ParenthesesExpr) {
+            node.addr = ((ParenthesesExpr) node.expr).addr;
         }
     }
 
@@ -1113,6 +1118,8 @@ public class IRBuilder implements __ASTVisitor {
                 addr = ((ArrayAccessExpr) node.expr).addr;
             } else if (node.expr instanceof UnaryArithExpr) {
                 addr = ((UnaryArithExpr) node.expr).addr;
+            } else if (node.expr instanceof ParenthesesExpr) {
+                addr = ((ParenthesesExpr) node.expr).addr;
             }
             Store s = new Store(new IRType(node.expr.type),
                     res, addr);

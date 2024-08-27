@@ -617,9 +617,9 @@ public class SemanticChecker implements __ASTVisitor {
 
     @Override
     public void visit(ParenthesesExpr node) {
-        node.exp.accept(this);
-        node.isLvalue = node.exp.isLvalue;
-        node.type = node.exp.type;
+        node.expr.accept(this);
+        node.isLvalue = node.expr.isLvalue;
+        node.type = node.expr.type;
     }
 
     @Override

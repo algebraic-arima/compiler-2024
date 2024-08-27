@@ -233,13 +233,13 @@ public class ASMBuilder implements IRVisitor {
                     addLW("t0", regPos.get(rn2), "sp");
                     curBlock.addInst(new AND("t0", "t0", "t1"));
                 } else {
-                    curBlock.addInst(new ANDI("t0", "t1", ((Constant) node.rhs).value));
+                    addANDI("t0", "t1", ((Constant) node.rhs).value);
                 }
             } else {
                 if (node.rhs instanceof Register) {
                     String rn = ((Register) node.rhs).name;
                     addLW("t1", regPos.get(rn), "sp");
-                    curBlock.addInst(new ANDI("t0", "t1", ((Constant) node.lhs).value));
+                    addANDI("t0", "t1", ((Constant) node.lhs).value);
                 } else {
                     curBlock.addInst(new LI("t0", ((Constant) node.lhs).value));
                     curBlock.addInst(new LI("t1", ((Constant) node.rhs).value));
