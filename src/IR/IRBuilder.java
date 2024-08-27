@@ -662,6 +662,45 @@ public class IRBuilder implements __ASTVisitor {
     public void visit(FmtStrLiteralExpr node) {
         node.exprs.forEach(e -> e.accept(this));
         /// todo: call strcat to align all the expr values
+        Register result = new Register(typePtr, irProg.strDef.getString(node.strs.getFirst()));
+        for (int i = 0; i < node.exprs.size(); ++i) {
+            Expr e = node.exprs.get(i);
+            String str = node.strs.get(i + 1);
+
+            Register toStrRes;
+            Register strReg = new Register(typePtr, irProg.strDef.getString(str));
+
+            if (e.type.isString()) {
+                toStrRes = (Register) e.entity;
+            } else if (e.type.isBool()) {
+                toStrRes = null;
+            } else if (e.type.isInt()) {
+                toStrRes = new AnonReg(typePtr);
+                Call c = new Call("@toString", typePtr, toStrRes);
+                c.args.add(e.entity);
+                c.argTypes.add(typeI32);
+                curBlock.addInst(c);
+            } else {
+                toStrRes = null;
+            }
+            Register nresult = new AnonReg(typePtr);
+            Call c = new Call("@string..add", typePtr, nresult);
+            c.args.add(result);
+            c.args.add(toStrRes);
+            c.argTypes.add(typePtr);
+            c.argTypes.add(typePtr);
+            curBlock.addInst(c);
+            result = nresult;
+            nresult = new AnonReg(typePtr);
+            c = new Call("@string..add", typePtr, nresult);
+            c.args.add(result);
+            c.args.add(strReg);
+            c.argTypes.add(typePtr);
+            c.argTypes.add(typePtr);
+            curBlock.addInst(c);
+            result = nresult;
+        }
+        node.entity = result;
     }
 
     @Override

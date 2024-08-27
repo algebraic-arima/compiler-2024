@@ -98,8 +98,7 @@ public class ASMBuilder implements IRVisitor {
             bn = curFunc.name;
         }
         if (!curBlock.label.equals(bn)) {
-            bn = bn.replace("-", "_");
-            curBlock = new ASMBlock(bn);
+            curBlock = new ASMBlock(bn.replace("-", "_"));
             curFunc.blocks.add(curBlock);
         }
         node.IRInsts.forEach(x -> x.accept(this));
@@ -309,8 +308,12 @@ public class ASMBuilder implements IRVisitor {
         } else {
             String rn = ((Register) node.cond).name;
             addLW("t0", regPos.get(rn), "sp");
-            curBlock.addInst(new BEQZ("t0", node.falseBlock.label.label));
+            String nlabel = curBlock.label + "_forb";
+            curBlock.addInst(new BEQZ("t0", nlabel));
             curBlock.addInst(new J(node.trueBlock.label.label));
+            curBlock = new ASMBlock(nlabel);
+            curBlock.addInst(new J(node.falseBlock.label.label));
+            curFunc.blocks.add(curBlock);
         }
     }
 
@@ -624,6 +627,15 @@ public class ASMBuilder implements IRVisitor {
             curBlock.addInst(new LI("t3", offset_));
             curBlock.addInst(new ADD("t3", "t3", destAddr_));
             curBlock.addInst(new LW(src_, 0, "t3"));
+        }
+    }
+
+    private void addANDI(String dest_, String lhs_, long rhs_) {
+        if (rhs_ < 2048 && rhs_ >= -2048) {
+            curBlock.addInst(new ANDI(dest_, lhs_, rhs_));
+        } else {
+            curBlock.addInst(new LI("t2", rhs_));
+            curBlock.addInst(new AND(dest_, lhs_, "t2"));
         }
     }
 
