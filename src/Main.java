@@ -64,7 +64,7 @@ public class Main {
             System.exit(0);
         } catch (error e) {
             System.err.println(e.pos.row + ":" + e.pos.column + " " + e.message);
-//            System.exit(1); // if judge
+            System.exit(1); // if judge
         }
     }
 }
