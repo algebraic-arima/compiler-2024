@@ -8,8 +8,8 @@ public class IRPrinter {
         this.irProgram = irProgram;
     }
 
-    public void print() {
-        printOut("declare dso_local void @print(ptr)\n",
+    public void print(boolean p) {
+        if (p) printOut("declare dso_local void @print(ptr)\n",
                 "declare dso_local void @println(ptr)\n",
                 "declare dso_local void @printInt(i32)\n",
                 "declare dso_local void @printlnInt(i32)\n",
@@ -30,7 +30,7 @@ public class IRPrinter {
                 "declare dso_local i32 @array..size(ptr)\n",
                 "declare dso_local ptr @array..malloc(i32)\n",
                 "declare dso_local ptr @..malloc(i32)\n\n");
-        irProgram.print();
+        irProgram.print(p);
     }
 
     public void printOut(String... strings) {

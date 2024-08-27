@@ -7,16 +7,20 @@ public class ASMGStrDef extends ASMNode {
 
     public String name;
     public String value;
+    public int len;
 
     public ASMGStrDef(String name, String value) {
         this.name = name;
-        this.value = value;
+        this.len = value.length() + 1;
+        this.value = value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n");
     }
 
     @Override
     public void print() {
         System.out.println(name + ":");
-        System.out.println("  .ascii \"" + value + "\"");
-        System.out.println("  .size " + name + ", " + value.length() + "\n");
+        System.out.println("  .asciz \"" + value + "\"");
+        System.out.println("  .size " + name + ", " + len + "\n");
     }
 }

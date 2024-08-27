@@ -19,7 +19,11 @@ public class GetElePtr extends IRInst {
     }
 
     public GetElePtr(String ptrType, String destType, Register ptr, Register dest, int offset, int fieldInd) {
-        this.ptrType = new IRType(ptrType);
+        if (ptrType.equals("bool")) {
+            this.ptrType = new IRType("int");
+        } else {
+            this.ptrType = new IRType(ptrType);
+        }
         this.ptr = ptr;
         this.offset = new Constant(offset);
         this.fieldInd = fieldInd;
@@ -28,7 +32,11 @@ public class GetElePtr extends IRInst {
     }
 
     public GetElePtr(String ptrType, String destType, Register ptr, Register dest, Entity offset, int fieldInd) {
-        this.ptrType = new IRType(ptrType);
+        if (ptrType.equals("bool")) {
+            this.ptrType = new IRType("int");
+        } else {
+            this.ptrType = new IRType(ptrType);
+        }
         this.ptr = ptr;
         this.offset = offset;
         this.fieldInd = fieldInd;

@@ -1,5 +1,6 @@
 package src.IR;
 
+import org.stringtemplate.v4.ST;
 import src.AST.Def.*;
 import src.AST.Expr.*;
 import src.AST.Prog;
@@ -447,7 +448,7 @@ public class IRBuilder implements __ASTVisitor {
         Register res = new AnonReg(typePtr);
         Register res_offset_addr = new AnonReg(node.type.isArray() ? typePtr : typeI32);
 
-        GetElePtr g = new GetElePtr((node.array.type.hasClass()||node.array.type.dim>1) ? "ptr" : node.array.type.typeName,
+        GetElePtr g = new GetElePtr((node.array.type.hasClass() || node.array.type.dim > 1) ? "ptr" : node.array.type.typeName,
                 node.type.typeName,
                 (Register) node.array.entity, res,
                 node.index.entity, -1);
@@ -1000,21 +1001,33 @@ public class IRBuilder implements __ASTVisitor {
         IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-true");
         IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-false");
         IRBlock endBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-end");
+        IRType resType = new IRType(node.type);
+        Register resAddr = null;
+        if (!node.trueBranch.type.isVoid() || !node.falseBranch.type.isVoid()) {
+            resAddr = new AnonReg(resType);
+            curFunc.addAlloca(new Alloca(resType, resAddr));
+        }
         Br b = new Br(node.cond.entity, trueBlock, falseBlock);
         curBlock.addInst(b);
         curFunc.addBlock(curBlock);
         curBlock = trueBlock;
         node.trueBranch.accept(this);
+        if (!node.trueBranch.type.isVoid() || !node.falseBranch.type.isVoid()) {
+            curBlock.addInst(new Store(resType, node.trueBranch.entity, resAddr));
+        }
         Jmp j = new Jmp(endBlock);
         curBlock.addInst(j);
         curFunc.addBlock(curBlock);
         curBlock = falseBlock;
         node.falseBranch.accept(this);
+        if (!node.trueBranch.type.isVoid() || !node.falseBranch.type.isVoid()) {
+            curBlock.addInst(new Store(resType, node.falseBranch.entity, resAddr));
+        }
         curBlock.addInst(j);
         curFunc.addBlock(curBlock);
         curBlock = endBlock;
         if (!node.trueBranch.type.isVoid() || !node.falseBranch.type.isVoid()) {
-            curBlock.addInst(new Select(node.cond.entity, new IRType(node.type), node.trueBranch.entity, node.falseBranch.entity, res));
+            curBlock.addInst(new Load(resType, resAddr, res));
         }
         node.entity = res;
     }

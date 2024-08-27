@@ -26,12 +26,12 @@ public class IRBlock {
         IRInsts.add(IRInst);
     }
 
-    public void print() {
+    public void print(boolean p) {
         if (IRInsts.isEmpty()) return;
-        System.out.print(label.label + ":\n");
+        if (p) System.out.print(label.label + ":\n");
         ArrayList<IRInst> newIRInsts = new ArrayList<>();
         for (IRInst i : IRInsts) {
-            i.print();
+            if (p) i.print();
             newIRInsts.add(i);
             if (i instanceof Binary || i instanceof Select
                     || i instanceof Load || i instanceof GetElePtr
@@ -54,7 +54,7 @@ public class IRBlock {
         IRInsts = newIRInsts;
         // indent in inst::print()
 //        tInst.print();
-        System.out.print("\n");
+        if (p) System.out.print("\n");
     }
 
     public void accept(IRVisitor visitor) {
