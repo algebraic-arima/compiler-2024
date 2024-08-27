@@ -22,7 +22,7 @@ public class Main {
         SemanticJudge sj = new SemanticJudge();
         try {
 //            String file = "/home/limike/Git/compiler-2024/t.mx";
-//            String file = "/home/limike/Git/compiler-2024/src/testcases/sema/basic-package/basic-71.mx";
+//            String file = "/home/limike/Git/compiler-2024/src/testcases/codegen/easy/e1.mx";
 //            InputStream in = new FileInputStream(file);
             InputStream in = System.in;
             Lex lexer = new Lex(CharStreams.fromStream(in));

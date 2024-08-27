@@ -65,6 +65,7 @@ public class SemanticJudge {
                 p("Type Mismatch");
                 break;
             case "variable definition: variable already defined in current scope":
+            case "function name used in class or function":
                 p("Multiple Definitions");
                 break;
             case "Break not in loop":
@@ -73,6 +74,7 @@ public class SemanticJudge {
                 break;
             case "array access on non-array":
                 p("Dimension Out Of Bound");
+                break;
             default:
                 p(s);
         }
