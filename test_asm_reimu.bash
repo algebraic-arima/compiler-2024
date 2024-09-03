@@ -47,7 +47,7 @@ source $(dirname $0)/utils.bash
 # Note: If you just follow the steps in the README, you need to put the last
 # line (export PATH="/usr/local/opt/bin:$PATH") in your .bashrc or .zshrc
 # (depending on which shell you are using).
-test_bin ravel
+test_bin reimu
 
 # 1. Make temp directory
 if [ $# -eq 4 ]; then
@@ -104,7 +104,7 @@ EOF
 
 # 2. Compile the testcase with your compiler
 echo "Compiling '$TESTCASE' with your compiler..." >&2
-$COMPILER < $TESTCASE > "$TEMPDIR/output.s"
+$COMPILER < $TESTCASE > "$TEMPDIR/test.s"
 if [ $? -ne 0 ]; then
     echo "Error: Failed to compile $TESTCASE." >&2
     clean
@@ -126,9 +126,11 @@ if [ $? -ne 0 ]; then
 fi
 
 EXPECTED_EXIT_CODE=$(grep -a "ExitCode:" $TESTCASE | awk '{print $2}')
+cp $BUILTIN "$TEMPDIR/builtin.s"
 
 #4. Execute with reimu
-reimu -i="$TEMPDIR/test.in" -o="$TEMPDIR/test.out" > "$TEMPDIR/reimu_output.txt" 2> "$TEMPDIR/reimu_errput.txt"
+cd $TEMPDIR
+reimu -i="$TEMPDIR/test.in" -o="$TEMPDIR/test.out" > "$TEMPDIR/reimu_output.txt" 2> "$TEMPDIR/reimu_err.txt"
 if [ $? -ne 0 ]; then
     cat << EOF >&2
 Error: Ravel exits with a non-zero value.

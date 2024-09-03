@@ -7,12 +7,22 @@ public class Constant extends Entity {
 
     @Override
     public void print() {
-        System.out.print(value);
+        if (type.typeName.equals("ptr")) {
+            System.out.print("null");
+        } else {
+            System.out.print(value);
+        }
     }
 
     public Constant(long d) {
         super();
         value = d;
         type = new IRType("int");
+    }
+
+    public Constant(boolean isNull) {
+        super();
+        value = 0;
+        type = new IRType("ptr");
     }
 }

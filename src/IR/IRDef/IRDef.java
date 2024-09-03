@@ -4,5 +4,5 @@ import src.IR.IRNode;
 
 public abstract class IRDef extends IRNode {
 
-    public abstract void print(boolean p);
+    public abstract void print();
 }

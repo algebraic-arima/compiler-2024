@@ -35,32 +35,30 @@ public class IRFuncDef extends IRDef {
     }
 
     @Override
-    public void print(boolean p) {
-        if (p) {
-            System.out.print("\ndefine dso_local " + retType.typeName + " " + name + "(");
-            for (int i = 0; i < paramNames.size(); ++i) {
-                paramTypes.get(i).print();
-                System.out.print(" " + paramNames.get(i));
-                if (i != paramNames.size() - 1)
-                    System.out.print(", ");
-            }
-            System.out.print(") {\n");
-
+    public void print() {
+        System.out.print("\ndefine dso_local " + retType.typeName + " " + name + "(");
+        for (int i = 0; i < paramNames.size(); ++i) {
+            paramTypes.get(i).print();
+            System.out.print(" " + paramNames.get(i));
+            if (i != paramNames.size() - 1)
+                System.out.print(", ");
         }
+        System.out.print(") {\n");
+        blocks.forEach(IRBlock::print);
+        System.out.print("}\n");
+        System.out.print("; " + regNum + " * 4 stack memory used\n");
+        System.out.print("; at most " + funcParamMax + " * 4 function parameters\n");
+    }
+
+    public void reformat() {
+        blocks.removeIf(e -> e.IRInsts.isEmpty());
         blocks.forEach(e -> {
-            e.print(p);
-        });
-        blocks.forEach(e -> {
+            e.reformat();
             regNum += e.regNum;
             if (e.funcParamMax > funcParamMax) {
                 funcParamMax = e.funcParamMax;
             }
         });
-        if (p) {
-            System.out.print("}\n");
-            System.out.print("; " + regNum + " * 4 stack memory used\n");
-            System.out.print("; at most " + funcParamMax + " * 4 function parameters\n");
-        }
     }
 
     @Override

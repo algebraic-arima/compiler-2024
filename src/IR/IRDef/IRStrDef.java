@@ -30,13 +30,12 @@ public class IRStrDef extends IRDef {
     }
 
     @Override
-    public void print(boolean p) {
+    public void print() {
         for (Map.Entry<String, Integer> e : strMap.entrySet()) {
             String s = e.getKey();
             s = s.replace("\\", "\\\\");
             s = s.replace("\"", "\\22");
             s = s.replace("\n", "\\0A");
-            if(!p) continue;
             System.out.print("@constStr-");
             System.out.print(e.getValue());
             System.out.print(" = private unnamed_addr constant [");

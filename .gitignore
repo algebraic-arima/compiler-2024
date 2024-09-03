@@ -12,3 +12,4 @@ bin.src
 *.txt
 *.ll
 *.s
+utils.bash

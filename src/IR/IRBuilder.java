@@ -79,6 +79,11 @@ public class IRBuilder implements __ASTVisitor {
         }
     }
 
+    public IRProg build(Prog node) {
+        visit(node);
+        return this.irProg;
+    }
+
     @Override
     public void visit(Prog node) {
         node.defs.forEach(d -> d.accept(this));
@@ -587,16 +592,14 @@ public class IRBuilder implements __ASTVisitor {
             Register res = new AnonReg(typeI1);
             Icmp n = new Icmp(node.op);
             n.dest = res;
-            if (node.lhs.type.isNull()) {
-                n.setRhs(node.rhs.entity);
-            } else {
-                n.setLhs(node.lhs.entity);
-            }
+            n.setRhs(node.rhs.entity);
+            n.setLhs(node.lhs.entity);
             node.entity = res;
             n.type = typePtr;
             curBlock.IRInsts.add(n);
         } else if (node.lhs.type.isNull() && node.rhs.type.isNull()) {
-            node.entity = new Constant(1);
+            if (node.op == EQ) node.entity = new Constant(1);
+            else if (node.op == NE) node.entity = new Constant(0);
         } else if (node.lhs.type.isBool() && node.rhs.type.isBool()) {
             Register res = new AnonReg(typeI1);
             Icmp n = new Icmp(node.op);
@@ -1000,9 +1003,11 @@ public class IRBuilder implements __ASTVisitor {
         }
     }
 
+    public static Constant nullConst = new Constant(true);
+
     @Override
     public void visit(NullExpr node) {
-        node.entity = null;
+        node.entity = nullConst;
     }
 
     @Override

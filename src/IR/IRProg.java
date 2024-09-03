@@ -23,10 +23,14 @@ public class IRProg {
         funcDefs.add(funcDef);
     }
 
-    public void print(boolean p) {
-        if (p) classDefs.forEach(e -> e.print(true));
-        strDef.print(p);
-        if (p) gVarDefs.forEach(e -> e.print(true));
-        funcDefs.forEach(e -> e.print(p));
+    public void print() {
+        classDefs.forEach(IRClassDef::print);
+        strDef.print();
+        gVarDefs.forEach(IRGlobalVarDef::print);
+        funcDefs.forEach(IRFuncDef::print);
+    }
+
+    public void reformat(){
+        funcDefs.forEach(IRFuncDef::reformat);
     }
 }

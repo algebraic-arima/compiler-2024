@@ -27,8 +27,8 @@ public class ASMPrinter {
         } catch (IOException e) {
             return;
         }
-        System.out.print(fileContent);
-        System.out.print("\n");
+//        System.out.print(fileContent);
+//        System.out.print("\n");
         prog.print();
     }
 

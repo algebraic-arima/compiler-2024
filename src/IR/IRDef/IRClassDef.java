@@ -26,7 +26,7 @@ public class IRClassDef extends IRDef {
     }
 
     @Override
-    public void print(boolean p) {
+    public void print() {
         System.out.print(className + " = type {");
         for (int i = 0; i < fields.size(); ++i) {
             fields.get(i).print();

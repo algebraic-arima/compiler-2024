@@ -324,10 +324,8 @@ public class ASMBuilder implements IRVisitor {
             if (cnt < 8) {
                 if (e instanceof Constant) {
                     curBlock.addInst(new LI("a" + cnt, ((Constant) e).value));
-                } else if (e == null) {
-                    curBlock.addInst(new LI("a" + cnt, 0));
                 } else {
-                    if (((Register) e).name.startsWith("%")) {
+                    if (((Register) e).name.startsWith("%")) { // some variable
                         addLW("a" + cnt, regPos.get(((Register) e).name), "sp");
                     } else {
                         curBlock.addInst(new LA("a" + cnt, ((Register) e).name.substring(1).replace("-", "_")));
@@ -336,9 +334,6 @@ public class ASMBuilder implements IRVisitor {
             } else {
                 if (e instanceof Constant) {
                     curBlock.addInst(new LI("t0", ((Constant) e).value));
-                    addSW("t0", (cnt - 8) * 4L, "sp");
-                } else if (e == null) {
-                    curBlock.addInst(new LI("t0", 0));
                     addSW("t0", (cnt - 8) * 4L, "sp");
                 } else {
                     if (((Register) e).name.startsWith("%")) {
@@ -389,23 +384,23 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(Icmp node) {
-        if (node.rhs == null || node.lhs == null) {
-            String rn;
-            if (node.lhs != null) rn = ((Register) node.lhs).name;
-            else if (node.rhs != null) rn = ((Register) node.rhs).name;
-            else return;
-            addLW("t0", regPos.get(rn), "sp");
-            if (node.op.equals("eq")) {
-                curBlock.addInst(new SEQZ("t0", "t0"));
-            } else {
-                curBlock.addInst(new SNEZ("t0", "t0"));
-            }
-            String rdn = node.dest.name;
-            occSP += 4;
-            regPos.put(rdn, curFunc.stackSize - occSP);
-            addSW("t0", curFunc.stackSize - occSP, "sp");
-            return;
-        }
+//        if (node.rhs == null || node.lhs == null) {
+//            String rn;
+//            if (node.lhs != null) rn = ((Register) node.lhs).name;
+//            else if (node.rhs != null) rn = ((Register) node.rhs).name;
+//            else return;
+//            addLW("t0", regPos.get(rn), "sp");
+//            if (node.op.equals("eq")) {
+//                curBlock.addInst(new SEQZ("t0", "t0"));
+//            } else {
+//                curBlock.addInst(new SNEZ("t0", "t0"));
+//            }
+//            String rdn = node.dest.name;
+//            occSP += 4;
+//            regPos.put(rdn, curFunc.stackSize - occSP);
+//            addSW("t0", curFunc.stackSize - occSP, "sp");
+//            return;
+//        }
         if (node.op.equals("eq")) {
             if (node.lhs instanceof Register) {
                 String rn = ((Register) node.lhs).name;
@@ -574,22 +569,18 @@ public class ASMBuilder implements IRVisitor {
         if (node.value instanceof Constant) {
             curBlock.addInst(new LI("t0", ((Constant) node.value).value));
         } else {
-            if (node.irType.typeName.equals("ptr") && node.value == null) {
-                curBlock.addInst((new LI("t0", 0)));
-            } else {
-                String rn = ((Register) node.value).name;
-                if (rn.endsWith(".val")) {
-                    int ind = curIRFuncDef.paramNames.indexOf(rn);
-                    if (ind < 8) {
-                        addADDI("t0", "a" + ind, 0);
-                    } else {
-                        addLW("t0", curFunc.stackSize + (ind - 8) * 4L, "sp");
-                    }
-                } else if (rn.startsWith("@constStr-")) {
-                    curBlock.addInst(new LA("t0", rn.substring(1).replace("-", "_")));
+            String rn = ((Register) node.value).name;
+            if (rn.endsWith(".val")) {
+                int ind = curIRFuncDef.paramNames.indexOf(rn);
+                if (ind < 8) {
+                    addADDI("t0", "a" + ind, 0);
                 } else {
-                    addLW("t0", regPos.get(rn), "sp");
+                    addLW("t0", curFunc.stackSize + (ind - 8) * 4L, "sp");
                 }
+            } else if (rn.startsWith("@constStr-")) {
+                curBlock.addInst(new LA("t0", rn.substring(1).replace("-", "_")));
+            } else {
+                addLW("t0", regPos.get(rn), "sp");
             }
         }
         if (node.dest.name.startsWith("@")) {

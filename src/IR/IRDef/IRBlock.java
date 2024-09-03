@@ -6,7 +6,7 @@ import src.IR.IRVisitor;
 import java.util.ArrayList;
 
 public class IRBlock {
-    public Label label = null;
+    public Label label;
     public ArrayList<IRInst> IRInsts = new ArrayList<>();
     public int index;
     static public int blockCnt;
@@ -26,12 +26,18 @@ public class IRBlock {
         IRInsts.add(IRInst);
     }
 
-    public void print(boolean p) {
+    public void print() {
+        System.out.print(label.label + ":\n");
+        for (IRInst i : IRInsts) {
+            i.print();
+        }
+        System.out.print("\n");
+    }
+
+    public void reformat(){
         if (IRInsts.isEmpty()) return;
-        if (p) System.out.print(label.label + ":\n");
         ArrayList<IRInst> newIRInsts = new ArrayList<>();
         for (IRInst i : IRInsts) {
-            if (p) i.print();
             newIRInsts.add(i);
             if (i instanceof Binary || i instanceof Select
                     || i instanceof Load || i instanceof GetElePtr
@@ -52,9 +58,6 @@ public class IRBlock {
             }
         }
         IRInsts = newIRInsts;
-        // indent in inst::print()
-//        tInst.print();
-        if (p) System.out.print("\n");
     }
 
     public void accept(IRVisitor visitor) {
