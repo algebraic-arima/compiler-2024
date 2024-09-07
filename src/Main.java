@@ -9,6 +9,8 @@ import src.AST.Prog;
 import src.IR.IRBuilder;
 import src.IR.IRPrinter;
 import src.IR.IRProg;
+import src.Optim.Mem2Reg.CFGNode;
+import src.Optim.Mem2Reg.Mem2Reg;
 import src.Semantic.*;
 import src.parser.Lex;
 import src.parser.Mx;
@@ -17,19 +19,20 @@ import src.utils.Scope.GlobalScope;
 import src.utils.error.error;
 
 import java.io.*;
+import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) throws Exception {
         SemanticJudge sj = new SemanticJudge();
-        boolean fileIn = false;
-        boolean printIR = false;
+        boolean fileIn = true;
+        boolean printIR = true;
         boolean fileOutIR = false;
-        boolean printASM = true;
+        boolean printASM = false;
         boolean fileOutASM = false;
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/git/compiler-2024/test.mx";
+                String file = "/home/limike/git/compiler-2024/testcases/codegen/test/t25.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -63,6 +66,8 @@ public class Main {
                     irPrinter.print();
                 }
             }
+
+            ArrayList<CFGNode> f = new Mem2Reg(irProg).CFGSet;
 
             ASMBuilder asmBuilder = new ASMBuilder(irBuilder.irProg, printIR);
 

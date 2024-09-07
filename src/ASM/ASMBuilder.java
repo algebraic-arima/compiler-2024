@@ -11,7 +11,6 @@ import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -480,7 +479,7 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(Jmp node) {
-        curBlock.addInst(new J(node.irBlock.label.label));
+        curBlock.addInst(new J(node.block.label.label));
     }
 
     @Override

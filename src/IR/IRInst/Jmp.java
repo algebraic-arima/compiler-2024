@@ -6,15 +6,15 @@ import src.IR.IRVisitor;
 public class Jmp extends terminalIRInst {
     // unconditional branch
 
-    public IRBlock irBlock;
+    public IRBlock block;
 
-    public Jmp(IRBlock irBlock) {
-        this.irBlock = irBlock;
+    public Jmp(IRBlock block) {
+        this.block = block;
     }
 
     @Override
     public void print() {
-        System.out.print("  br label %" + irBlock.label.label + "\n");
+        System.out.print("  br label %" + block.label.label + "\n");
     }
 
     @Override
