@@ -55,6 +55,8 @@ public class Main {
             IRBuilder irBuilder = new IRBuilder(gScope);
             IRProg irProg = irBuilder.build(ASTRoot);
             irProg.reformat();
+            
+            Mem2Reg m2r = new Mem2Reg(irProg);
 
             if (printIR) {
                 IRPrinter irPrinter = new IRPrinter(irProg);
@@ -67,11 +69,10 @@ public class Main {
                 }
             }
 
-            ArrayList<CFGNode> f = new Mem2Reg(irProg).CFGSet;
 
-            ASMBuilder asmBuilder = new ASMBuilder(irBuilder.irProg, printIR);
 
             if (printASM) {
+                ASMBuilder asmBuilder = new ASMBuilder(irBuilder.irProg, printIR);
                 ASMPrinter asmPrinter = new ASMPrinter(asmBuilder.asmProg);
                 if (fileOutASM) {
                     FileOutputStream fileOutputStream1 = new FileOutputStream("/home/limike/Git/compiler-2024/test.s");

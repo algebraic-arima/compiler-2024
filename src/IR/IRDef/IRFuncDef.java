@@ -13,6 +13,7 @@ public class IRFuncDef extends IRDef {
     public ArrayList<IRType> paramTypes;
     public ArrayList<String> paramNames;
     public IRBlock regCollector;
+    // collect the vars of Alloca
     public ArrayList<IRBlock> blocks;
     public int regNum = 0;
     public int funcParamMax = 0;

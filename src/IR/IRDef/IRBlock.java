@@ -4,9 +4,12 @@ import src.IR.IRInst.*;
 import src.IR.IRVisitor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class IRBlock {
     public Label label;
+    public HashMap<String, Phi> phis = new HashMap<>();
     public ArrayList<IRInst> IRInsts = new ArrayList<>();
     public int index;
     static public int blockCnt;
@@ -28,13 +31,16 @@ public class IRBlock {
 
     public void print() {
         System.out.print(label.label + ":\n");
+        for (Phi p : phis.values()) {
+            p.print();
+        }
         for (IRInst i : IRInsts) {
             i.print();
         }
         System.out.print("\n");
     }
 
-    public void reformat(){
+    public void reformat() {
         if (IRInsts.isEmpty()) return;
         ArrayList<IRInst> newIRInsts = new ArrayList<>();
         for (IRInst i : IRInsts) {
@@ -58,6 +64,10 @@ public class IRBlock {
             }
         }
         IRInsts = newIRInsts;
+    }
+
+    public void putPhi(String var, Phi p) {
+        phis.put(var, p);
     }
 
     public void accept(IRVisitor visitor) {

@@ -7,12 +7,13 @@ import java.util.ArrayList;
 
 public class Mem2Reg {
 
-    public ArrayList<CFGNode> CFGSet;
+    public ArrayList<FuncMem2Reg> FuncMem2RegSet;
 
     public Mem2Reg(IRProg node) {
-        CFGSet = new ArrayList<>();
+        FuncMem2RegSet = new ArrayList<>();
         for (IRFuncDef func : node.funcDefs) {
-            CFGSet.add(new CFG(func).CFGRoot);
+            FuncMem2Reg root = new FuncMem2Reg(func);
+            FuncMem2RegSet.add(root);
         }
     }
 }
