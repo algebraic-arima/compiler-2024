@@ -1,5 +1,7 @@
 package src.Optim.Mem2Reg;
 
+import org.antlr.v4.runtime.misc.Pair;
+import src.ASM.Operand.Reg;
 import src.IR.IRDef.*;
 import src.IR.IRInst.*;
 import src.utils.Entity.Constant;
@@ -18,6 +20,9 @@ public class FuncMem2Reg {
     ArrayList<CFGNode> postOrder;
     HashMap<String, IRType> varDefGlobal;
     HashMap<String, HashSet<String>> varDefBlocks;
+    HashMap<String, Entity> renameMap;
+    // (k, v) \in renameMap => the AnonReg k stores the value of the variable v
+    // thus, when accessing k, use v instead
     HashMap<String, Integer> counter;
     HashMap<String, Stack<String>> stack;
 
@@ -29,6 +34,7 @@ public class FuncMem2Reg {
         varDefGlobal = new HashMap<>();
         varDefBlocks = new HashMap<>();
         irBlocks = new HashMap<>();
+        renameMap = new HashMap<>();
         func.blocks.forEach(e -> {
             nodes.put(e.label.label, new CFGNode(e.label.label));
             irBlocks.put(e.label.label, e);
@@ -178,7 +184,7 @@ public class FuncMem2Reg {
 
     public String newName(String name) {
         int index = counter.get(name);
-        String n = name + "." + index;
+        String n = name + "-" + index;
         stack.get(name).add(n);
         counter.put(name, index + 1);
         return n;
@@ -193,25 +199,119 @@ public class FuncMem2Reg {
     }
 
     public void rename(String label) {
-        HashMap<String, Stack<String>> tmp = new HashMap<>(stack);
+        HashMap<String, Integer> pushStack = new HashMap<>();
+        for (String s : varDefGlobal.keySet()) {
+            pushStack.put(s, 0);
+        }
         IRBlock ir = irBlocks.get(label);
         CFGNode cfg = nodes.get(label);
         for (Map.Entry<String, Phi> e : ir.phis.entrySet()) {
             e.getValue().dest = new Register(newName(e.getKey()));
+            pushStack.put(e.getKey(), pushStack.get(e.getKey()) + 1);
         }
         for (int cnt = 0; cnt < ir.IRInsts.size(); ++cnt) {
             IRInst i = ir.IRInsts.get(cnt);
             if (i instanceof Load ii) {
-                if (!varDefGlobal.containsKey(ii.src.name)) continue;
-                if (stack.get(ii.src.name).isEmpty()) continue;
-                ir.IRInsts.set(cnt, new Binary("+", new Register(ii.irType, getNewName(ii.src.name)),
-                        new Constant(0), ii.dest, ii.irType));
+                if (!varDefGlobal.containsKey(ii.src.name)) {
+                    continue;
+                }
+//                if (stack.get(ii.src.name).isEmpty()) {
+//                    ir.IRInsts.set(cnt, null);
+//                } else {
+//                    ir.IRInsts.set(cnt, new Binary("+", new Register(ii.irType, getNewName(ii.src.name)),
+//                            new Constant(0), ii.dest, ii.irType));
+//                }
+
+                Entity c = new Register(ii.irType, getNewName(ii.src.name));
+                while (c instanceof Register r) {
+                    Entity e = renameMap.get(r.name);
+                    if (e == null) break;
+                    else c = e;
+                }
+                renameMap.put(ii.dest.name, c);
+                ir.IRInsts.set(cnt, null);
             } else if (i instanceof Store ii) {
-                if (!varDefGlobal.containsKey(ii.dest.name)) continue;
-                ir.IRInsts.set(cnt, new Binary("+", ii.value,
-                        new Constant(0), new Register(ii.irType, newName(ii.dest.name)), ii.irType));
+                if (!varDefGlobal.containsKey(ii.dest.name)) {
+                    Entity c = ii.value;
+                    while (c instanceof Register r) {
+                        Entity e = renameMap.get(r.name);
+                        if (e == null) break;
+                        else c = e;
+                    }
+                    ii.value = c;
+                    // value serves as a use
+                    continue;
+                }
+//                ir.IRInsts.set(cnt, new Binary("+", ii.value,
+//                        new Constant(0), new Register(ii.irType, newName(ii.dest.name)), ii.irType));
+                if (ii.value instanceof Register r) {
+                    Entity s = renameMap.get(r.name);
+                    if (s != null) ii.value = s;
+                }
+                Entity c = ii.value;
+                while (c instanceof Register r) {
+                    Entity e = renameMap.get(r.name);
+                    if (e == null) break;
+                    else c = e;
+                }
+                renameMap.put(newName(ii.dest.name), c);
+                ir.IRInsts.set(cnt, null);
+                pushStack.put(ii.dest.name, pushStack.get(ii.dest.name) + 1);
+            } else if (i instanceof Alloca a) {
+                if (!varDefGlobal.containsKey(a.dest.name)) continue;
+                ir.IRInsts.set(cnt, null);
+            } else if (i instanceof Binary b) {
+                if (b.rhs instanceof Register r) {
+                    Entity s = renameMap.get(r.name);
+                    if (s != null) b.rhs = s;
+                }
+                if (b.lhs instanceof Register r) {
+                    Entity s = renameMap.get(r.name);
+                    if (s != null) b.lhs = s;
+                }
+            } else if (i instanceof Call c) {
+                for (Entity e : c.args) {
+                    if (e instanceof Register ee) {
+                        Entity s = renameMap.get(ee.name);
+                        if (s != null) c.args.set(c.args.indexOf(e), s);
+                    }
+                }
+            } else if (i instanceof GetElePtr g) {
+                if (g.offset instanceof Register r) {
+                    Entity s = renameMap.get(r.name);
+                    if (s != null) g.offset = s;
+                }
+                Entity s = renameMap.get(g.ptr.name);
+                if (s != null) g.ptr = (Register) s;
+            } else if (i instanceof Icmp ic) {
+                if (ic.rhs instanceof Register r) {
+                    Entity s = renameMap.get(r.name);
+                    if (s != null) ic.rhs = s;
+                }
+                if (ic.lhs instanceof Register r) {
+                    Entity s = renameMap.get(r.name);
+                    if (s != null) ic.lhs = s;
+                }
+            } else if (i instanceof Ret t) {
+                if (t.value instanceof Register r) {
+                    Entity s = renameMap.get(r.name);
+                    if (s != null) t.value = s;
+                }
+            } else if (i instanceof Br br) {
+                if (br.cond instanceof Register r) {
+                    Entity s = renameMap.get(r.name);
+                    if (s != null) br.cond = s;
+                }
+            } else if (i instanceof Phi p) {
+                for (int cn = 0; cn < p.valList.size(); ++cn) {
+                    if (p.valList.get(cn).a instanceof Register r) {
+                        Entity s = renameMap.get(r.name);
+                        if (s != null) p.valList.set(cn, new Pair<>(s, p.valList.get(cn).b));
+                    }
+                }
             }
         }
+        ir.IRInsts.removeIf(Objects::isNull);
         for (CFGNode s : cfg.succ) {
             String succName = s.label;
             IRBlock irBlock = irBlocks.get(succName);
@@ -219,9 +319,18 @@ public class FuncMem2Reg {
                 Entity en;
                 String str = getNewName(e.getKey());
                 if (str == null) {
-                    en = new Constant(0);
+                    if (e.getValue().irType.typeName.equals("ptr")) {
+                        en = new Constant(true);
+                    } else {
+                        en = new Constant(0);
+                    }
                 } else {
-                    en = new Register(e.getValue().irType, str);
+                    Entity entity = renameMap.get(str);
+                    if (entity == null) {
+                        en = new Register(e.getValue().irType, str);
+                    } else {
+                        en = entity;
+                    }
                 }
                 e.getValue().addList(en, label);
             }
@@ -231,7 +340,12 @@ public class FuncMem2Reg {
                 rename(e.label);
             }
         });
-        stack = tmp;
+        for (Map.Entry<String, Integer> s : pushStack.entrySet()) {
+            int ind = s.getValue();
+            while (ind-- > 0) {
+                stack.get(s.getKey()).pop();
+            }
+        }
     }
 
 }

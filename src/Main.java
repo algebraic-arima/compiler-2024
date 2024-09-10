@@ -9,7 +9,6 @@ import src.AST.Prog;
 import src.IR.IRBuilder;
 import src.IR.IRPrinter;
 import src.IR.IRProg;
-import src.Optim.Mem2Reg.CFGNode;
 import src.Optim.Mem2Reg.Mem2Reg;
 import src.Semantic.*;
 import src.parser.Lex;
@@ -19,20 +18,21 @@ import src.utils.Scope.GlobalScope;
 import src.utils.error.error;
 
 import java.io.*;
-import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) throws Exception {
         SemanticJudge sj = new SemanticJudge();
-        boolean fileIn = true;
-        boolean printIR = true;
+        boolean fileIn = false;
+        boolean printIR = false;
         boolean fileOutIR = false;
+        boolean printM2R = true;
+        boolean fileOutM2R = false;
         boolean printASM = false;
         boolean fileOutASM = false;
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/git/compiler-2024/testcases/codegen/test/t25.mx";
+                String file = "/home/limike/git/compiler-2024/testcases/codegen/test/t70.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -55,12 +55,23 @@ public class Main {
             IRBuilder irBuilder = new IRBuilder(gScope);
             IRProg irProg = irBuilder.build(ASTRoot);
             irProg.reformat();
-            
-            Mem2Reg m2r = new Mem2Reg(irProg);
 
             if (printIR) {
                 IRPrinter irPrinter = new IRPrinter(irProg);
                 if (fileOutIR) {
+                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/git/compiler-2024/test.ll");
+                    PrintStream printStream = new PrintStream(fileOutputStream);
+                    System.setOut(printStream);
+                } else {
+                    irPrinter.print();
+                }
+            }
+
+            Mem2Reg m2r = new Mem2Reg(irProg);
+
+            if (printM2R) {
+                IRPrinter irPrinter = new IRPrinter(irProg);
+                if (fileOutM2R) {
                     FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/git/compiler-2024/test.ll");
                     PrintStream printStream = new PrintStream(fileOutputStream);
                     System.setOut(printStream);
