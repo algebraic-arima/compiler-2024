@@ -38,7 +38,7 @@ public class Phi extends IRInst {
     public void print() {
         System.out.print("  ");
         dest.print();
-        System.out.print(" =  phi ");
+        System.out.print(" = phi ");
         irType.print();
         for (int i = 0; i < valList.size(); ++i) {
             System.out.print(" [");

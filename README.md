@@ -6,7 +6,10 @@
 - [x] semantic check 2024.08.13
 - [x] LLVM IR generation 2024.08.22
 - [x] code generation 2024.08.27
-- [ ] optim
+- [x] 08.29-09.07 a short vacation(?)
+- [x] Mem2Reg 2024.09.10
+- [ ] RegAlloc 
+- [ ] ...?
 
 ## Usage
 

@@ -32,7 +32,7 @@ public class Main {
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/git/compiler-2024/testcases/codegen/test/t70.mx";
+                String file = "/home/limike/git/compiler-2024/testcases/codegen/test/t61.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
