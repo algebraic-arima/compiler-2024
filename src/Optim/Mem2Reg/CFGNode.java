@@ -1,9 +1,5 @@
 package src.Optim.Mem2Reg;
 
-import src.IR.IRDef.IRBlock;
-import src.IR.IRDef.IRFuncDef;
-import src.IR.IRInst.IRInst;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 

@@ -1,5 +1,6 @@
 package src.utils.Entity;
 
+import src.ASM.Operand.PhyReg;
 import src.IR.IRBuilder;
 import src.utils.IRType.IRType;
 import src.utils.type.Type;
@@ -7,6 +8,7 @@ import src.utils.type.Type;
 public class Register extends Entity {
 
     public String name = null;
+    public PhyReg phyReg = null;
 
     public Register() {
         super();
@@ -31,5 +33,8 @@ public class Register extends Entity {
         this.name = name;
     }
 
+    public String getName() {
+            return name;
+    }
 
 }

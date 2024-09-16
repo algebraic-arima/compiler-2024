@@ -1,7 +1,6 @@
 package src.Optim.Mem2Reg;
 
 import org.antlr.v4.runtime.misc.Pair;
-import src.ASM.Operand.Reg;
 import src.IR.IRDef.*;
 import src.IR.IRInst.*;
 import src.utils.Entity.Constant;
@@ -17,6 +16,7 @@ public class FuncMem2Reg {
     public HashMap<String, IRBlock> irBlocks;
     public HashMap<String, CFGNode> nodes;
     public CFGNode CFGRoot;
+    ArrayList<CFGNode> preOrder;
     ArrayList<CFGNode> postOrder;
     HashMap<String, IRType> varDefGlobal;
     HashMap<String, IRType> varDefLocal;
@@ -31,6 +31,7 @@ public class FuncMem2Reg {
     public FuncMem2Reg(IRFuncDef func) {
         this.func = func;
         postOrder = new ArrayList<>();
+        preOrder = new ArrayList<>();
         nodes = new HashMap<>();
         varDefGlobal = new HashMap<>();
         varDefBlocks = new HashMap<>();
@@ -59,6 +60,7 @@ public class FuncMem2Reg {
             }
             c.dom = new HashSet<>(dom);
         }
+
         CFGRoot = nodes.get("entry");
         CFGRoot.dom.clear();
         CFGRoot.dom.add(CFGRoot);
@@ -69,10 +71,11 @@ public class FuncMem2Reg {
         renameLocal();
         putPhi();
         rename();
+//        merge();
     }
 
     public void computeDom() {
-        visit(CFGRoot, postOrder);
+        visit(CFGRoot);
         boolean changed = true;
         while (changed) {
             changed = false;
@@ -89,11 +92,12 @@ public class FuncMem2Reg {
         }
     }
 
-    public void visit(CFGNode node, ArrayList<CFGNode> list) {
+    public void visit(CFGNode node) {
         if (node.vis) return;
         node.vis = true;
-        node.succ.forEach(e -> visit(e, list));
-        list.add(node);
+        preOrder.add(node);
+        node.succ.forEach(this::visit);
+        postOrder.add(node);
     }
 
     public void computeIDom() {
@@ -236,6 +240,9 @@ public class FuncMem2Reg {
                             Entity en = rns.get(r.name);
                             if (en != null) {
                                 br.cond = en;
+                                if (en instanceof Constant con) {
+                                    i.IRInsts.set(cnt, new Jmp(con.value == 0 ? br.falseBlock : br.trueBlock));
+                                }
                             }
                         }
                     } else if (inst instanceof Call c) {
@@ -360,6 +367,7 @@ public class FuncMem2Reg {
 
         // rename result of phi
         for (Map.Entry<String, Phi> e : ir.phis.entrySet()) {
+            if (!varDefGlobal.containsKey(e.getKey())) continue;
             e.getValue().dest = new Register(newName(e.getKey()));
             pushStack.put(e.getKey(), pushStack.get(e.getKey()) + 1);
         }
@@ -452,7 +460,12 @@ public class FuncMem2Reg {
             } else if (i instanceof Br br) {
                 if (br.cond instanceof Register r) {
                     Entity s = renameMap.get(r.name);
-                    if (s != null) br.cond = s;
+                    if (s != null) {
+                        br.cond = s;
+                        if (s instanceof Constant con) {
+                            ir.IRInsts.set(cnt, new Jmp(con.value == 0 ? br.falseBlock : br.trueBlock));
+                        }
+                    }
                 }
             } else if (i instanceof Phi p) {
                 for (int cn = 0; cn < p.valList.size(); ++cn) {
@@ -470,6 +483,7 @@ public class FuncMem2Reg {
             String succName = s.label;
             IRBlock irBlock = irBlocks.get(succName);
             for (Map.Entry<String, Phi> e : irBlock.phis.entrySet()) {
+                if (!varDefGlobal.containsKey(e.getKey())) continue;
                 Entity en;
                 String str = getNewName(e.getKey());
                 if (str == null) {
@@ -486,7 +500,7 @@ public class FuncMem2Reg {
                         en = entity;
                     }
                 }
-                e.getValue().addList(en, label);
+                e.getValue().addList(en, ir);
             }
         }
 
@@ -504,6 +518,52 @@ public class FuncMem2Reg {
                 stack.get(s.getKey()).pop();
             }
         }
+    }
+
+    public void merge() {
+        // todo: reduce the edge that satisfies is the unique out and in edge
+        HashMap<String, String> mergeList = new HashMap<>();
+        for (CFGNode n : preOrder) {
+            if (n.succNum == 1) {
+                CFGNode nxt = n.succ.getFirst();
+                if (nxt.predNum == 1) {
+                    mergeList.put(n.label, nxt.label);
+                }
+            }
+        }
+        for (CFGNode n : preOrder) {
+            if (!mergeList.containsKey(n.label)) {
+                continue;
+            }
+            IRBlock i = irBlocks.get(n.label);
+            func.blocks.remove(i);
+            IRBlock nxt = irBlocks.get(mergeList.get(n.label));
+            for (CFGNode pre : n.pred) {
+                IRBlock prei = irBlocks.get(pre.label);
+                if (prei.IRInsts.getLast() instanceof Jmp j) {
+                    j.block = nxt;
+                } else if (prei.IRInsts.getLast() instanceof Br br) {
+                    if (br.trueBlock == i) {
+                        br.trueBlock = nxt;
+                    } else if (br.falseBlock == i) {
+                        br.falseBlock = nxt;
+                    }
+                }
+            }
+            ArrayList<IRInst> tmp = new ArrayList<>(i.IRInsts);
+            tmp.removeLast();
+            tmp.addAll(nxt.IRInsts);
+            nxt.IRInsts = tmp;
+            nxt.phis.putAll(i.phis);
+            nxt.regNum += i.regNum;
+            if (nxt.funcParamMax < i.funcParamMax) {
+                nxt.funcParamMax = i.funcParamMax;
+            }
+        }
+    }
+
+    public void reducePhi() {
+
     }
 
 }

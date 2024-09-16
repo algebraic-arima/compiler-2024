@@ -613,6 +613,7 @@ public class IRBuilder implements __ASTVisitor {
     }
 
 
+    /*
     @Override
     public void visit(BinaryLogicExpr node) {
         if (node.op == AND) {
@@ -657,6 +658,47 @@ public class IRBuilder implements __ASTVisitor {
             curBlock.addInst(new Load(typeI1, brAddr, br));
             node.entity = br;
         }
+    }*/
+
+    @Override
+    public void visit(BinaryLogicExpr node) {
+        Register res = new AnonReg(typeI1);
+        if (node.op == AND) {
+            Phi p = new Phi(res, boolType);
+            IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-and-rhs");
+            IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-and-end");
+            node.lhs.accept(this);
+            p.addList(new Constant(0), curBlock);
+            Br b = new Br(node.lhs.entity, trueBlock, falseBlock);
+            curBlock.IRInsts.add(b);
+            curFunc.addBlock(curBlock);
+            curBlock = trueBlock;
+            node.rhs.accept(this);
+            p.addList(node.rhs.entity, curBlock);
+            Jmp j = new Jmp(falseBlock);
+            curBlock.IRInsts.add(j);
+            curFunc.addBlock(curBlock);
+            curBlock = falseBlock;
+            curBlock.putPhi(p.dest.name, p);
+        } else if (node.op == OR) {
+            Phi p = new Phi(res, boolType);
+            IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-or-end");
+            IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-or-rhs");
+            node.lhs.accept(this);
+            p.addList(new Constant(1), curBlock);
+            Br b = new Br(node.lhs.entity, trueBlock, falseBlock);
+            curBlock.IRInsts.add(b);
+            curFunc.addBlock(curBlock);
+            curBlock = falseBlock;
+            node.rhs.accept(this);
+            p.addList(node.rhs.entity, curBlock);
+            Jmp j = new Jmp(trueBlock);
+            curBlock.IRInsts.add(j);
+            curFunc.addBlock(curBlock);
+            curBlock = trueBlock;
+            curBlock.putPhi(p.dest.name, p);
+        }
+        node.entity = res;
     }
 
     @Override
@@ -814,6 +856,73 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(NewArrayExpr node) {
+        node.len.forEach(e -> e.accept(this));
+        int dim = node.type.dim;
+        int loop = node.len.size();
+        ArrayList<Entity> e = new ArrayList<>();
+        node.len.forEach(ed -> e.add(ed.entity));
+
+        if (loop == 0) {
+            return;
+        } else if (loop == 1) {
+            Call c = new Call("@array..malloc", node.type, new AnonReg(typePtr));
+            c.args.add(e.getFirst());
+            c.argTypes.add(typeI32);
+            curBlock.addInst(c);
+            node.entity = c.dest;
+            return;
+        }
+        IRBlock[] condBlocks = new IRBlock[loop * 3 - 3];
+        for (int i = 0; i < loop - 1; ++i) {
+            condBlocks[2 * i] = new IRBlock(node.pos.row + "-" + node.pos.column + "-na-cond" + i);
+            condBlocks[2 * i + 1] = new IRBlock(node.pos.row + "-" + node.pos.column + "-na-body" + i);
+            condBlocks[loop * 3 - 4 - i] = new IRBlock(node.pos.row + "-" + node.pos.column + "-na-end" + i);
+        }
+        for (int i = 0; i < loop - 1; ++i) {
+            Register tmp1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-tmp" + i);
+            Register cmp1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-cmp" + i);
+            Register inc1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-inc" + i);
+            Phi p = new Phi(tmp1, typeI32);
+            p.addList(new Constant(0), i == 0 ? curBlock : condBlocks[2 * i - 1]);
+            p.addList(inc1, condBlocks[loop * 3 - 5 - i]);
+            condBlocks[2 * i].putPhi(p.dest.name, p);
+            condBlocks[2 * i].addInst(new Icmp("<", tmp1, e.get(i), cmp1, typeI32));
+            condBlocks[2 * i].addInst(new Br(cmp1, condBlocks[2 * i + 1], condBlocks[loop * 3 - 4 - i]));
+
+            Register p1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-p" + i);
+            Register t1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i));
+            Register t2 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i + 1));
+            condBlocks[2 * i + 1].addInst(new GetElePtr("ptr",
+                    node.type.typeName, t1, p1, tmp1, -1));
+            Call c = new Call("@array..malloc", typePtr, t2);
+            c.args.add(e.get(i + 1));
+            c.argTypes.add(typeI32);
+            condBlocks[2 * i + 1].addInst(c);
+            condBlocks[2 * i + 1].addInst(new Store(typePtr, t2, p1));
+            condBlocks[2 * i + 1].addInst(new Binary("+", tmp1, new Constant(1), inc1, typeI32));
+            condBlocks[2 * i + 1].addInst(new Jmp((i == loop - 2) ? condBlocks[2 * i] : condBlocks[2 * i + 2]));
+
+            if (i != 0) {
+                condBlocks[loop * 3 - 4 - i].addInst(new Jmp(condBlocks[2 * i - 2]));
+            }
+        }
+        Call c = new Call("@array..malloc", node.type,
+                new Register("%na-" + node.pos.row + "-" + node.pos.column + "-t" + 0));
+        c.args.add(e.getFirst());
+        c.argTypes.add(typeI32);
+        curBlock.addInst(c);
+        node.entity = c.dest;
+        curBlock.addInst(new Jmp(condBlocks[0]));
+        curFunc.addBlock(curBlock);
+        for (int i = 0; i < loop * 3 - 4; ++i) {
+            curFunc.addBlock(condBlocks[i]);
+        }
+        curBlock = condBlocks[loop * 3 - 4];
+    }
+
+    /*
+    @Override
+    public void visit(NewArrayExpr node) {
         /// no need to use null or 0 to initialize the array
         node.len.forEach(e -> e.accept(this));
         int dim = node.type.dim;
@@ -888,7 +997,7 @@ public class IRBuilder implements __ASTVisitor {
             curFunc.addBlock(condBlocks[i]);
         }
         curBlock = condBlocks[loop * 3 - 4];
-    }
+    }*/
 
     /*
         int[][][] a = new int[x + y][x - y][6 * z];
@@ -1038,6 +1147,7 @@ public class IRBuilder implements __ASTVisitor {
         node.entity = new Register(typePtr, irProg.strDef.getString(node.value));
     }
 
+    /*
     @Override
     public void visit(TernaryBranchExpr node) {
         node.cond.accept(this);
@@ -1079,7 +1189,40 @@ public class IRBuilder implements __ASTVisitor {
             curBlock.addInst(new Load(resType, resAddr, res));
         }
         node.entity = res;
+    }*/
+
+    @Override
+    public void visit(TernaryBranchExpr node) {
+        node.cond.accept(this);
+        if (node.type.isInt() || node.type.isBool()) {
+            node.entity = new AnonReg(typeI32);
+        } else {
+            node.entity = new AnonReg(typePtr);
+        }
+        Phi p = new Phi((Register) node.entity, node.type);
+
+        IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-true");
+        IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-false");
+        IRBlock endBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-end");
+        Br b = new Br(node.cond.entity, trueBlock, falseBlock);
+        curBlock.addInst(b);
+        curFunc.addBlock(curBlock);
+        curBlock = trueBlock;
+        node.trueBranch.accept(this);
+        Jmp j = new Jmp(endBlock);
+        curBlock.addInst(j);
+        curFunc.addBlock(curBlock);
+        p.addList(node.trueBranch.entity, curBlock);
+        curBlock = falseBlock;
+        node.falseBranch.accept(this);
+        curBlock.addInst(j);
+        curFunc.addBlock(curBlock);
+        p.addList(node.falseBranch.entity, curBlock);
+        curBlock = endBlock;
+        if (!node.trueBranch.type.isVoid() || !node.falseBranch.type.isVoid())
+            curBlock.putPhi(p.dest.name, p);
     }
+
 
     @Override
     public void visit(ThisPtrExpr node) {

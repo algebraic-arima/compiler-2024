@@ -91,7 +91,7 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(IRBlock node) {
-        if (node.IRInsts.isEmpty()) return;
+        if (node.IRInsts.isEmpty() && node.phis.isEmpty()) return;
         String bn = node.label.label;
         if (node.label.label.equals("entry")) {
             bn = curFunc.name;

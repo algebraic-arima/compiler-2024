@@ -5,6 +5,10 @@ import src.utils.IRType.IRType;
 public class Constant extends Entity {
     public long value;
 
+    public String getName() {
+        return null;
+    }
+
     @Override
     public void print() {
         if (type.typeName.equals("ptr")) {

@@ -6,7 +6,7 @@ import src.utils.type.Type;
 abstract public class Entity {
     public IRType type;
 
-    public Entity(){
+    public Entity() {
         this.type = new IRType();
     }
 
@@ -15,4 +15,6 @@ abstract public class Entity {
     }
 
     abstract public void print();
+
+    abstract public String getName();
 }

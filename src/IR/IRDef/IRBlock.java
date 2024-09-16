@@ -15,6 +15,10 @@ public class IRBlock {
     static public int blockCnt;
     public int regNum = 0;
     public int funcParamMax = 0;
+    public HashSet<String> liveIn;
+    public HashSet<String> liveOut;
+    public ArrayList<IRBlock> pred, succ;
+    public ArrayList<IRInst> instList;
 
     public IRBlock(String s) {
         index = blockCnt;
@@ -23,6 +27,11 @@ public class IRBlock {
             s = "l-" + index + "-" + s;
         }
         label = new Label(s);
+        liveIn = new HashSet<>();
+        liveOut = new HashSet<>();
+        pred = new ArrayList<>();
+        succ = new ArrayList<>();
+        instList = new ArrayList<>();
     }
 
     public void addInst(IRInst IRInst) {
@@ -49,12 +58,12 @@ public class IRBlock {
                     || i instanceof Load || i instanceof GetElePtr
                     || i instanceof Icmp || i instanceof Phi) {
                 regNum++;
-            } else if (i instanceof Call) {
-                if (i.dest != null && !((Call) i).retType.typeName.equals("void")) {
+            } else if (i instanceof Call c) {
+                if (i.dest != null && !c.retType.typeName.equals("void")) {
                     regNum++;
                 }
-                if (((Call) i).args.size() > funcParamMax) {
-                    funcParamMax = ((Call) i).args.size();
+                if (c.args.size() > funcParamMax) {
+                    funcParamMax = c.args.size();
                 }
             } else if (i instanceof Alloca) {
                 regNum += 2;
