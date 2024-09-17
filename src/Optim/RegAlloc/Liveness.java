@@ -17,6 +17,7 @@ public class Liveness {
     public HashMap<String, HashSet<Pair<IRBlock, IRInst>>> varList;
     public HashMap<IRInst, IRInst> preInst;
     HashSet<IRBlock> visBlocks;
+    public RIG rig;
 
     public Liveness(IRFuncDef irFunc) {
         this.irFunc = irFunc;
