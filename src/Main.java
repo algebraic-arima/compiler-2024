@@ -10,6 +10,7 @@ import src.IR.IRBuilder;
 import src.IR.IRPrinter;
 import src.IR.IRProg;
 import src.Optim.Mem2Reg.Mem2Reg;
+import src.Optim.RegAlloc.RegAlloc;
 import src.Semantic.*;
 import src.parser.Lex;
 import src.parser.Mx;
@@ -22,7 +23,7 @@ import java.io.*;
 public class Main {
     public static void main(String[] args) throws Exception {
         SemanticJudge sj = new SemanticJudge();
-        boolean fileIn = false;
+        boolean fileIn = true;
         boolean printIR = false;
         boolean fileOutIR = false;
         boolean printM2R = true;
@@ -32,7 +33,7 @@ public class Main {
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/git/compiler-2024/testcases/codegen/test/t25.mx";
+                String file = "F:\\vscode\\antlr-demo\\compiler-2024\\testcases\\codegen\\t26.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -80,6 +81,7 @@ public class Main {
                 }
             }
 
+            RegAlloc ra = new RegAlloc(irProg);
 
 
             if (printASM) {

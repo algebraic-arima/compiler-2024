@@ -13,17 +13,32 @@ import java.util.Map;
 
 public class Liveness {
 
+    static int loopConst = 16;
     public IRFuncDef irFunc;
     public HashMap<String, HashSet<Pair<IRBlock, IRInst>>> varList;
     public HashMap<IRInst, IRInst> preInst;
     HashSet<IRBlock> visBlocks;
+    public HashMap<String, Long> cost;
+    long loop = 1;
     public RIG rig;
 
     public Liveness(IRFuncDef irFunc) {
         this.irFunc = irFunc;
         varList = new HashMap<>();
         preInst = new HashMap<>();
+        cost = new HashMap<>();
+
+        // collect var defs
         for (IRBlock b : irFunc.blocks) {
+            if (b.label.label.endsWith("-for-cond")
+                    || b.label.label.endsWith("-while-cond")
+                    || b.label.label.endsWith("-na-cond")) {
+                loop *= loopConst;
+            } else if (b.label.label.endsWith("-for-end")
+                    || b.label.label.endsWith("-while-end")
+                    || b.label.label.endsWith("-na-end")) {
+                loop /= loopConst;
+            }
             b.instList.addAll(b.phis.values());
             b.instList.addAll(b.IRInsts);
             IRInst te = b.IRInsts.getLast();
@@ -42,64 +57,118 @@ public class Liveness {
                 if (i instanceof Alloca || i instanceof Binary || i instanceof GetElePtr
                         || i instanceof Icmp || i instanceof Load || i instanceof Phi) {
                     varList.put(i.dest.name, new HashSet<>());
+                    cost.put(i.dest.name, loop);
                 } else if (i instanceof Call c) {
                     if (!c.retType.typeName.equals("void") && c.dest != null) {
                         varList.put(i.dest.name, new HashSet<>());
+                        cost.put(i.dest.name, loop);
                     }
                 }
             }
 
         }
+
+        // collect uses
+        loop = 1;
         for (int bi = 0; bi < irFunc.blocks.size(); ++bi) {
             IRBlock b = irFunc.blocks.get(bi);
             IRInst cur = null;
+            if (b.label.label.endsWith("-for-cond")
+                    || b.label.label.endsWith("-while-cond")
+                    || b.label.label.endsWith("-na-cond")) {
+                loop *= loopConst;
+            } else if (b.label.label.endsWith("-for-end")
+                    || b.label.label.endsWith("-while-end")
+                    || b.label.label.endsWith("-na-end")) {
+                loop /= loopConst;
+            }
             for (IRInst i : b.instList) {
                 preInst.put(i, cur);
                 cur = i;
                 if (i instanceof Binary bin) {
                     if (bin.lhs instanceof Register r) {
-                        varList.get(r.name).add(new Pair<>(b, bin));
+                        if (varList.containsKey(r.name)) {
+                            varList.get(r.name).add(new Pair<>(b, bin));
+                            cost.put(r.name, cost.get(r.name) + loop);
+                        }
                     }
                     if (bin.rhs instanceof Register r) {
-                        varList.get(r.name).add(new Pair<>(b, bin));
+                        if (varList.containsKey(r.name)) {
+                            varList.get(r.name).add(new Pair<>(b, bin));
+                            cost.put(r.name, cost.get(r.name) + loop);
+                        }
                     }
                 } else if (i instanceof Br br) {
                     if (br.cond instanceof Register r) {
-                        varList.get(r.name).add(new Pair<>(b, br));
+                        if (varList.containsKey(r.name)) {
+                            varList.get(r.name).add(new Pair<>(b, br));
+                            cost.put(r.name, cost.get(r.name) + loop);
+                        }
                     }
                 } else if (i instanceof Call c) {
                     for (Entity en : c.args) {
                         if (en instanceof Register r) {
-                            varList.get(r.name).add(new Pair<>(b, c));
+                            if (varList.containsKey(r.name)) {
+                                varList.get(r.name).add(new Pair<>(b, c));
+                                cost.put(r.name, cost.get(r.name) + loop);
+                            }
                         }
                     }
                 } else if (i instanceof GetElePtr g) {
                     if (g.offset instanceof Register r) {
-                        varList.get(r.name).add(new Pair<>(b, g));
+                        if (varList.containsKey(r.name)) {
+                            varList.get(r.name).add(new Pair<>(b, g));
+                            cost.put(r.name, cost.get(r.name) + loop);
+                        }
                     }
-                    varList.get(g.ptr.name).add(new Pair<>(b, g));
+                    if (varList.containsKey(g.ptr.name)) {
+                        varList.get(g.ptr.name).add(new Pair<>(b, g));
+                        cost.put(g.ptr.name, cost.get(g.ptr.name) + loop);
+                    }
                 } else if (i instanceof Icmp bin) {
                     if (bin.lhs instanceof Register r) {
-                        varList.get(r.name).add(new Pair<>(b, bin));
+                        if (varList.containsKey(r.name)) {
+                            varList.get(r.name).add(new Pair<>(b, bin));
+                            cost.put(r.name, cost.get(r.name) + loop);
+                        }
                     }
                     if (bin.rhs instanceof Register r) {
-                        varList.get(r.name).add(new Pair<>(b, bin));
+                        if (varList.containsKey(r.name)) {
+                            varList.get(r.name).add(new Pair<>(b, bin));
+                            cost.put(r.name, cost.get(r.name) + loop);
+                        }
                     }
                 } else if (i instanceof Load l) {
-                    varList.get(l.src.name).add(new Pair<>(b, l));
-                } else if (i instanceof Store s) {
-                    varList.get(s.dest.name).add(new Pair<>(b, s));
-                    if (s.value instanceof Register r) {
-                        varList.get(r.name).add(new Pair<>(b, s));
+                    if (varList.containsKey(l.src.name)) {
+                        varList.get(l.src.name).add(new Pair<>(b, l));
+                        cost.put(l.src.name, cost.get(l.src.name) + loop);
                     }
+                } else if (i instanceof Store s) {
+                    if (varList.containsKey(s.dest.name)) {
+                        varList.get(s.dest.name).add(new Pair<>(b, s));
+                        cost.put(s.dest.name, cost.get(s.dest.name) + loop);
+                    }
+                    if (s.value instanceof Register r) {
+                        if (varList.containsKey(r.name)) {
+                            varList.get(r.name).add(new Pair<>(b, s));
+                            cost.put(r.name, cost.get(r.name) + loop);
+                        }
+                    }
+
                 } else if (i instanceof Ret ret) {
                     if (ret.value instanceof Register r) {
-                        varList.get(r.name).add(new Pair<>(b, ret));
+                        if (varList.containsKey(r.name)) {
+                            varList.get(r.name).add(new Pair<>(b, ret));
+                            cost.put(r.name, cost.get(r.name) + loop);
+                        }
                     }
                 } else if (i instanceof Phi p) {
                     for (var d : p.valList) {
                         if (d.a instanceof Register r) {
-                            varList.get(r.name).add(new Pair<>(b, p));
+                            if (varList.containsKey(r.name)) {
+                                varList.get(r.name).add(new Pair<>(b, p));
+                                cost.put(r.name, cost.get(r.name) + loop);
+                            }
                         }
                     }
                 }
@@ -108,6 +177,8 @@ public class Liveness {
 
 
         visBlocks = new HashSet<>();
+        rig = new RIG();
+        rig.addCost(cost);
         for (Map.Entry<String, HashSet<Pair<IRBlock, IRInst>>> e : varList.entrySet()) {
             visBlocks.clear();
             String v = e.getKey();
@@ -129,10 +200,20 @@ public class Liveness {
                 }
             }
         }
+        rig.MCS();
+        rig.color();
+        for (Map.Entry<String, RIG.RIGNode> e : rig.g.entrySet()) {
+            System.out.println(e.getKey() + " " + e.getValue().color + " " + e.getValue().cost + " " + e.getValue().n.size());
+            if (!e.getValue().n.isEmpty()) {
+                System.out.println("  " + e.getValue().cost / e.getValue().n.size());
+            }
+        }
+        rig.spill();
     }
 
     public void scanBlock(IRBlock b, String v) {
         if (visBlocks.contains(b)) return;
+        b.liveOut.add(v);
         visBlocks.add(b);
         liveOut(b, b.instList.getLast(), v);
     }
@@ -162,8 +243,9 @@ public class Liveness {
         }
         for (String y : def) {
             if (y.equals(v)) continue;
-            // interfere
-
+            rig.addEdge(v, y);
+            // y: def in the inst
+            // v: some active var suring the inst
         }
         if (!def.contains(v)) {
             liveIn(b, i, v);
