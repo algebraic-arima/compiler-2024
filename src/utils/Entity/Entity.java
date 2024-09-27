@@ -16,5 +16,4 @@ abstract public class Entity {
 
     abstract public void print();
 
-    abstract public String getName();
 }

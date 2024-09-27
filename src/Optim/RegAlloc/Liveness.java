@@ -1,21 +1,20 @@
 package src.Optim.RegAlloc;
 
 import org.antlr.v4.runtime.misc.Pair;
+import src.IR.IRBuilder;
 import src.IR.IRDef.IRBlock;
 import src.IR.IRDef.IRFuncDef;
 import src.IR.IRInst.*;
 import src.utils.Entity.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 public class Liveness {
 
     static int loopConst = 16;
     public IRFuncDef irFunc;
     public HashMap<String, HashSet<Pair<IRBlock, IRInst>>> varList;
+    public HashMap<String, Pair<IRBlock, IRInst>> defInst;
     public HashMap<IRInst, IRInst> preInst;
     HashSet<IRBlock> visBlocks;
     public HashMap<String, Long> cost;
@@ -27,7 +26,38 @@ public class Liveness {
         varList = new HashMap<>();
         preInst = new HashMap<>();
         cost = new HashMap<>();
+        defInst = new HashMap<>();
 
+        varDefCollect();
+        varUseCollect();
+        trimUseless();
+
+        rig = new RIG();
+        rig.addCost(cost);
+        liveAnalysis();
+//        rig.MCS();
+//        rig.color();
+        for (Map.Entry<String, RIG.RIGNode> e : rig.g.entrySet()) {
+            System.out.println(e.getKey() + " " + e.getValue().color + " " + e.getValue().cost + " " + e.getValue().n.size());
+            if (!e.getValue().n.isEmpty()) {
+                System.out.println("  " + e.getValue().cost / e.getValue().n.size());
+            }
+        }
+//        int maxColor = 0;
+//        int trueColor = rig.colors.size();
+//        IRInst maxInst = null;
+//        for (IRBlock b : irFunc.blocks) {
+//            for (IRInst i : b.instList) {
+//                if (i.liveOut.size() > maxColor) {
+//                    maxInst = i;
+//                    maxColor = i.liveOut.size();
+//                }
+//            }
+//        }
+        spill(2);
+    }
+
+    public void varDefCollect() {
         // collect var defs
         for (IRBlock b : irFunc.blocks) {
             if (b.label.label.endsWith("-for-cond")
@@ -57,17 +87,21 @@ public class Liveness {
                 if (i instanceof Alloca || i instanceof Binary || i instanceof GetElePtr
                         || i instanceof Icmp || i instanceof Load || i instanceof Phi) {
                     varList.put(i.dest.name, new HashSet<>());
+                    defInst.put(i.dest.name, new Pair<>(b, i));
                     cost.put(i.dest.name, loop);
                 } else if (i instanceof Call c) {
                     if (!c.retType.typeName.equals("void") && c.dest != null) {
                         varList.put(i.dest.name, new HashSet<>());
+                        defInst.put(i.dest.name, new Pair<>(b, i));
                         cost.put(i.dest.name, loop);
                     }
                 }
             }
 
         }
+    }
 
+    public void varUseCollect() {
         // collect uses
         loop = 1;
         for (int bi = 0; bi < irFunc.blocks.size(); ++bi) {
@@ -174,15 +208,28 @@ public class Liveness {
                 }
             }
         }
+    }
 
+    public void trimUseless() {
+        for (Map.Entry<String, HashSet<Pair<IRBlock, IRInst>>> e : varList.entrySet()) {
+            if (e.getValue().isEmpty()) {
+                String var = e.getKey();
+                Pair<IRBlock, IRInst> def = defInst.get(var);
+                preInst.put(def.a.instList.get(def.a.instList.indexOf(def.b) + 1), preInst.get(def.b));
+                def.a.instList.remove(def.b);
+                def.a.IRInsts.remove(def.b);
+                cost.remove(var);
+            }
+        }
+    }
 
+    public void liveAnalysis() {
         visBlocks = new HashSet<>();
-        rig = new RIG();
-        rig.addCost(cost);
         for (Map.Entry<String, HashSet<Pair<IRBlock, IRInst>>> e : varList.entrySet()) {
             visBlocks.clear();
             String v = e.getKey();
-            for (var use : e.getValue()) {
+            HashSet<Pair<IRBlock, IRInst>> uses = e.getValue();
+            for (var use : uses) {
                 IRBlock useBlock = use.a;
                 IRInst useInst = use.b;
                 if (useInst instanceof Phi p) {
@@ -200,15 +247,6 @@ public class Liveness {
                 }
             }
         }
-        rig.MCS();
-        rig.color();
-        for (Map.Entry<String, RIG.RIGNode> e : rig.g.entrySet()) {
-            System.out.println(e.getKey() + " " + e.getValue().color + " " + e.getValue().cost + " " + e.getValue().n.size());
-            if (!e.getValue().n.isEmpty()) {
-                System.out.println("  " + e.getValue().cost / e.getValue().n.size());
-            }
-        }
-        rig.spill();
     }
 
     public void scanBlock(IRBlock b, String v) {
@@ -249,6 +287,40 @@ public class Liveness {
         }
         if (!def.contains(v)) {
             liveIn(b, i, v);
+        } else {
+            return;
+        }
+    }
+
+    public void spill(int rn) {
+        HashMap<String, Integer> spillList = new HashMap<>();
+        for (IRBlock b : irFunc.blocks) {
+            for (IRInst i : b.instList) {
+                int cnt = 0;
+                for (String s : i.liveOut) {
+                    if (!spillList.containsKey(s)) {
+                        ++cnt;
+                    }
+                }
+                if (cnt > rn) {
+                    // select the max-cost (cnt - rn) vars to spill
+                    PriorityQueue<Pair<String, Integer>> pq = new PriorityQueue<>(Comparator.comparingInt(p -> p.b));
+                    for (String s : i.liveOut) {
+                        if (!spillList.containsKey(s)) {
+                            pq.offer(new Pair<>(s, cost.get(s).intValue()));
+                        }
+                    }
+                    for (int j = 0; j < cnt - rn; ++j) {
+                        Pair<String, Integer> p = pq.poll();
+                        spillList.put(p.a, p.b);
+                    }
+                }
+            }
+        }
+        for (Map.Entry<String, Integer> e : spillList.entrySet()) {
+            System.out.println("  " + e.getKey() + " " + e.getValue());
+            Register.markStack(e.getKey());
+            rig.removeVertex(e.getKey());
         }
     }
 }

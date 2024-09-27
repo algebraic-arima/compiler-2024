@@ -41,6 +41,14 @@ public class RIG {
         g.get(t).n.put(s, g.get(s));
     }
 
+    public void removeVertex(String s) {
+        RIGNode u = g.get(s);
+        for (Map.Entry<String, RIGNode> e : u.n.entrySet()) {
+            e.getValue().n.remove(s);
+        }
+        g.remove(s);
+    }
+
     public void MCS() {
         int cnt = g.size(), max = 0;
         HashMap<Integer, HashSet<RIGNode>> bucket = new HashMap<>();
@@ -92,7 +100,5 @@ public class RIG {
 
     }
 
-    public void spill() {
 
-    }
 }

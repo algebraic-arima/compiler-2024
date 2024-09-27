@@ -113,10 +113,10 @@ public class IRBuilder implements __ASTVisitor {
             for (Map.Entry<String, Type> entry : node.funcParams.entrySet()) {
                 f.paramTypes.add(new IRType(entry.getValue()));
                 f.paramNames.add("%" + entry.getKey() + ".val");
-                Register r = new Register("%" + entry.getKey());
+                Register r = Register.newReg("%" + entry.getKey());
                 curFunc.addAlloca(new Alloca(new IRType(entry.getValue()), r));
                 curBlock.addInst(new Store(new IRType(entry.getValue()),
-                        new Register("%" + entry.getKey() + ".val"), r));
+                        Register.newReg("%" + entry.getKey() + ".val"), r));
             }
 
             curScope = new Scope(curScope);
@@ -150,24 +150,24 @@ public class IRBuilder implements __ASTVisitor {
             for (Map.Entry<String, Type> entry : node.funcParams.entrySet()) {
                 f.paramTypes.add(new IRType(entry.getValue()));
                 f.paramNames.add("%" + entry.getKey() + ".val");
-                Register r = new Register("%" + entry.getKey());
+                Register r = Register.newReg("%" + entry.getKey());
                 curFunc.addAlloca(new Alloca(new IRType(entry.getValue()), r));
                 curBlock.addInst(new Store(new IRType(entry.getValue()),
-                        new Register("%" + entry.getKey() + ".val"), r));
+                        Register.newReg("%" + entry.getKey() + ".val"), r));
             }
 
             curScope = new Scope(curScope);
             curScope.VarList = gScope.getClass(curClassDef).methods.get(node.funcName).args;
 
-            Register originThisReg = new Register("%this");
-            Register thisReg = new Register("%this1");
+            Register originThisReg = Register.newReg("%this");
+            Register thisReg = Register.newReg("%this1");
             curFunc.addAlloca(new Alloca(typePtr, originThisReg));
-            curBlock.addInst(new Store(typePtr, new Register("%this.val"), originThisReg));
+            curBlock.addInst(new Store(typePtr, Register.newReg("%this.val"), originThisReg));
             curBlock.addInst(new Load(typePtr, originThisReg, thisReg));
 
             int m = 0;
             for (Map.Entry<String, Type> e : gScope.getClass(curClassDef).fields.entrySet()) {
-                GetElePtr g = new GetElePtr(curClassDef, e.getValue().typeName, thisReg, new Register("%" + curClassDef + ".." + e.getKey()), 0, m);
+                GetElePtr g = new GetElePtr(curClassDef, e.getValue().typeName, thisReg, Register.newReg("%" + curClassDef + ".." + e.getKey()), 0, m);
                 curBlock.addInst(g);
                 m++;
             }
@@ -199,15 +199,15 @@ public class IRBuilder implements __ASTVisitor {
         curFunc = new IRFuncDef("@" + node.className + ".." + node.className);
         curFunc.paramNames.add("%this.val");
         curFunc.paramTypes.add(typePtr);
-        Register originThisReg = new Register("%this");
-        Register thisReg = new Register("%this1");
+        Register originThisReg = Register.newReg("%this");
+        Register thisReg = Register.newReg("%this1");
         curFunc.addAlloca(new Alloca(typePtr, originThisReg));
-        curBlock.addInst(new Store(typePtr, new Register("%this.val"), originThisReg));
+        curBlock.addInst(new Store(typePtr, Register.newReg("%this.val"), originThisReg));
         curBlock.addInst(new Load(typePtr, originThisReg, thisReg));
 
         int m = 0;
         for (Map.Entry<String, Type> e : gScope.getClass(curClassDef).fields.entrySet()) {
-            GetElePtr g = new GetElePtr(curClassDef, e.getValue().typeName, thisReg, new Register("%" + curClassDef + ".." + e.getKey()), 0, m);
+            GetElePtr g = new GetElePtr(curClassDef, e.getValue().typeName, thisReg, Register.newReg("%" + curClassDef + ".." + e.getKey()), 0, m);
             curBlock.addInst(g);
             m++;
         }
@@ -216,10 +216,9 @@ public class IRBuilder implements __ASTVisitor {
             for (Map.Entry<String, Expr> entry : v.initVals.entrySet()) {
                 cd.fields.add(new IRType(v.type));
                 if (entry.getValue() != null) {
-                    Register reg = new Register("%" + node.className + ".." + entry.getKey());
+                    Register reg = Register.newReg("%" + node.className + ".." + entry.getKey());
                     entry.getValue().accept(this);
-                    Store s = new Store(new IRType(v.type), entry.getValue().entity, reg);
-                    curBlock.addInst(s);
+                    curBlock.addInst(new Store(new IRType(v.type), entry.getValue().entity, reg));
                 }
             }
         }
@@ -245,7 +244,6 @@ public class IRBuilder implements __ASTVisitor {
         if (curScope.isGlobal()) {
             for (Map.Entry<String, Expr> entry : node.initVals.entrySet()) {
                 IRGlobalVarDef g = new IRGlobalVarDef();
-                Register addr = new Register(node.type, "@" + entry.getKey());
 //                entityMap.put(addr, "@" + entry.getKey());
                 g.irType = new IRType(node.type);
                 g.name = "@" + entry.getKey();
@@ -258,7 +256,7 @@ public class IRBuilder implements __ASTVisitor {
                         curBlock = new IRBlock("entry");
                         curFunc = init;
                         entry.getValue().accept(this);
-                        curBlock.addInst(new Store(new IRType(node.type), entry.getValue().entity, new Register(g.name)));
+                        curBlock.addInst(new Store(new IRType(node.type), entry.getValue().entity, Register.newReg(g.name)));
                         curBlock.addInst(new Ret());
                         curFunc.addBlock(curBlock);
                         for (IRInst i : curFunc.blocks.getFirst().IRInsts) {
@@ -273,7 +271,7 @@ public class IRBuilder implements __ASTVisitor {
             }
         } else {
             for (Map.Entry<String, Expr> entry : node.initVals.entrySet()) {
-                Register addr = new Register(node.type, "%" + entry.getKey());
+                Register addr = Register.newReg(new IRType(node.type), "%" + entry.getKey());
 //                entityMap.put(addr, "%" + entry.getKey());
 
                 if (entry.getValue() != null) {
@@ -283,14 +281,12 @@ public class IRBuilder implements __ASTVisitor {
                 if (node.type.isInt() || node.type.isBool()) {
                     curFunc.addAlloca(new Alloca(typeI32, addr));
                     if (entry.getValue() != null) {
-                        Store s = new Store(node.type.isInt() ? typeI32 : typeI1, entry.getValue().entity, addr);
-                        curBlock.addInst(s);
+                        curBlock.addInst(new Store(node.type.isInt() ? typeI32 : typeI1, entry.getValue().entity, addr));
                     }
                 } else if (node.type.isClass() || node.type.isString() || node.type.isArray()) {
                     curFunc.addAlloca(new Alloca(typePtr, addr));
                     if (entry.getValue() != null) {
-                        Store s = new Store(typePtr, entry.getValue().entity, addr);
-                        curBlock.addInst(s);
+                        curBlock.addInst(new Store(typePtr, entry.getValue().entity, addr));
                     }
                 }
             }
@@ -371,17 +367,15 @@ public class IRBuilder implements __ASTVisitor {
         IRBlock tmpBreak = breakBlock, tmpCont = contBlock;
         breakBlock = endBlock;
         contBlock = condBlock;
-        Jmp j = new Jmp(condBlock);
-        curBlock.addInst(j);
+        curBlock.addInst(new Jmp(condBlock));
         curFunc.addBlock(curBlock);
         curBlock = condBlock;
         node.cond.accept(this);
-        Br b = new Br(node.cond.entity, bodyBlock, endBlock);
-        curBlock.addInst(b);
+        curBlock.addInst(new Br(node.cond.entity, bodyBlock, endBlock));
         curFunc.addBlock(curBlock);
         curBlock = bodyBlock;
         node.body.accept(this);
-        curBlock.addInst(j);
+        curBlock.addInst(new Jmp(condBlock));
         curFunc.addBlock(curBlock);
         curBlock = endBlock;
         breakBlock = tmpBreak;
@@ -402,8 +396,7 @@ public class IRBuilder implements __ASTVisitor {
         breakBlock = endBlock;
         contBlock = (node.update == null) ? condBlock : stepBlock;
 
-        Jmp j = new Jmp(condBlock);
-        curBlock.addInst(j);
+        curBlock.addInst(new Jmp(condBlock));
         curFunc.addBlock(curBlock);
         curBlock = condBlock;
         if (node.cond != null) {
@@ -415,13 +408,12 @@ public class IRBuilder implements __ASTVisitor {
         }
         node.body.accept(this);
         if (node.update != null) {
-            Jmp jj = new Jmp(stepBlock);
-            curBlock.addInst(jj);
+            curBlock.addInst(new Jmp(stepBlock));
             curFunc.addBlock(curBlock);
             curBlock = stepBlock;
             node.update.accept(this);
         }
-        curBlock.addInst(j);
+        curBlock.addInst(new Jmp(condBlock));
         curFunc.addBlock(curBlock);
         curBlock = endBlock;
 
@@ -709,14 +701,13 @@ public class IRBuilder implements __ASTVisitor {
     @Override
     public void visit(FmtStrLiteralExpr node) {
         node.exprs.forEach(e -> e.accept(this));
-        /// todo: call strcat to align all the expr values
-        Register result = new Register(typePtr, irProg.strDef.getString(node.strs.getFirst()));
+        Register result = Register.newReg(typePtr, irProg.strDef.getString(node.strs.getFirst()));
         for (int i = 0; i < node.exprs.size(); ++i) {
             Expr e = node.exprs.get(i);
             String str = node.strs.get(i + 1);
 
             Register toStrRes;
-            Register strReg = new Register(typePtr, irProg.strDef.getString(str));
+            Register strReg = Register.newReg(typePtr, irProg.strDef.getString(str));
 
             if (e.type.isString()) {
                 toStrRes = (Register) e.entity;
@@ -770,7 +761,7 @@ public class IRBuilder implements __ASTVisitor {
                 c = new Call("@" + curClassDef + ".." + node.funcName, cft.retType, res);
                 node.entity = res;
             }
-            c.args.add(new Register("%this1"));
+            c.args.add(Register.newReg("%this1"));
             c.argTypes.add(typePtr);
         } else {
             node.args.exps.forEach(e -> e.accept(this));
@@ -840,7 +831,7 @@ public class IRBuilder implements __ASTVisitor {
         Register res_offset_addr = new AnonReg(typePtr);
         Register res = new AnonReg((node.type.isInt() || node.type.isBool()) ? typeI32 : typePtr);
 
-//        Register res_member = new Register(node.type, "%" + node.obj.type.typeName + "-" + node.member);
+//        Register res_member = Register.newReg(node.type, "%" + node.obj.type.typeName + "-" + node.member);
 //        // res stores the address of the object
 //        Load l = new Load(new IRType(node.type), (Register) node.obj.entity, res);
 //        curBlock.addInst(l);
@@ -879,9 +870,9 @@ public class IRBuilder implements __ASTVisitor {
             condBlocks[loop * 3 - 4 - i] = new IRBlock(node.pos.row + "-" + node.pos.column + "-na-end" + i);
         }
         for (int i = 0; i < loop - 1; ++i) {
-            Register tmp1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-tmp" + i);
-            Register cmp1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-cmp" + i);
-            Register inc1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-inc" + i);
+            Register tmp1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-tmp" + i);
+            Register cmp1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-cmp" + i);
+            Register inc1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-inc" + i);
             Phi p = new Phi(tmp1, typeI32);
             p.addList(new Constant(0), i == 0 ? curBlock : condBlocks[2 * i - 1]);
             p.addList(inc1, condBlocks[loop * 3 - 5 - i]);
@@ -889,9 +880,9 @@ public class IRBuilder implements __ASTVisitor {
             condBlocks[2 * i].addInst(new Icmp("<", tmp1, e.get(i), cmp1, typeI32));
             condBlocks[2 * i].addInst(new Br(cmp1, condBlocks[2 * i + 1], condBlocks[loop * 3 - 4 - i]));
 
-            Register p1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-p" + i);
-            Register t1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i));
-            Register t2 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i + 1));
+            Register p1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-p" + i);
+            Register t1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i));
+            Register t2 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i + 1));
             condBlocks[2 * i + 1].addInst(new GetElePtr("ptr",
                     node.type.typeName, t1, p1, tmp1, -1));
             Call c = new Call("@array..malloc", typePtr, t2);
@@ -907,7 +898,7 @@ public class IRBuilder implements __ASTVisitor {
             }
         }
         Call c = new Call("@array..malloc", node.type,
-                new Register("%na-" + node.pos.row + "-" + node.pos.column + "-t" + 0));
+                Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-t" + 0));
         c.args.add(e.getFirst());
         c.argTypes.add(typeI32);
         curBlock.addInst(c);
@@ -947,19 +938,19 @@ public class IRBuilder implements __ASTVisitor {
             condBlocks[loop * 3 - 4 - i] = new IRBlock(node.pos.row + "-" + node.pos.column + "-na-end" + i);
         }
         for (int i = 0; i < loop - 1; ++i) {
-            Register tmp1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-tmp" + i);
-            Register cmp1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-cmp" + i);
-            Register inc1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-inc" + i);
-            Register addr1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-addr" + i);
-            Register addr2 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-addr" + (i + 1));
+            Register tmp1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-tmp" + i);
+            Register cmp1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-cmp" + i);
+            Register inc1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-inc" + i);
+            Register addr1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-addr" + i);
+            Register addr2 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-addr" + (i + 1));
 
             condBlocks[2 * i].addInst(new Load(typeI32, addr1, tmp1));
             condBlocks[2 * i].addInst(new Icmp("<", tmp1, e.get(i), cmp1, typeI32));
             condBlocks[2 * i].addInst(new Br(cmp1, condBlocks[2 * i + 1], condBlocks[loop * 3 - 4 - i]));
 
-            Register p1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-p" + i);
-            Register t1 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i));
-            Register t2 = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i + 1));
+            Register p1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-p" + i);
+            Register t1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i));
+            Register t2 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-t" + (i + 1));
             Call c = new Call("@array..malloc", typePtr, t2);
             c.args.add(e.get(i + 1));
             c.argTypes.add(typeI32);
@@ -981,11 +972,11 @@ public class IRBuilder implements __ASTVisitor {
             }
         }
         Call c = new Call("@array..malloc", node.type,
-                new Register("%na-" + node.pos.row + "-" + node.pos.column + "-t" + 0));
+                Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-t" + 0));
         c.args.add(e.getFirst());
         c.argTypes.add(typeI32);
         curBlock.addInst(c);
-        Register addr = new Register("%na-" + node.pos.row + "-" + node.pos.column + "-addr" + 0);
+        Register addr = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-addr" + 0);
         curFunc.addAlloca(new Alloca(typeI32, addr));
         curBlock.addInst(new Store(typeI32, new Constant(0), addr));
 
@@ -1144,7 +1135,7 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(StringLiteralExpr node) {
-        node.entity = new Register(typePtr, irProg.strDef.getString(node.value));
+        node.entity = Register.newReg(typePtr, irProg.strDef.getString(node.value));
     }
 
     /*
@@ -1204,18 +1195,16 @@ public class IRBuilder implements __ASTVisitor {
         IRBlock trueBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-true");
         IRBlock falseBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-false");
         IRBlock endBlock = new IRBlock(node.pos.row + "-" + node.pos.column + "-ternary-end");
-        Br b = new Br(node.cond.entity, trueBlock, falseBlock);
-        curBlock.addInst(b);
+        curBlock.addInst(new Br(node.cond.entity, trueBlock, falseBlock));
         curFunc.addBlock(curBlock);
         curBlock = trueBlock;
         node.trueBranch.accept(this);
-        Jmp j = new Jmp(endBlock);
-        curBlock.addInst(j);
+        curBlock.addInst(new Jmp(endBlock));
         curFunc.addBlock(curBlock);
         p.addList(node.trueBranch.entity, curBlock);
         curBlock = falseBlock;
         node.falseBranch.accept(this);
-        curBlock.addInst(j);
+        curBlock.addInst(new Jmp(endBlock));
         curFunc.addBlock(curBlock);
         p.addList(node.falseBranch.entity, curBlock);
         curBlock = endBlock;
@@ -1226,7 +1215,7 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(ThisPtrExpr node) {
-        node.entity = new Register(typePtr, "%this1");
+        node.entity = Register.newReg(typePtr, "%this1");
     }
 
     @Override
@@ -1300,7 +1289,7 @@ public class IRBuilder implements __ASTVisitor {
     public void visit(VarExpr node) {
         Register res = new AnonReg((node.type.isInt() || node.type.isBool()) ? typeI32 : typePtr);
         boolean isg = gScope.VarList.containsKey(node.varName);
-        Register addr = new Register(node.type, (isg ? "@" : "%") + node.varName);
+        Register addr = Register.newReg(new IRType(node.type), (isg ? "@" : "%") + node.varName);
         Load l = new Load(new IRType(node.type), addr, res);
         // the value of variable `i` is stored in the position that @i/%i points
         node.entity = res;

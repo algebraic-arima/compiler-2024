@@ -6,8 +6,9 @@ public class AnonReg extends Register {
     public static int cnt = 0;
 
     public AnonReg(IRType type) {
-        super("%." + String.valueOf(cnt));
+        super("%." + cnt);
         this.type = type;
         ++cnt;
+        registers.put(name, this);
     }
 }
