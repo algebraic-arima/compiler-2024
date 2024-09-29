@@ -44,14 +44,6 @@ public class GetElePtr extends IRInst {
         this.dest = dest;
     }
 
-    public GetElePtr() {
-        this.ptrType = new IRType();
-        this.ptr = new Register();
-        this.offset = new Constant(0);
-        this.fieldInd = 0;
-        this.destType = new IRType();
-    }
-
 
     @Override
     public void print() {

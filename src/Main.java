@@ -33,7 +33,7 @@ public class Main {
         try {
             InputStream in;
             if (fileIn) {
-                String file = "F:\\vscode\\antlr-demo\\compiler-2024\\testcases\\codegen\\t26.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t59.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -68,8 +68,9 @@ public class Main {
                 }
             }
 
-            Mem2Reg m2r = new Mem2Reg(irProg);
 
+            Mem2Reg m2r = new Mem2Reg(irProg);
+            RegAlloc ra = new RegAlloc(irProg);
             if (printM2R) {
                 IRPrinter irPrinter = new IRPrinter(irProg);
                 if (fileOutM2R) {
@@ -80,9 +81,6 @@ public class Main {
                     irPrinter.print();
                 }
             }
-
-            RegAlloc ra = new RegAlloc(irProg);
-
 
             if (printASM) {
                 ASMBuilder asmBuilder = new ASMBuilder(irBuilder.irProg, printIR);

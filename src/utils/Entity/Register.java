@@ -51,4 +51,8 @@ public class Register extends Entity {
         registers.get(name).phyReg = -1;
     }
 
+    static public void markReg(String name, int c) {
+        registers.get(name).phyReg = c;
+    }
+
 }

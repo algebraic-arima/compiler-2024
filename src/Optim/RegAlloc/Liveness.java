@@ -20,6 +20,7 @@ public class Liveness {
     public HashMap<String, Long> cost;
     long loop = 1;
     public RIG rig;
+    HashMap<String, Integer> spillList;
 
     public Liveness(IRFuncDef irFunc) {
         this.irFunc = irFunc;
@@ -35,8 +36,7 @@ public class Liveness {
         rig = new RIG();
         rig.addCost(cost);
         liveAnalysis();
-//        rig.MCS();
-//        rig.color();
+
         for (Map.Entry<String, RIG.RIGNode> e : rig.g.entrySet()) {
             System.out.println(e.getKey() + " " + e.getValue().color + " " + e.getValue().cost + " " + e.getValue().n.size());
             if (!e.getValue().n.isEmpty()) {
@@ -54,7 +54,10 @@ public class Liveness {
 //                }
 //            }
 //        }
-        spill(2);
+        spill(5);
+        rig.MCS();
+        rig.color();
+        reducePhi();
     }
 
     public void varDefCollect() {
@@ -293,7 +296,7 @@ public class Liveness {
     }
 
     public void spill(int rn) {
-        HashMap<String, Integer> spillList = new HashMap<>();
+        spillList = new HashMap<>();
         for (IRBlock b : irFunc.blocks) {
             for (IRInst i : b.instList) {
                 int cnt = 0;
@@ -303,7 +306,7 @@ public class Liveness {
                     }
                 }
                 if (cnt > rn) {
-                    // select the max-cost (cnt - rn) vars to spill
+                    // select the min-cost (cnt - rn) vars to spill
                     PriorityQueue<Pair<String, Integer>> pq = new PriorityQueue<>(Comparator.comparingInt(p -> p.b));
                     for (String s : i.liveOut) {
                         if (!spillList.containsKey(s)) {
@@ -321,6 +324,56 @@ public class Liveness {
             System.out.println("  " + e.getKey() + " " + e.getValue());
             Register.markStack(e.getKey());
             rig.removeVertex(e.getKey());
+        }
+    }
+
+    public void reducePhi() {
+        for (IRBlock b : irFunc.blocks) {
+            HashMap<Register, Phi> phis = new HashMap<>();
+            HashMap<String, ArrayList<Pair<Entity, Register>>> totMVList = new HashMap<>();
+            for (IRBlock p : b.pred) {
+                totMVList.put(p.label.label, new ArrayList<>());
+            }
+            for (IRInst i : b.instList) {
+                if (i instanceof Phi p) {
+                    phis.put(p.dest, p);
+                    for (var c : p.valList) {
+                        totMVList.get(c.b.label.label).add(new Pair<>(c.a, p.dest));
+                    }
+                } else break;
+            }
+            for (IRBlock p : b.pred) {
+                // apply modifies to p.mv
+                ArrayList<Pair<Entity, Register>> mvList = totMVList.get(p.label.label);
+                HashSet<Register> dest = new HashSet<>();
+                HashMap<Register, Register> copy = new HashMap<>(); // originreg -> tmpreg
+                HashSet<Register> src = new HashSet<>();
+                for (var e : mvList) {
+                    if (e.a instanceof Register r) {
+                        src.add(r);
+                    }
+                    dest.add(e.b);
+                }
+                for (var e : dest) {
+                    if (src.contains(e)) {
+                        copy.put(e, Register.newReg(e.type, e.name + ".cp"));
+                    }
+                }
+                ArrayList<MV> mvArray = new ArrayList<>();
+                p.mv.put(b.label.label, mvArray);
+                for (Map.Entry<Register, Register> e : copy.entrySet()) {
+                    mvArray.add(new MV(e.getValue(), e.getKey()));
+                }
+                for (var e : mvList) {
+                    if (e.a instanceof Register r) {
+                        if (copy.containsKey(r)) {
+                            mvArray.add(new MV(copy.get(r), e.b));
+                            continue;
+                        }
+                    }
+                    mvArray.add(new MV(e.a, e.b));
+                }
+            }
         }
     }
 }

@@ -776,8 +776,8 @@ public class IRBuilder implements __ASTVisitor {
         }
         for (Expr e : node.args.exps) {
             c.args.add(e.entity);
-            if (e.entity != null) c.argTypes.add(new IRType(e.type));
-            else c.argTypes.add(null);
+            if (e.entity != nullConst) c.argTypes.add(new IRType(e.type));
+            else c.argTypes.add(typePtr);
         }
         curBlock.IRInsts.add(c);
     }

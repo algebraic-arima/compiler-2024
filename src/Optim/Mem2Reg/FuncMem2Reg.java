@@ -315,7 +315,7 @@ public class FuncMem2Reg {
                 for (CFGNode dd : b.DF) {
                     IRBlock d = irBlocks.get(dd.label);
                     if (!d.phis.containsKey(x)) {
-                        d.putPhi(x, new Phi(new Register(x), t));// occupier
+                        d.putPhi(x, new Phi(Register.newReg(x), t));// occupier
                         list.offer(dd.label);
                     }
                 }
@@ -368,7 +368,7 @@ public class FuncMem2Reg {
         // rename result of phi
         for (Map.Entry<String, Phi> e : ir.phis.entrySet()) {
             if (!varDefGlobal.containsKey(e.getKey())) continue;
-            e.getValue().dest = new Register(newName(e.getKey()));
+            e.getValue().dest = Register.newReg(newName(e.getKey()));
             pushStack.put(e.getKey(), pushStack.get(e.getKey()) + 1);
         }
 
@@ -384,11 +384,11 @@ public class FuncMem2Reg {
 //                if (stack.get(ii.src.name).isEmpty()) {
 //                    ir.IRInsts.set(cnt, null);
 //                } else {
-//                    ir.IRInsts.set(cnt, new Binary("+", new Register(ii.irType, getNewName(ii.src.name)),
+//                    ir.IRInsts.set(cnt, new Binary("+", Register.newReg(ii.irType, getNewName(ii.src.name)),
 //                            new Constant(0), ii.dest, ii.irType));
 //                }
 
-                Entity c = new Register(ii.irType, getNewName(ii.src.name));
+                Entity c = Register.newReg(ii.irType, getNewName(ii.src.name));
                 while (c instanceof Register r) {
                     Entity e = renameMap.get(r.name);
                     if (e == null) break;
@@ -409,7 +409,7 @@ public class FuncMem2Reg {
                     continue;
                 }
 //                ir.IRInsts.set(cnt, new Binary("+", ii.value,
-//                        new Constant(0), new Register(ii.irType, newName(ii.dest.name)), ii.irType));
+//                        new Constant(0), Register.newReg(ii.irType, newName(ii.dest.name)), ii.irType));
 //                if (ii.value instanceof Register r) {
 //                    Entity s = renameMap.get(r.name);
 //                    if (s != null) ii.value = s;
@@ -495,7 +495,7 @@ public class FuncMem2Reg {
                 } else {
                     Entity entity = renameMap.get(str);
                     if (entity == null) {
-                        en = new Register(e.getValue().irType, str);
+                        en = Register.newReg(e.getValue().irType, str);
                     } else {
                         en = entity;
                     }
