@@ -1,6 +1,7 @@
 package src.Optim.RegAlloc;
 
 import java.util.*;
+
 import src.utils.Entity.*;
 
 public class RIG {
@@ -94,7 +95,7 @@ public class RIG {
                     u.color = i;
                     colors.add(i);
                     u.colored = true;
-                    Register.markReg(u.name,i);
+                    Register.markReg(u.name, i + 1);
                     break;
                 }
             }

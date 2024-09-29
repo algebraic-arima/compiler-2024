@@ -23,7 +23,7 @@ import java.io.*;
 public class Main {
     public static void main(String[] args) throws Exception {
         SemanticJudge sj = new SemanticJudge();
-        boolean fileIn = true;
+        boolean fileIn = false;
         boolean printIR = false;
         boolean fileOutIR = false;
         boolean printM2R = true;
@@ -33,7 +33,7 @@ public class Main {
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t59.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/shortest_path/dijkstra.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -57,6 +57,9 @@ public class Main {
             IRProg irProg = irBuilder.build(ASTRoot);
             irProg.reformat();
 
+            Mem2Reg m2r = new Mem2Reg(irProg);
+            RegAlloc ra = new RegAlloc(irProg);
+
             if (printIR) {
                 IRPrinter irPrinter = new IRPrinter(irProg);
                 if (fileOutIR) {
@@ -69,8 +72,6 @@ public class Main {
             }
 
 
-            Mem2Reg m2r = new Mem2Reg(irProg);
-            RegAlloc ra = new RegAlloc(irProg);
             if (printM2R) {
                 IRPrinter irPrinter = new IRPrinter(irProg);
                 if (fileOutM2R) {

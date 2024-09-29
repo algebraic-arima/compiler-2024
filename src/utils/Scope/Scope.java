@@ -14,7 +14,7 @@ public class Scope {
 
     public HashMap<String, Type> VarList;
     public HashMap<String, FuncType> FuncList;
-    public HashMap<String,String> renameVarMap;
+    public HashMap<String, String> renameVarMap;
     // to find the var,
     // if in the scope, find in renameVarMap
     // if not, resort to parent
@@ -43,18 +43,18 @@ public class Scope {
         VarList.put(name, t);
     }
 
-    public class VarInfo{
+    public class VarInfo {
         public Type t;
         public String alias;
 
-        public VarInfo(Type t, String alias){
+        public VarInfo(Type t, String alias) {
             this.t = t;
             this.alias = alias;
         }
     }
 
     public VarInfo getVar(String name) {
-        if (VarList.containsKey(name)) return new VarInfo(VarList.get(name),renameVarMap.get(name));
+        if (VarList.containsKey(name)) return new VarInfo(VarList.get(name), renameVarMap.get(name));
         if (parent != null) return parent.getVar(name);
         return null;
     }
@@ -74,7 +74,7 @@ public class Scope {
         return null;
     }
 
-    public boolean isGlobal(){
+    public boolean isGlobal() {
         return false;
     }
 }

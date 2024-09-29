@@ -71,8 +71,8 @@ public class SemanticChecker implements __ASTVisitor {
             if (varCount.containsKey(e.getKey())) {
                 int ind = varCount.get(e.getKey());
                 varCount.put(e.getKey(), ind + 1);
-                curScope.renameVarMap.put(e.getKey(), e.getKey() +"."+ ind);
-                tmp_rename.put(e.getKey(), e.getKey()+"." + ind);
+                curScope.renameVarMap.put(e.getKey(), e.getKey() + "." + ind);
+                tmp_rename.put(e.getKey(), e.getKey() + "." + ind);
                 // if put after remove,
                 // the value will be deleted
             } else {
@@ -121,13 +121,24 @@ public class SemanticChecker implements __ASTVisitor {
         cur_c = node.className;
         curScope = new Scope(curScope);
         curScope.VarList = new HashMap<>(gScope.getClass(node.className).fields);
-        for (Map.Entry<String, Type> entry : curScope.VarList.entrySet()) {
-            curScope.renameVarMap.put(entry.getKey(), node.className + ".." + entry.getKey());
-        }
+//        for (Map.Entry<String, Type> entry : curScope.VarList.entrySet()) {
+//            curScope.renameVarMap.put(entry.getKey(), node.className + ".." + entry.getKey());
+//        }
         curScope.addVar("this", new Type(node.className), node.pos);
         curScope.FuncList = gScope.getClass(node.className).methods;
-        if (node.constructor != null) node.constructor.accept(this);
-        node.classFunc.forEach(d -> d.accept(this));
+        if (node.constructor != null) {
+            for (Map.Entry<String, Type> entry : curScope.VarList.entrySet()) {
+                curScope.renameVarMap.put(entry.getKey(), node.className + ".." + node.constructor.className + ".." + entry.getKey());
+            }
+            node.constructor.accept(this);
+        }
+        for (var d : node.classFunc) {
+            for (Map.Entry<String, Type> entry : curScope.VarList.entrySet()) {
+                curScope.renameVarMap.put(entry.getKey(), node.className + ".." + d.funcName + ".." + entry.getKey());
+            }
+            d.accept(this);
+        }
+        // 240929 modify: rename according to the member method
         curScope.FuncList = null;
         curScope.VarList = null;
         curScope = curScope.parent;//leak?
@@ -168,8 +179,8 @@ public class SemanticChecker implements __ASTVisitor {
             if (varCount.containsKey(entry.getKey())) {
                 int ind = varCount.get(entry.getKey());
                 varCount.put(entry.getKey(), ind + 1);
-                curScope.renameVarMap.put(entry.getKey(), entry.getKey()+"." + ind);
-                changes.put(entry.getKey(), entry.getKey()+"." + ind);
+                curScope.renameVarMap.put(entry.getKey(), entry.getKey() + "." + ind);
+                changes.put(entry.getKey(), entry.getKey() + "." + ind);
             } else {
                 varCount.put(entry.getKey(), 1);
             }

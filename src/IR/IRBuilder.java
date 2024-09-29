@@ -167,7 +167,8 @@ public class IRBuilder implements __ASTVisitor {
 
             int m = 0;
             for (Map.Entry<String, Type> e : gScope.getClass(curClassDef).fields.entrySet()) {
-                GetElePtr g = new GetElePtr(curClassDef, e.getValue().typeName, thisReg, Register.newReg("%" + curClassDef + ".." + e.getKey()), 0, m);
+                GetElePtr g = new GetElePtr(curClassDef, e.getValue().typeName, thisReg,
+                        Register.newReg("%" + curClassDef + ".." + node.funcName + ".." + e.getKey()), 0, m);
                 curBlock.addInst(g);
                 m++;
             }
@@ -207,7 +208,8 @@ public class IRBuilder implements __ASTVisitor {
 
         int m = 0;
         for (Map.Entry<String, Type> e : gScope.getClass(curClassDef).fields.entrySet()) {
-            GetElePtr g = new GetElePtr(curClassDef, e.getValue().typeName, thisReg, Register.newReg("%" + curClassDef + ".." + e.getKey()), 0, m);
+            GetElePtr g = new GetElePtr(curClassDef, e.getValue().typeName, thisReg,
+                    Register.newReg("%" + curClassDef + ".." + curClassDef + ".." + e.getKey()), 0, m);
             curBlock.addInst(g);
             m++;
         }

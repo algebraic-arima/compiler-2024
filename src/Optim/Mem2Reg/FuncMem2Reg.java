@@ -388,13 +388,16 @@ public class FuncMem2Reg {
 //                            new Constant(0), ii.dest, ii.irType));
 //                }
 
-                Entity c = Register.newReg(ii.irType, getNewName(ii.src.name));
-                while (c instanceof Register r) {
-                    Entity e = renameMap.get(r.name);
-                    if (e == null) break;
-                    else c = e;
+                String str = getNewName(ii.src.name);
+                if (str != null) {
+                    Entity c = Register.newReg(ii.irType, getNewName(ii.src.name));
+                    while (c instanceof Register r) {
+                        Entity e = renameMap.get(r.name);
+                        if (e == null) break;
+                        else c = e;
+                    }
+                    renameMap.put(ii.dest.name, c); // the very origin of the value
                 }
-                renameMap.put(ii.dest.name, c); // the very origin of the value
                 ir.IRInsts.set(cnt, null);
             } else if (i instanceof Store ii) {
                 Entity c = ii.value;

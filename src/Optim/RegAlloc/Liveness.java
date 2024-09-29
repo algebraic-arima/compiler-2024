@@ -37,12 +37,12 @@ public class Liveness {
         rig.addCost(cost);
         liveAnalysis();
 
-        for (Map.Entry<String, RIG.RIGNode> e : rig.g.entrySet()) {
-            System.out.println(e.getKey() + " " + e.getValue().color + " " + e.getValue().cost + " " + e.getValue().n.size());
-            if (!e.getValue().n.isEmpty()) {
-                System.out.println("  " + e.getValue().cost / e.getValue().n.size());
-            }
-        }
+//        for (Map.Entry<String, RIG.RIGNode> e : rig.g.entrySet()) {
+//            System.out.println(e.getKey() + " " + e.getValue().color + " " + e.getValue().cost + " " + e.getValue().n.size());
+//            if (!e.getValue().n.isEmpty()) {
+//                System.out.println("  " + e.getValue().cost / e.getValue().n.size());
+//            }
+//        }
 //        int maxColor = 0;
 //        int trueColor = rig.colors.size();
 //        IRInst maxInst = null;
@@ -218,6 +218,9 @@ public class Liveness {
             if (e.getValue().isEmpty()) {
                 String var = e.getKey();
                 Pair<IRBlock, IRInst> def = defInst.get(var);
+                if (def.b instanceof Call) {
+                    continue; // Call can modify some other vars
+                }
                 preInst.put(def.a.instList.get(def.a.instList.indexOf(def.b) + 1), preInst.get(def.b));
                 def.a.instList.remove(def.b);
                 def.a.IRInsts.remove(def.b);
@@ -321,7 +324,7 @@ public class Liveness {
             }
         }
         for (Map.Entry<String, Integer> e : spillList.entrySet()) {
-            System.out.println("  " + e.getKey() + " " + e.getValue());
+//            System.out.println("  " + e.getKey() + " " + e.getValue());
             Register.markStack(e.getKey());
             rig.removeVertex(e.getKey());
         }
