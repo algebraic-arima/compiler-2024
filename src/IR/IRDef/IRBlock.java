@@ -19,7 +19,7 @@ public class IRBlock {
     public HashSet<String> liveOut;
     public ArrayList<IRBlock> pred, succ;
     public ArrayList<IRInst> instList;
-    public HashMap<String, ArrayList<MV>> mv;
+    public HashMap<String, ArrayList<Move>> mv;
 
     public IRBlock(String s) {
         index = blockCnt;

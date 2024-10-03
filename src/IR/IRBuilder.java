@@ -697,7 +697,7 @@ public class IRBuilder implements __ASTVisitor {
 
     @Override
     public void visit(BoolLiteralExpr node) {
-        node.entity = new Constant(node.value ? 1 : 0);
+        node.entity = new Constant(node.value ? 1 : 0, true);
     }
 
     @Override

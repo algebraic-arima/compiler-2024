@@ -7,7 +7,7 @@ import java.util.HashMap;
 public class Register extends Entity {
 
     public String name = null;
-    public int phyReg;
+    public int color;
 
     static public HashMap<String, Register> registers = new HashMap<>();
 
@@ -54,11 +54,11 @@ public class Register extends Entity {
     }
 
     static public void markStack(String name) {
-        registers.get(name).phyReg = -1;
+        registers.get(name).color = -1;
     }
 
     static public void markReg(String name, int c) {
-        registers.get(name).phyReg = c;
+        registers.get(name).color = c;
     }
 
 }

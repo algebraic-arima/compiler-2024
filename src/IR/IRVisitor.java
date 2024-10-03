@@ -35,11 +35,7 @@ public interface IRVisitor {
 
     public void visit(Load node);
 
-    public void visit(Phi node);
-
     public void visit(Ret node);
-
-    public void visit(Select node);
 
     public void visit(Store node);
 

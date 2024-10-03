@@ -38,6 +38,6 @@ public class Select extends IRInst {
 
     @Override
     public void accept(IRVisitor visitor) {
-        visitor.visit(this);
+
     }
 }

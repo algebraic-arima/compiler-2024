@@ -32,7 +32,6 @@ public class Phi extends IRInst {
 
     @Override
     public void accept(IRVisitor visitor) {
-        visitor.visit(this);
     }
 
     @Override

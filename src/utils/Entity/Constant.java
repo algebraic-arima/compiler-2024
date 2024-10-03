@@ -21,12 +21,18 @@ public class Constant extends Entity {
     public Constant(long d) {
         super();
         value = d;
-        type = new IRType("int");
+        type = typeI32;
+    }
+
+    public Constant(long d, boolean isBool) {
+        super();
+        value = d;
+        type = typeI1;
     }
 
     public Constant(boolean isNull) {
         super();
         value = 0;
-        type = new IRType("ptr");
+        type = typePtr;
     }
 }

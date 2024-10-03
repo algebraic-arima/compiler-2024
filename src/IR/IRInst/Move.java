@@ -3,11 +3,11 @@ package src.IR.IRInst;
 import src.IR.IRVisitor;
 import src.utils.Entity.*;
 
-public class MV extends IRInst {
+public class Move extends IRInst {
 
-    Entity src;
+    public Entity src;
 
-    public MV(Entity src, Register dest) {
+    public Move(Entity src, Register dest) {
         this.src = src;
         this.dest = dest;
     }

@@ -54,6 +54,11 @@ public class PhyReg extends Reg {
             s8, s9, s10, s11, t3, t4, t5, t6
     };
 
+    static public String[] freeRegs = {
+            "zero", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
+            "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
+    };
+
     public PhyReg(int ind) {
         this.index = ind;
         this.name = phyRegs[ind].name;

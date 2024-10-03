@@ -1,7 +1,6 @@
 package src.Optim.RegAlloc;
 
 import org.antlr.v4.runtime.misc.Pair;
-import src.IR.IRBuilder;
 import src.IR.IRDef.IRBlock;
 import src.IR.IRDef.IRFuncDef;
 import src.IR.IRInst.*;
@@ -54,7 +53,7 @@ public class Liveness {
 //                }
 //            }
 //        }
-        spill(5);
+        spill(16);
         rig.MCS();
         rig.color();
         reducePhi();
@@ -328,6 +327,7 @@ public class Liveness {
             Register.markStack(e.getKey());
             rig.removeVertex(e.getKey());
         }
+        irFunc.stackSize = spillList.size();
     }
 
     public void reducePhi() {
@@ -362,19 +362,19 @@ public class Liveness {
                         copy.put(e, Register.newReg(e.type, e.name + ".cp"));
                     }
                 }
-                ArrayList<MV> mvArray = new ArrayList<>();
-                p.mv.put(b.label.label, mvArray);
+                ArrayList<Move> moveArray = new ArrayList<>();
+                p.mv.put(b.label.label, moveArray);
                 for (Map.Entry<Register, Register> e : copy.entrySet()) {
-                    mvArray.add(new MV(e.getValue(), e.getKey()));
+                    moveArray.add(new Move(e.getValue(), e.getKey()));
                 }
                 for (var e : mvList) {
                     if (e.a instanceof Register r) {
                         if (copy.containsKey(r)) {
-                            mvArray.add(new MV(copy.get(r), e.b));
+                            moveArray.add(new Move(copy.get(r), e.b));
                             continue;
                         }
                     }
-                    mvArray.add(new MV(e.a, e.b));
+                    moveArray.add(new Move(e.a, e.b));
                 }
             }
         }

@@ -15,7 +15,7 @@ public class IRFuncDef extends IRDef {
     public IRBlock regCollector;
     // collect the vars of Alloca
     public ArrayList<IRBlock> blocks;
-    public int regNum = 0;
+    public int stackSize = 0;
     public int funcParamMax = 0;
 
     public IRFuncDef(String name) {
@@ -47,7 +47,7 @@ public class IRFuncDef extends IRDef {
         System.out.print(") {\n");
         blocks.forEach(IRBlock::print);
         System.out.print("}\n");
-        System.out.print("; " + regNum + " * 4 stack memory used\n");
+        System.out.print("; " + stackSize + " * 4 stack memory used\n");
         System.out.print("; at most " + funcParamMax + " * 4 function parameters\n");
     }
 
@@ -55,7 +55,7 @@ public class IRFuncDef extends IRDef {
         blocks.removeIf(e -> e.IRInsts.isEmpty());
         blocks.forEach(e -> {
             e.reformat();
-            regNum += e.regNum;
+//            regNum += e.regNum;
             if (e.funcParamMax > funcParamMax) {
                 funcParamMax = e.funcParamMax;
             }

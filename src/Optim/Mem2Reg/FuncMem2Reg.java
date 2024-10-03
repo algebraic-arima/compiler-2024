@@ -565,8 +565,4 @@ public class FuncMem2Reg {
         }
     }
 
-    public void reducePhi() {
-
-    }
-
 }
