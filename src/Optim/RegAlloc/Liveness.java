@@ -53,10 +53,11 @@ public class Liveness {
 //                }
 //            }
 //        }
-        spill(16);
+        spill(12);
         rig.MCS();
         rig.color();
         reducePhi();
+        /// may have hazard
     }
 
     public void varDefCollect() {

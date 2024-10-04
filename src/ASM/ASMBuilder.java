@@ -67,7 +67,7 @@ public class ASMBuilder implements IRVisitor {
         ASMBlock in = new ASMBlock(node.name.substring(1));
         curFunc.blocks.add(in);
         curBlock = in;
-        int stackSize = 4 * (node.stackSize + (node.funcParamMax > 8 ? node.funcParamMax - 8 : 0) + 1);
+        int stackSize = 4 * (node.regNum + node.stackSize + (node.funcParamMax > 8 ? node.funcParamMax - 8 : 0) + 1);
         curFunc.stackSize = (stackSize / 16 + 1) * 16;
         if (curFunc.stackSize <= 2047) {
             addADDI("sp", "sp", -curFunc.stackSize);
@@ -77,6 +77,10 @@ public class ASMBuilder implements IRVisitor {
         }
         occSP = 4;
         addSW("ra", curFunc.stackSize - occSP, "sp"); // caller saved
+        for (int i = 0; i < node.regNum; ++i) {
+            occSP += 4;
+            addSW("s" + i, curFunc.stackSize - occSP, "sp");
+        }
 
         node.blocks.forEach(x -> x.accept(this));
         curIRFuncDef = null;
@@ -225,7 +229,7 @@ public class ASMBuilder implements IRVisitor {
                         storeReg(node.dest, "t0");
                     } else if (node.dest.color > 0) {
                         String ss = storeReg(node.dest, null);
-                        curBlock.addInst(new ADDI(ss, r_name, c.value));
+                        curBlock.addInst(new ADDI(ss, r_name, -c.value));
                         curBlock.addInst(new SUB(ss, "zero", ss));
                     }
                 } else if (node.rhs instanceof Constant cr) {
@@ -592,10 +596,6 @@ public class ASMBuilder implements IRVisitor {
                 }
             }
         }
-
-        occSP += 4;
-        regPos.put(node.dest.name, curFunc.stackSize - occSP);
-        addSW("t0", curFunc.stackSize - occSP, "sp");
     }
 
     @Override
@@ -803,6 +803,9 @@ public class ASMBuilder implements IRVisitor {
             }
         }
         addLW("ra", curFunc.stackSize - 4, "sp");
+        for (int i = 0; i < curIRFuncDef.regNum; ++i) {
+            addLW("s" + i, curFunc.stackSize - 4L * (i + 2), "sp");
+        }
         addADDI("sp", "sp", curFunc.stackSize);
         curBlock.addInst(new RET());
     }

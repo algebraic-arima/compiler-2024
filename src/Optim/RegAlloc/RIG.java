@@ -90,12 +90,12 @@ public class RIG {
                     s.add(v.color);
                 }
             }
-            for (int i = 0; ; ++i) {
+            for (int i = 1; ; ++i) {
                 if (!s.contains(i)) {
                     u.color = i;
                     colors.add(i);
                     u.colored = true;
-                    Register.markReg(u.name, i + 1);
+                    Register.markReg(u.name, i);
                     break;
                 }
             }

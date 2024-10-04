@@ -16,6 +16,7 @@ public class RegAlloc {
         for (IRFuncDef func : prog.funcDefs) {
             Liveness l = new Liveness(func);
             r.put(func.name, l);
+            func.regNum = l.rig.colors.size();
         }
     }
 
