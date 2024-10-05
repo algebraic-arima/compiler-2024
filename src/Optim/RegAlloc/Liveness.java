@@ -53,11 +53,12 @@ public class Liveness {
 //                }
 //            }
 //        }
-        spill(12);
+        int regNum = 12;
+        spill(regNum);
         rig.MCS();
-        rig.color();
+        rig.color(regNum);
         reducePhi();
-        /// may have hazard
+        /// may have data hazard in phi
     }
 
     public void varDefCollect() {
@@ -263,7 +264,7 @@ public class Liveness {
     }
 
     public void liveIn(IRBlock b, IRInst s, String v) {
-        s.liveIn.add(v);
+        s.addIn(v);
         IRInst pre = preInst.get(s);
         if (pre == null) {
             for (IRBlock p : b.pred) {
@@ -275,7 +276,7 @@ public class Liveness {
     }
 
     public void liveOut(IRBlock b, IRInst i, String v) {
-        i.liveOut.add(v);
+        i.addOut(v);
         HashSet<String> def = new HashSet<>();
         if (i instanceof Alloca || i instanceof Binary || i instanceof GetElePtr
                 || i instanceof Icmp || i instanceof Load || i instanceof Phi) {
@@ -303,7 +304,8 @@ public class Liveness {
         for (IRBlock b : irFunc.blocks) {
             for (IRInst i : b.instList) {
                 int cnt = 0;
-                for (String s : i.liveOut) {
+                for (var r : i.liveOut) {
+                    String s = r.name;
                     if (!spillList.containsKey(s)) {
                         ++cnt;
                     }
@@ -311,7 +313,8 @@ public class Liveness {
                 if (cnt > rn) {
                     // select the min-cost (cnt - rn) vars to spill
                     PriorityQueue<Pair<String, Integer>> pq = new PriorityQueue<>(Comparator.comparingInt(p -> p.b));
-                    for (String s : i.liveOut) {
+                    for (Register r : i.liveOut) {
+                        String s = r.name;
                         if (!spillList.containsKey(s)) {
                             pq.offer(new Pair<>(s, cost.get(s).intValue()));
                         }
@@ -320,6 +323,9 @@ public class Liveness {
                         Pair<String, Integer> p = pq.poll();
                         spillList.put(p.a, p.b);
                     }
+                    i.omega = rn;
+                } else {
+                    i.omega = cnt;
                 }
             }
         }
@@ -346,38 +352,18 @@ public class Liveness {
                     }
                 } else break;
             }
+            // no need to consider parallel data shifting
+            // since you don't know where it will be assigned
             for (IRBlock p : b.pred) {
                 // apply modifies to p.mv
                 ArrayList<Pair<Entity, Register>> mvList = totMVList.get(p.label.label);
-                HashSet<Register> dest = new HashSet<>();
-                HashMap<Register, Register> copy = new HashMap<>(); // originreg -> tmpreg
-                HashSet<Register> src = new HashSet<>();
-                for (var e : mvList) {
-                    if (e.a instanceof Register r) {
-                        src.add(r);
-                    }
-                    dest.add(e.b);
-                }
-                for (var e : dest) {
-                    if (src.contains(e)) {
-                        copy.put(e, Register.newReg(e.type, e.name + ".cp"));
-                    }
-                }
                 ArrayList<Move> moveArray = new ArrayList<>();
                 p.mv.put(b.label.label, moveArray);
-                for (Map.Entry<Register, Register> e : copy.entrySet()) {
-                    moveArray.add(new Move(e.getValue(), e.getKey()));
-                }
                 for (var e : mvList) {
-                    if (e.a instanceof Register r) {
-                        if (copy.containsKey(r)) {
-                            moveArray.add(new Move(copy.get(r), e.b));
-                            continue;
-                        }
-                    }
                     moveArray.add(new Move(e.a, e.b));
                 }
             }
+            // reserve those not trimmed, using phis
         }
     }
 }

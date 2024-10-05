@@ -580,8 +580,8 @@ public class ASMBuilder implements IRVisitor {
             String offset_name = fetchReg(r, "t1");
             if (node.dest.color < 0) {
                 curBlock.addInst(new LI("t2", csize == null ? 1 : 4));
-                curBlock.addInst(new MUL(offset_name, offset_name, "t2"));
-                curBlock.addInst(new ADD("t0", ptrName, offset_name));
+                curBlock.addInst(new MUL("t1", offset_name, "t2"));
+                curBlock.addInst(new ADD("t0", ptrName, "t1"));
                 if (node.fieldInd != -1) {
                     addADDI("t0", "t0", node.fieldInd * 4L);
                 }
@@ -589,8 +589,8 @@ public class ASMBuilder implements IRVisitor {
             } else if (node.dest.color > 0) {
                 String dest_reg = storeReg(node.dest, null);
                 curBlock.addInst(new LI("t2", csize == null ? 1 : 4));
-                curBlock.addInst(new MUL(offset_name, offset_name, "t2"));
-                curBlock.addInst(new ADD(dest_reg, ptrName, offset_name));
+                curBlock.addInst(new MUL("t1", offset_name, "t2"));
+                curBlock.addInst(new ADD(dest_reg, ptrName, "t1"));
                 if (node.fieldInd != -1) {
                     addADDI(dest_reg, dest_reg, node.fieldInd * 4L);
                 }
@@ -858,18 +858,17 @@ public class ASMBuilder implements IRVisitor {
                 addSW(valName, 0, d_name);
             }
         } else if (node.value instanceof Register r) {
-            String rn = r.name;
-            if (rn.endsWith(".val")) { // func params
-                String val_name = fetchReg(r, "t0");
+            if (r.name.endsWith(".val")) { // func params
+                valName = fetchReg(r, "t0");
                 if (node.dest.name.startsWith("@")) {
                     curBlock.addInst(new LA("t1", node.dest.name.substring(1)));
-                    addSW(val_name, 0, "t1");
+                    addSW(valName, 0, "t1");
                 } else {
                     String d_name = fetchReg(node.dest, "t1");
-                    addSW(val_name, 0, d_name);
+                    addSW(valName, 0, d_name);
                 }
-            } else if (rn.startsWith("@constStr-")) { // global ptrs
-                curBlock.addInst(new LA("t0", rn.substring(1).replace("-", "_")));
+            } else if (r.name.startsWith("@constStr-")) { // global ptrs
+                curBlock.addInst(new LA("t0", r.name.substring(1).replace("-", "_")));
                 if (node.dest.name.startsWith("@")) {
                     curBlock.addInst(new LA("t1", node.dest.name.substring(1)));
                     addSW("t0", 0, "t1");
@@ -878,13 +877,13 @@ public class ASMBuilder implements IRVisitor {
                     addSW("t0", 0, d_name);
                 }
             } else {
-                String val_name = fetchReg(r, "t0");
+                valName = fetchReg(r, "t0");
                 if (node.dest.name.startsWith("@")) {
                     curBlock.addInst(new LA("t1", node.dest.name.substring(1)));
-                    addSW(val_name, 0, "t1");
+                    addSW(valName, 0, "t1");
                 } else {
                     String d_name = fetchReg(node.dest, "t1");
-                    addSW(val_name, 0, d_name);
+                    addSW(valName, 0, d_name);
                 }
             }
         }
@@ -894,9 +893,9 @@ public class ASMBuilder implements IRVisitor {
         if (offset_ < 2048 && offset_ >= -2048) {
             curBlock.addInst(new SW(src_, offset_, destAddr_));
         } else {
-            curBlock.addInst(new LI("t1", offset_));
-            curBlock.addInst(new ADD("t1", "t1", destAddr_));
-            curBlock.addInst(new SW(src_, 0, "t1"));
+            curBlock.addInst(new LI("tp", offset_));
+            curBlock.addInst(new ADD("tp", "tp", destAddr_));
+            curBlock.addInst(new SW(src_, 0, "tp"));
         }
     }
 

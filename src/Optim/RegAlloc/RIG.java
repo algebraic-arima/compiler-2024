@@ -31,6 +31,7 @@ public class RIG {
 
     public HashMap<String, RIGNode> g = new HashMap<>();
     public HashSet<Integer> colors = new HashSet<>();
+    public ArrayList<RIGNode> peo = new ArrayList<>();
 
     public void addCost(HashMap<String, Long> m) {
         for (Map.Entry<String, Long> e : m.entrySet()) {
@@ -77,12 +78,35 @@ public class RIG {
                 max = Math.max(max, v.label);
             }
         }
+        peo = new ArrayList<>(g.values());
+        Collections.sort(peo);
+        boolean isChordal = true;
+        for (int i = 0; i < cnt && isChordal; ++i) {
+            RIGNode r = peo.get(i);
+            PriorityQueue<RIGNode> A = new PriorityQueue<>();
+            for (int j = i + 1; j < cnt; ++j) {
+                RIGNode ne = peo.get(j);
+                if (r.n.containsKey(ne.name)) {
+                    A.offer(ne);
+                }
+            }
+            if (!A.isEmpty()) {
+                RIGNode m = A.poll();
+                for (var adj : A) {
+                    if (!m.n.containsKey(adj.name)) {
+                        isChordal = false;
+                        break;
+                    }
+                }
+            }
+        }
+        assert isChordal;
     }
 
-    public void color() {
-        PriorityQueue<RIGNode> pq = new PriorityQueue<>(g.values());
+    public void color(int rn) {
         // sort by label
-        for (RIGNode u : pq) {
+        for (int r = peo.size() - 1; r >= 0; --r) {
+            var u = peo.get(r);
             HashSet<Integer> s = new HashSet<>();
             for (Map.Entry<String, RIGNode> e : u.n.entrySet()) {
                 RIGNode v = e.getValue();
@@ -92,6 +116,7 @@ public class RIG {
             }
             for (int i = 1; ; ++i) {
                 if (!s.contains(i)) {
+                    assert i <= rn;
                     u.color = i;
                     colors.add(i);
                     u.colored = true;
