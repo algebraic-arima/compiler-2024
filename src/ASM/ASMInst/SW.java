@@ -1,15 +1,15 @@
 package src.ASM.ASMInst;
 
-import src.ASM.Operand.PhyReg;
+import src.ASM.Operand.Reg;
 
 public class SW extends ASMInst {
-    public PhyReg rs2, rs1;
+    public Reg rs2, rs1;
     public long offset;
 
     public SW(String src_, long offset_, String destAddr_) {
-        rs2 = new PhyReg(src_);
+        rs2 = Reg.get(src_);
         offset = offset_;
-        rs1 = new PhyReg(destAddr_);
+        rs1 = Reg.get(destAddr_);
     }
 
     public void print() {

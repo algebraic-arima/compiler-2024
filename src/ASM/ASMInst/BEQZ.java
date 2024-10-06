@@ -1,14 +1,13 @@
 package src.ASM.ASMInst;
 
-import src.ASM.ASMNode;
-import src.ASM.Operand.PhyReg;
+import src.ASM.Operand.Reg;
 
 public class BEQZ extends ASMInst {
-    public PhyReg rs;
+    public Reg rs;
     public String label;
 
     public BEQZ(String rs_, String label_) {
-        rs = new PhyReg(rs_);
+        rs = Reg.get(rs_);
         label = label_.replace("-", "_");
     }
 

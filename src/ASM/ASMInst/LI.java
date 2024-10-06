@@ -1,13 +1,13 @@
 package src.ASM.ASMInst;
 
-import src.ASM.Operand.PhyReg;
+import src.ASM.Operand.Reg;
 
 public class LI extends ASMInst{
-    public PhyReg rd;
+    public Reg rd;
     public long imm;
 
     public LI(String rd_, long imm_) {
-        rd = new PhyReg(rd_);
+        rd = Reg.get(rd_);
         imm = imm_;
     }
 

@@ -1,6 +1,5 @@
 package src.IR.IRInst;
 
-import src.ASM.Operand.Reg;
 import src.IR.IRNode;
 import src.utils.Entity.Register;
 

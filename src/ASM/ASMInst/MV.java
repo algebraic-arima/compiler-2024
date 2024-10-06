@@ -1,14 +1,20 @@
 package src.ASM.ASMInst;
 
-import src.ASM.Operand.PhyReg;
+import src.ASM.Operand.Operand;
+import src.ASM.Operand.Reg;
 
 public class MV extends ASMInst {
-    public PhyReg dest;
-    public PhyReg src;
+    public Operand dest;
+    public Operand src;
+
+    public MV() {
+        dest = null;
+        src = null;
+    }
 
     public MV(String dest_, String src_) {
-        dest = new PhyReg(dest_);
-        src = new PhyReg(src_);
+        dest = Reg.get(dest_);
+        src = Reg.get(src_);
     }
 
     public void print() {

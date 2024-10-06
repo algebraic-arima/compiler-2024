@@ -4,8 +4,10 @@ import src.ASM.ASMDef.*;
 import src.ASM.ASMInst.*;
 import src.ASM.ASMInst.Bin.*;
 import src.ASM.ASMInst.MV;
-import src.ASM.Operand.PhyReg;
+import src.ASM.Operand.Imm;
+import src.ASM.Operand.Operand;
 import src.ASM.Operand.Reg;
+import src.ASM.Operand.Stack;
 import src.IR.IRDef.*;
 import src.IR.IRInst.*;
 import src.IR.IRProg;
@@ -16,6 +18,7 @@ import src.utils.Entity.Register;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class ASMBuilder implements IRVisitor {
@@ -117,7 +120,7 @@ public class ASMBuilder implements IRVisitor {
 
     String fetchReg(Register r, String tmp) {
         if (r.color > 0) {
-            return PhyReg.freeRegs[r.color];
+            return Reg.freeRegs[r.color];
         } else if (r.color < 0) {
             addLW(tmp, regPos.get(r.name), "sp");
             return tmp;
@@ -142,7 +145,7 @@ public class ASMBuilder implements IRVisitor {
             addSW(src, curFunc.stackSize - occSP, "sp");
             return src;
         } else if (r.color > 0) {
-            return PhyReg.freeRegs[r.color];
+            return Reg.freeRegs[r.color];
         }
         return null;
     }
@@ -156,7 +159,7 @@ public class ASMBuilder implements IRVisitor {
             addSW("t0", regPos.get(node.dest.name), "sp");
         } else {
             occSP += 4;
-            addADDI(PhyReg.freeRegs[node.dest.color], "sp", curFunc.stackSize - occSP);
+            addADDI(Reg.freeRegs[node.dest.color], "sp", curFunc.stackSize - occSP);
         }
     }
 
@@ -508,6 +511,9 @@ public class ASMBuilder implements IRVisitor {
         /// todo: caller save a0-a7,
         for (Entity e : node.args) {
             if (cnt < 8) {
+                occSP += 4;
+                curBlock.addInst(new SW("a" + cnt,
+                        curFunc.stackSize - occSP, "sp"));
                 if (e instanceof Constant) {
                     curBlock.addInst(new LI("a" + cnt, ((Constant) e).value));
                 } else if (e instanceof Register r) {
@@ -515,7 +521,7 @@ public class ASMBuilder implements IRVisitor {
                         if (r.color < 0) {
                             addLW("a" + cnt, regPos.get(r.name), "sp");
                         } else if (r.color > 0) {
-                            curBlock.addInst(new MV("a" + cnt, PhyReg.freeRegs[r.color]));
+                            curBlock.addInst(new MV("a" + cnt, Reg.freeRegs[r.color]));
                         }
                     } else {
                         curBlock.addInst(new LA("a" + cnt, ((Register) e).name.substring(1).replace("-", "_")));
@@ -548,7 +554,11 @@ public class ASMBuilder implements IRVisitor {
                 curBlock.addInst(new MV(storeReg(node.dest, null), "a0"));
             }
         }
-
+        if (cnt > 8) cnt = 8;
+        while (cnt-- > 0) {
+            curBlock.addInst(new LW("a" + cnt, curFunc.stackSize - occSP, "sp"));
+            occSP -= 4;
+        }
     }
 
     @Override
@@ -624,7 +634,7 @@ public class ASMBuilder implements IRVisitor {
                     String r_name = fetchReg(r, "t2");
                     curBlock.addInst(new XOR("t0", l_name, r_name));
                     if (node.dest.color > 0) {
-                        curBlock.addInst(new SEQZ(PhyReg.freeRegs[node.dest.color], "t0"));
+                        curBlock.addInst(new SEQZ(Reg.freeRegs[node.dest.color], "t0"));
                     } else if (node.dest.color < 0) {
                         curBlock.addInst(new SEQZ("t0", "t0"));
                         storeReg(node.dest, "t0");
@@ -632,7 +642,7 @@ public class ASMBuilder implements IRVisitor {
                 } else {
                     curBlock.addInst(new XORI("t0", l_name, ((Constant) node.rhs).value));
                     if (node.dest.color > 0) {
-                        curBlock.addInst(new SEQZ(PhyReg.freeRegs[node.dest.color], "t0"));
+                        curBlock.addInst(new SEQZ(Reg.freeRegs[node.dest.color], "t0"));
                     } else if (node.dest.color < 0) {
                         curBlock.addInst(new SEQZ("t0", "t0"));
                         storeReg(node.dest, "t0");
@@ -643,7 +653,7 @@ public class ASMBuilder implements IRVisitor {
                     String r_name = fetchReg(r, "t2");
                     curBlock.addInst(new XORI("t0", r_name, ((Constant) node.lhs).value));
                     if (node.dest.color > 0) {
-                        curBlock.addInst(new SEQZ(PhyReg.freeRegs[node.dest.color], "t0"));
+                        curBlock.addInst(new SEQZ(Reg.freeRegs[node.dest.color], "t0"));
                     } else if (node.dest.color < 0) {
                         curBlock.addInst(new SEQZ("t0", "t0"));
                         storeReg(node.dest, "t0");
@@ -665,7 +675,7 @@ public class ASMBuilder implements IRVisitor {
                     String r_name = fetchReg(r, "t2");
                     curBlock.addInst(new XOR("t0", l_name, r_name));
                     if (node.dest.color > 0) {
-                        curBlock.addInst(new SNEZ(PhyReg.freeRegs[node.dest.color], "t0"));
+                        curBlock.addInst(new SNEZ(Reg.freeRegs[node.dest.color], "t0"));
                     } else if (node.dest.color < 0) {
                         curBlock.addInst(new SNEZ("t0", "t0"));
                         storeReg(node.dest, "t0");
@@ -673,7 +683,7 @@ public class ASMBuilder implements IRVisitor {
                 } else {
                     curBlock.addInst(new XORI("t0", l_name, ((Constant) node.rhs).value));
                     if (node.dest.color > 0) {
-                        curBlock.addInst(new SNEZ(PhyReg.freeRegs[node.dest.color], "t0"));
+                        curBlock.addInst(new SNEZ(Reg.freeRegs[node.dest.color], "t0"));
                     } else if (node.dest.color < 0) {
                         curBlock.addInst(new SNEZ("t0", "t0"));
                         storeReg(node.dest, "t0");
@@ -684,7 +694,7 @@ public class ASMBuilder implements IRVisitor {
                     String r_name = fetchReg(r, "t2");
                     curBlock.addInst(new XORI("t0", r_name, ((Constant) node.lhs).value));
                     if (node.dest.color > 0) {
-                        curBlock.addInst(new SNEZ(PhyReg.freeRegs[node.dest.color], "t0"));
+                        curBlock.addInst(new SNEZ(Reg.freeRegs[node.dest.color], "t0"));
                     } else if (node.dest.color < 0) {
                         curBlock.addInst(new SNEZ("t0", "t0"));
                         storeReg(node.dest, "t0");
@@ -928,27 +938,61 @@ public class ASMBuilder implements IRVisitor {
     }
 
     public void addMV(ArrayList<Move> moves) {
+        ArrayList<MV> regMV = new ArrayList<>();
+        ArrayList<MV> immMV = new ArrayList<>();
+        HashMap<Operand, HashSet<MV>> srcs = new HashMap<>();
+        HashMap<Operand, HashSet<MV>> dests = new HashMap<>();
         for (var mv : moves) {
-            String src_name = null;
+            MV m = new MV();
+            if (mv.dest.color < 0) {
+                if (regPos.containsKey(mv.dest.name)) {
+                    m.dest = new Stack(regPos.get(mv.dest.name));
+                } else {
+                    occSP += 4;
+                    regPos.put(mv.dest.name, curFunc.stackSize - occSP);
+                    m.dest = new Stack(curFunc.stackSize - occSP);
+                }
+            } else if (mv.dest.color > 0) {
+                m.dest = Reg.get(Reg.freeRegs[mv.dest.color]);
+            }
             if (mv.src instanceof Register r) {
-                src_name = fetchReg(r, "t0");
-                if (mv.dest.color > 0) {
-                    String dest_name = storeReg(mv.dest, null);
-                    if (!src_name.equals(dest_name)) {
-                        curBlock.addInst(new MV(storeReg(mv.dest, null), src_name));
-                    }
-                } else if (mv.dest.color < 0) {
-                    storeReg(mv.dest, src_name);
+                if (r.color < 0) {
+                    m.src = new Stack(regPos.get(r.name));
+                } else if (r.color > 0) {
+                    m.src = Reg.get(Reg.freeRegs[r.color]);
                 }
             } else if (mv.src instanceof Constant c) {
-                if (mv.dest.color > 0) {
-                    curBlock.addInst(new LI(storeReg(mv.dest, null), c.value));
-                } else if (mv.dest.color < 0) {
-                    curBlock.addInst(new LI("t0", c.value));
-                    storeReg(mv.dest, "t0");
+                m.src = new Imm(c.value);
+            }
+            if (m.src instanceof Reg rs && m.dest instanceof Reg rd) {
+                if (rs == rd) continue;
+            }
+            if (m.src instanceof Stack ss && m.dest instanceof Stack sd) {
+                if (ss.pos == sd.pos) continue;
+            }
+            if (!(m.src instanceof Imm)) {
+                if (!srcs.containsKey(m.src)) {
+                    srcs.put(m.src, new HashSet<>());
                 }
+                srcs.get(m.src).add(m);
+            }
+            if (!dests.containsKey(m.dest)) {
+                dests.put(m.dest, new HashSet<>());
+            }
+            dests.get(m.dest).add(m);
+            if (m.src instanceof Imm) {
+                immMV.add(m);
+            } else {
+                regMV.add(m);
             }
         }
+        System.out.println(3);
+        for (int i = 0; i < regMV.size(); ++i) {
+            MV mv = regMV.get(i);
+            if (mv == null) continue;
+            /// todo: parallel moving
+        }
+
     }
 
 }

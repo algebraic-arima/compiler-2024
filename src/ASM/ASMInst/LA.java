@@ -1,13 +1,13 @@
 package src.ASM.ASMInst;
 
-import src.ASM.Operand.PhyReg;
+import src.ASM.Operand.Reg;
 
 public class LA extends ASMInst{
-    public PhyReg rd;
+    public Reg rd;
     public String fromLabel;
 
     public LA(String rd_, String fromLabel_) {
-        rd = new PhyReg(rd_);
+        rd = Reg.get(rd_);
         fromLabel = fromLabel_;
     }
 

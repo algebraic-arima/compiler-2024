@@ -1,13 +1,13 @@
 package src.ASM.ASMInst;
 
-import src.ASM.Operand.PhyReg;
+import src.ASM.Operand.Reg;
 
 public class BNEZ extends ASMInst{
-    public PhyReg rs;
+    public Reg rs;
     public String label;
 
     public BNEZ(String rs_, String label_) {
-        rs = new PhyReg(rs_);
+        rs = Reg.get(rs_);
         label = label_;
     }
 
