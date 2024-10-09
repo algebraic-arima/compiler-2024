@@ -16,8 +16,8 @@ public class Liveness {
     public HashMap<String, Pair<IRBlock, IRInst>> defInst;
     public HashMap<IRInst, IRInst> preInst;
     HashSet<IRBlock> visBlocks;
-    public HashMap<String, Long> cost;
-    long loop = 1;
+    public HashMap<String, Double> cost;
+    double loop = 1;
     public RIG rig;
     HashMap<String, Integer> spillList;
 
@@ -33,7 +33,7 @@ public class Liveness {
         trimUseless();
 
         rig = new RIG();
-        rig.addCost(cost);
+        rig.add(cost);
         liveAnalysis();
 
 //        for (Map.Entry<String, RIG.RIGNode> e : rig.g.entrySet()) {
@@ -300,6 +300,11 @@ public class Liveness {
     }
 
     public void spill(int rn) {
+        HashMap<String, Double> tmp = new HashMap<>();
+        for (var m : cost.entrySet()) {
+            tmp.put(m.getKey(), m.getValue() / (1 + rig.getN(m.getKey())));
+        }
+        cost = tmp;
         spillList = new HashMap<>();
         for (IRBlock b : irFunc.blocks) {
             for (IRInst i : b.instList) {

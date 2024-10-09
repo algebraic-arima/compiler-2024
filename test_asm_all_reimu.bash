@@ -56,7 +56,7 @@ FAILED_TESTCASE=""
 judge_one_testcase() {
     local TESTDIR="$TEMPDIR/$2"
     mkdir -p $TESTDIR
-    ~/git/compiler-2024/test_asm_reimu.bash "$COMPILER" $1 $BUILTIN $TESTDIR > /dev/null 2>&1
+    ~/Git/compiler-2024/test_asm_reimu.bash "$COMPILER" $1 $BUILTIN $TESTDIR > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         FAILED_TESTCASE="$2"
         print_red_msg "Fail to pass testcase: '$1'."

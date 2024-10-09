@@ -16,10 +16,7 @@ import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 public class ASMBuilder implements IRVisitor {
 
@@ -70,7 +67,7 @@ public class ASMBuilder implements IRVisitor {
         ASMBlock in = new ASMBlock(node.name.substring(1));
         curFunc.blocks.add(in);
         curBlock = in;
-        int stackSize = 4 * (node.regNum + node.stackSize + (node.funcParamMax > 8 ? node.funcParamMax - 8 : 0) + 1);
+        int stackSize = 4 * (8 + node.regNum + node.stackSize + (node.funcParamMax > 8 ? node.funcParamMax - 8 : 0) + 1);
         curFunc.stackSize = (stackSize / 16 + 1) * 16;
         if (curFunc.stackSize <= 2047) {
             addADDI("sp", "sp", -curFunc.stackSize);
@@ -495,11 +492,11 @@ public class ASMBuilder implements IRVisitor {
             String nlabel = curBlock.label + "_forb";
             curBlock.addInst(new BEQZ(fetchReg(reg, "t0"), nlabel));
             var mv1 = curIRBlock.mv.get(node.trueBlock.label.label);
-            addMV(mv1);
+            addMVList(mv1);
             curBlock.addInst(new J(node.trueBlock.label.label));
             curBlock = new ASMBlock(nlabel);
             var mv2 = curIRBlock.mv.get(node.falseBlock.label.label);
-            addMV(mv2);
+            addMVList(mv2);
             curBlock.addInst(new J(node.falseBlock.label.label));
             curFunc.blocks.add(curBlock);
         }
@@ -507,13 +504,21 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(Call node) {
+        /// todo: a0-a7 parallel moving
         int cnt = 0;
-        /// todo: caller save a0-a7,
         for (Entity e : node.args) {
             if (cnt < 8) {
-                occSP += 4;
-                curBlock.addInst(new SW("a" + cnt,
-                        curFunc.stackSize - occSP, "sp"));
+                if (!curIRFuncDef.name.equals("@main")) {// caller save a0-a7
+                    occSP += 4;
+                    curBlock.addInst(new SW("a" + cnt,
+                            curFunc.stackSize - occSP, "sp"));
+                }
+            } else break;
+            ++cnt;
+        }
+        cnt = 0;
+        for (Entity e : node.args) {
+            if (cnt < 8) {
                 if (e instanceof Constant) {
                     curBlock.addInst(new LI("a" + cnt, ((Constant) e).value));
                 } else if (e instanceof Register r) {
@@ -522,6 +527,15 @@ public class ASMBuilder implements IRVisitor {
                             addLW("a" + cnt, regPos.get(r.name), "sp");
                         } else if (r.color > 0) {
                             curBlock.addInst(new MV("a" + cnt, Reg.freeRegs[r.color]));
+                        } else if (r.name.endsWith(".val")) {
+                            int i = curIRFuncDef.paramNames.indexOf(r.name);
+                            if (cnt != i) {
+                                if (i < 8) {
+                                    curBlock.addInst(new MV("a" + cnt, "a" + i));
+                                } else {
+                                    curBlock.addInst(new LW("a" + cnt, curFunc.stackSize + (i - 8) * 4L, "sp"));
+                                }
+                            }
                         }
                     } else {
                         curBlock.addInst(new LA("a" + cnt, ((Register) e).name.substring(1).replace("-", "_")));
@@ -554,10 +568,12 @@ public class ASMBuilder implements IRVisitor {
                 curBlock.addInst(new MV(storeReg(node.dest, null), "a0"));
             }
         }
-        if (cnt > 8) cnt = 8;
-        while (cnt-- > 0) {
-            curBlock.addInst(new LW("a" + cnt, curFunc.stackSize - occSP, "sp"));
-            occSP -= 4;
+        if (!curIRFuncDef.name.equals("@main")) {// caller save a0-a7
+            if (cnt > 8) cnt = 8;
+            while (cnt-- > 0) {
+                curBlock.addInst(new LW("a" + cnt, curFunc.stackSize - occSP, "sp"));
+                occSP -= 4;
+            }
         }
     }
 
@@ -762,7 +778,7 @@ public class ASMBuilder implements IRVisitor {
     @Override
     public void visit(Jmp node) {
         var mv = curIRBlock.mv.get(node.block.label.label);
-        addMV(mv);
+        addMVList(mv);
         curBlock.addInst(new J(node.block.label.label));
     }
 
@@ -808,6 +824,15 @@ public class ASMBuilder implements IRVisitor {
                     } else if (r.color > 0) {
                         String n = fetchReg(r, null);
                         curBlock.addInst(new MV("a0", n));
+                    } else if (r.name.endsWith(".val")) {
+                        int i = curIRFuncDef.paramNames.indexOf(r.name);
+                        if (i != 0) {
+                            if (i < 8) {
+                                curBlock.addInst(new MV("a0", "a" + i));
+                            } else {
+                                curBlock.addInst(new LW("a0", curFunc.stackSize + (i - 8) * 4L, "sp"));
+                            }
+                        }
                     }
                 }
             }
@@ -900,6 +925,7 @@ public class ASMBuilder implements IRVisitor {
     }
 
     private void addSW(String src_, long offset_, String destAddr_) {
+        assert !destAddr_.equals("sp") || offset_ >= 0;
         if (offset_ < 2048 && offset_ >= -2048) {
             curBlock.addInst(new SW(src_, offset_, destAddr_));
         } else {
@@ -918,13 +944,14 @@ public class ASMBuilder implements IRVisitor {
         }
     }
 
-    private void addLW(String src_, long offset_, String destAddr_) {
+    private void addLW(String dest_, long offset_, String srcAddr_) {
+        assert !srcAddr_.equals("sp") || offset_ >= 0;
         if (offset_ < 2048 && offset_ >= -2048) {
-            curBlock.addInst(new LW(src_, offset_, destAddr_));
+            curBlock.addInst(new LW(dest_, offset_, srcAddr_));
         } else {
             curBlock.addInst(new LI("tp", offset_));
-            curBlock.addInst(new ADD("tp", "tp", destAddr_));
-            curBlock.addInst(new LW(src_, 0, "tp"));
+            curBlock.addInst(new ADD("tp", "tp", srcAddr_));
+            curBlock.addInst(new LW(dest_, 0, "tp"));
         }
     }
 
@@ -937,7 +964,7 @@ public class ASMBuilder implements IRVisitor {
         }
     }
 
-    public void addMV(ArrayList<Move> moves) {
+    public void addMVList(ArrayList<Move> moves) {
         ArrayList<MV> regMV = new ArrayList<>();
         ArrayList<MV> immMV = new ArrayList<>();
         HashMap<Operand, HashSet<MV>> srcs = new HashMap<>();
@@ -960,6 +987,13 @@ public class ASMBuilder implements IRVisitor {
                     m.src = new Stack(regPos.get(r.name));
                 } else if (r.color > 0) {
                     m.src = Reg.get(Reg.freeRegs[r.color]);
+                } else if (r.name.endsWith(".val")) {
+                    int i = curIRFuncDef.paramNames.indexOf(r.name);
+                    if (i < 8) {
+                        m.src = Reg.get("a" + i);
+                    } else {
+                        m.src = new Stack(curFunc.stackSize + (i - 8) * 4L);
+                    }
                 }
             } else if (mv.src instanceof Constant c) {
                 m.src = new Imm(c.value);
@@ -970,29 +1004,163 @@ public class ASMBuilder implements IRVisitor {
             if (m.src instanceof Stack ss && m.dest instanceof Stack sd) {
                 if (ss.pos == sd.pos) continue;
             }
-            if (!(m.src instanceof Imm)) {
-                if (!srcs.containsKey(m.src)) {
-                    srcs.put(m.src, new HashSet<>());
-                }
-                srcs.get(m.src).add(m);
-            }
-            if (!dests.containsKey(m.dest)) {
-                dests.put(m.dest, new HashSet<>());
-            }
-            dests.get(m.dest).add(m);
             if (m.src instanceof Imm) {
                 immMV.add(m);
             } else {
                 regMV.add(m);
+                if (!srcs.containsKey(m.src)) {
+                    srcs.put(m.src, new HashSet<>());
+                }
+                srcs.get(m.src).add(m);
+                if (!dests.containsKey(m.dest)) {
+                    dests.put(m.dest, new HashSet<>());
+                }
+                dests.get(m.dest).add(m);
+                assert dests.get(m.dest).size() == 1;
             }
         }
-        System.out.println(3);
-        for (int i = 0; i < regMV.size(); ++i) {
-            MV mv = regMV.get(i);
-            if (mv == null) continue;
-            /// todo: parallel moving
+        addRegMV(regMV, srcs, dests);
+        addImmMV(immMV);
+
+
+//        for (var mv : moves) {
+//            String src_name = null;
+//            if (mv.src instanceof Register r) {
+//                src_name = fetchReg(r, "t0");
+//                if (mv.dest.color > 0) {
+//                    String dest_name = storeReg(mv.dest, null);
+//                    if (!src_name.equals(dest_name)) {
+//                        curBlock.addInst(new MV(storeReg(mv.dest, null), src_name));
+//                    }
+//                } else if (mv.dest.color < 0) {
+//                    storeReg(mv.dest, src_name);
+//                }
+//            } else if (mv.src instanceof Constant c) {
+//                if (mv.dest.color > 0) {
+//                    curBlock.addInst(new LI(storeReg(mv.dest, null), c.value));
+//                } else if (mv.dest.color < 0) {
+//                    curBlock.addInst(new LI("t0", c.value));
+//                    storeReg(mv.dest, "t0");
+//                }
+//            }
+//        }
+
+    }
+
+    static class mvNode {
+        MV mv;
+        HashSet<MV> preds;
+        HashSet<MV> succs;
+
+        public mvNode(MV mv) {
+            this.mv = mv;
+            preds = new HashSet<>();
+            succs = new HashSet<>();
+        }
+    }
+
+    public void addRegMV(ArrayList<MV> moves, HashMap<Operand, HashSet<MV>> srcs, HashMap<Operand, HashSet<MV>> dests) {
+        // observation: there is no same-dest operation -> at most one succ
+        // corollary1: a node can only participate in one ring
+        // corollary2: no node depends on nodes that is on a ring
+        if (moves.isEmpty()) return;
+        HashMap<MV, mvNode> m = new HashMap<>();
+        ArrayDeque<mvNode> zeroin = new ArrayDeque<>();
+        for (var mv : moves) {
+            m.put(mv, new mvNode(mv));
+        }
+        for (Map.Entry<Operand, HashSet<MV>> s : srcs.entrySet()) {
+            HashSet<MV> l = dests.get(s.getKey());
+            if (l != null) {
+                for (MV mv : s.getValue()) {
+                    m.get(mv).succs.addAll(l);
+                }
+            }
+        }
+        for (Map.Entry<Operand, HashSet<MV>> d : dests.entrySet()) {
+            HashSet<MV> l = srcs.get(d.getKey());
+            for (MV mv : d.getValue()) {
+                if (l == null) {
+                    zeroin.add(m.get(mv));
+                    continue;
+                }
+                m.get(mv).preds.addAll(l);
+                if (l.size() == 0) {
+                    zeroin.add(m.get(mv));
+                }
+            }
+
+        }
+        while (!m.isEmpty()) {
+            while (!zeroin.isEmpty()) {
+                mvNode n = zeroin.poll();
+                m.remove(n.mv);
+                addMV(n.mv);
+                for (var suc : n.succs) {
+                    mvNode sucn = m.get(suc);
+                    sucn.preds.remove(n.mv);
+                    if (sucn.preds.isEmpty()) {
+                        zeroin.add(sucn);
+                    }
+                }
+            }
+            if (m.isEmpty()) break;
+            mvNode br = m.entrySet().iterator().next().getValue();
+            // from corollary 2, whatever node we pick, it is in a ring
+            MV nmv = new MV();
+            nmv.dest = Reg.get("t0");
+            nmv.src = br.mv.dest;
+            mvNode n = new mvNode(nmv);
+            br.preds.iterator().next().src = Reg.get("t0");
+            HashSet<MV> ps = m.get(br.preds.iterator().next()).succs;
+            n.succs = new HashSet<>(ps);
+            ps.clear();
+            br.preds.clear();
+            br.preds.add(nmv);
+            m.put(nmv, n);
+            zeroin.add(n);
         }
 
+    }
+
+    public void addImmMV(ArrayList<MV> moves) {
+        for (var mv : moves) {
+            if (mv.src instanceof Imm i) {
+                long val = i.value;
+                if (mv.dest instanceof Reg r) {
+                    curBlock.addInst(new LI(r.name, val));
+                } else if (mv.dest instanceof Stack s) {
+                    curBlock.addInst(new LI("t0", val));
+                    addSW("t0", s.pos, "sp");
+                }
+            }
+        }
+    }
+
+    public void addMV(MV mv) {
+        if (mv.src instanceof Imm i) {
+            if (mv.dest instanceof Reg r) {
+                curBlock.addInst(new LI(r.name, i.value));
+            } else if (mv.dest instanceof Stack s) {
+                curBlock.addInst(new LI("t0", i.value));
+                addSW("t0", s.pos, "sp");
+            }
+        } else if (mv.src instanceof Reg rs) {
+            if (mv.dest instanceof Reg r) {
+                if (r.name.equals(rs.name)) return;
+                curBlock.addInst(new MV(r.name, rs.name));
+            } else if (mv.dest instanceof Stack s) {
+                addSW(rs.name, s.pos, "sp");
+            }
+        } else if (mv.src instanceof Stack ss) {
+            if (mv.dest instanceof Reg r) {
+                addLW(r.name, ss.pos, "sp");
+            } else if (mv.dest instanceof Stack s) {
+                if (s.pos == ss.pos) return;
+                addLW("t0", ss.pos, "sp");
+                addSW("t0", s.pos, "sp");
+            }
+        }
     }
 
 }

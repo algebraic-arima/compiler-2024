@@ -9,16 +9,14 @@ public class RIG {
     public static class RIGNode implements Comparable<RIGNode> {
         public String name;
         public HashMap<String, RIGNode> n;
-        public long cost; // cost /= n.size();
         public int color;
         public int label;
         public boolean vis = false;
         public boolean colored = false;
 
-        public RIGNode(String name, long cost) {
+        public RIGNode(String name) {
             this.name = name;
             n = new HashMap<>();
-            this.cost = cost;
             color = label = 0;
         }
 
@@ -33,15 +31,19 @@ public class RIG {
     public HashSet<Integer> colors = new HashSet<>();
     public ArrayList<RIGNode> peo = new ArrayList<>();
 
-    public void addCost(HashMap<String, Long> m) {
-        for (Map.Entry<String, Long> e : m.entrySet()) {
-            g.put(e.getKey(), new RIGNode(e.getKey(), e.getValue()));
+    public void add(HashMap<String, Double> m) {
+        for (Map.Entry<String, Double> e : m.entrySet()) {
+            g.put(e.getKey(), new RIGNode(e.getKey()));
         }
     }
 
     public void addEdge(String s, String t) {
         g.get(s).n.put(t, g.get(t));
         g.get(t).n.put(s, g.get(s));
+    }
+
+    public int getN(String s) {
+        return g.get(s).n.size();
     }
 
     public void removeVertex(String s) {

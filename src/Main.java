@@ -27,13 +27,13 @@ public class Main {
         boolean printIR = false;
         boolean fileOutIR = false;
         boolean printM2R = true;
-        boolean fileOutM2R = false;
-        boolean printASM = false;
+        boolean fileOutM2R = true;
+        boolean printASM = true;
         boolean fileOutASM = false;
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/codegen/shortest_path/dijkstra.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t14.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -63,24 +63,29 @@ public class Main {
             if (printIR) {
                 IRPrinter irPrinter = new IRPrinter(irProg);
                 if (fileOutIR) {
-                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/git/compiler-2024/test.ll");
+                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/test.ll");
                     PrintStream printStream = new PrintStream(fileOutputStream);
                     System.setOut(printStream);
                 } else {
-                    irPrinter.print();
+                    PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
+                    System.setOut(consolePrintStream);
                 }
+                irPrinter.print();
+
             }
 
 
             if (printM2R) {
                 IRPrinter irPrinter = new IRPrinter(irProg);
                 if (fileOutM2R) {
-                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/git/compiler-2024/test.ll");
+                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/test.ll");
                     PrintStream printStream = new PrintStream(fileOutputStream);
                     System.setOut(printStream);
                 } else {
-                    irPrinter.print();
+                    PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
+                    System.setOut(consolePrintStream);
                 }
+                irPrinter.print();
             }
 
             if (printASM) {
