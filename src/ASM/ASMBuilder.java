@@ -77,11 +77,16 @@ public class ASMBuilder implements IRVisitor {
         }
         occSP = 4;
         addSW("ra", curFunc.stackSize - occSP, "sp"); // caller saved
+
         for (int i = 0; i < node.regNum; ++i) {
             occSP += 4;
             addSW("s" + i, curFunc.stackSize - occSP, "sp");
         }
-
+        for (int i = 0; i < node.paramNames.size(); ++i) {
+            occSP += 4;
+            addSW("a" + i, curFunc.stackSize - occSP, "sp");
+            regPos.put(node.paramNames.get(i), curFunc.stackSize - occSP);
+        }
         node.blocks.forEach(x -> x.accept(this));
         curIRFuncDef = null;
 
@@ -125,7 +130,8 @@ public class ASMBuilder implements IRVisitor {
             if (r.name.endsWith(".val")) {
                 int ind = curIRFuncDef.paramNames.indexOf(r.name);
                 if (ind < 8) {
-                    return "a" + ind;
+                    addLW(tmp, regPos.get(r.name), "sp");
+                    return tmp;
                 } else {
                     addLW(tmp, curFunc.stackSize + (ind - 8) * 4L, "sp");
                     return tmp;
@@ -506,17 +512,17 @@ public class ASMBuilder implements IRVisitor {
     public void visit(Call node) {
         /// todo: a0-a7 parallel moving
         int cnt = 0;
-        for (Entity e : node.args) {
-            if (cnt < 8) {
-                if (!curIRFuncDef.name.equals("@main")) {// caller save a0-a7
-                    occSP += 4;
-                    curBlock.addInst(new SW("a" + cnt,
-                            curFunc.stackSize - occSP, "sp"));
-                }
-            } else break;
-            ++cnt;
-        }
-        cnt = 0;
+//        for (Entity e : node.args) {
+//            if (cnt < 8) {
+//                if (!curIRFuncDef.name.equals("@main")) {// caller save a0-a7
+//                    occSP += 4;
+//                    curBlock.addInst(new SW("a" + cnt,
+//                            curFunc.stackSize - occSP, "sp"));
+//                }
+//            } else break;
+//            ++cnt;
+//        }
+//        cnt = 0;
         for (Entity e : node.args) {
             if (cnt < 8) {
                 if (e instanceof Constant) {
@@ -531,7 +537,7 @@ public class ASMBuilder implements IRVisitor {
                             int i = curIRFuncDef.paramNames.indexOf(r.name);
                             if (cnt != i) {
                                 if (i < 8) {
-                                    curBlock.addInst(new MV("a" + cnt, "a" + i));
+                                    curBlock.addInst(new LW("a" + cnt, regPos.get(r.name), "sp"));
                                 } else {
                                     curBlock.addInst(new LW("a" + cnt, curFunc.stackSize + (i - 8) * 4L, "sp"));
                                 }
@@ -568,13 +574,13 @@ public class ASMBuilder implements IRVisitor {
                 curBlock.addInst(new MV(storeReg(node.dest, null), "a0"));
             }
         }
-        if (!curIRFuncDef.name.equals("@main")) {// caller save a0-a7
-            if (cnt > 8) cnt = 8;
-            while (cnt-- > 0) {
-                curBlock.addInst(new LW("a" + cnt, curFunc.stackSize - occSP, "sp"));
-                occSP -= 4;
-            }
-        }
+//        if (!curIRFuncDef.name.equals("@main")) {// caller save a0-a7
+//            if (cnt > 8) cnt = 8;
+//            while (cnt-- > 0) {
+//                curBlock.addInst(new LW("a" + cnt, curFunc.stackSize - occSP, "sp"));
+//                occSP -= 4;
+//            }
+//        }
     }
 
     @Override
@@ -826,12 +832,10 @@ public class ASMBuilder implements IRVisitor {
                         curBlock.addInst(new MV("a0", n));
                     } else if (r.name.endsWith(".val")) {
                         int i = curIRFuncDef.paramNames.indexOf(r.name);
-                        if (i != 0) {
-                            if (i < 8) {
-                                curBlock.addInst(new MV("a0", "a" + i));
-                            } else {
-                                curBlock.addInst(new LW("a0", curFunc.stackSize + (i - 8) * 4L, "sp"));
-                            }
+                        if (i < 8) {
+                            curBlock.addInst(new LW("a0", regPos.get(r.name), "sp"));
+                        } else {
+                            curBlock.addInst(new LW("a0", curFunc.stackSize + (i - 8) * 4L, "sp"));
                         }
                     }
                 }
@@ -990,7 +994,7 @@ public class ASMBuilder implements IRVisitor {
                 } else if (r.name.endsWith(".val")) {
                     int i = curIRFuncDef.paramNames.indexOf(r.name);
                     if (i < 8) {
-                        m.src = Reg.get("a" + i);
+                        m.src = new Stack(regPos.get(r.name));
                     } else {
                         m.src = new Stack(curFunc.stackSize + (i - 8) * 4L);
                     }
