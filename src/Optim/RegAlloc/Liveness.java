@@ -264,7 +264,6 @@ public class Liveness {
     }
 
     public void liveIn(IRBlock b, IRInst s, String v) {
-        s.addIn(v);
         IRInst pre = preInst.get(s);
         if (pre == null) {
             for (IRBlock p : b.pred) {

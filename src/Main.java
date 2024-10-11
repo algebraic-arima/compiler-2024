@@ -26,14 +26,14 @@ public class Main {
         boolean fileIn = false;
         boolean printIR = false;
         boolean fileOutIR = false;
-        boolean printM2R = true;
-        boolean fileOutM2R = true;
+        boolean printM2R = false;
+        boolean fileOutM2R = false;
         boolean printASM = true;
         boolean fileOutASM = false;
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t14.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/forward/sha_1.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;

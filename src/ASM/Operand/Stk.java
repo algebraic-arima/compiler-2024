@@ -1,9 +1,9 @@
 package src.ASM.Operand;
 
-public class Stack extends Operand {
+public class Stk extends Operand {
     public long pos;
 
-    public Stack(long pos) {
+    public Stk(long pos) {
         this.pos = pos;
     }
 }

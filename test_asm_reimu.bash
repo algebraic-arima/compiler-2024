@@ -150,11 +150,18 @@ if [ $? -ne 0 ]; then
     HAS_PROBLEM=1
 fi
 echo "$TESTCASE"
-EXIT_CODE=$(grep -a 'exit code' "$TEMPDIR/reimu_errput.txt" | awk '{print $3}')
-if [ $EXIT_CODE -ne $EXPECTED_EXIT_CODE ]; then
+EXIT_CODE=$(grep -a 'Exit code' "$TEMPDIR/reimu_err.txt" | awk '{print $3}')
+
+if [ -z $EXIT_CODE ]; then
+  echo "Error:"
+  cat "$TEMPDIR/reimu_err.txt"
+  HAS_PROBLEM=1
+else
+  if [ $EXIT_CODE -ne $EXPECTED_EXIT_CODE ]; then
     echo "Error: Exit code mismatch." >&2
     print_temp_dir
     HAS_PROBLEM=1
+  fi
 fi
 
 if [ $HAS_PROBLEM -eq 0 ]; then
