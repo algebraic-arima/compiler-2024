@@ -215,6 +215,7 @@ public class Liveness {
     }
 
     public void trimUseless() {
+        HashSet<String> trim = new HashSet<>();
         for (Map.Entry<String, HashSet<Pair<IRBlock, IRInst>>> e : varList.entrySet()) {
             if (e.getValue().isEmpty()) {
                 String var = e.getKey();
@@ -226,8 +227,10 @@ public class Liveness {
                 def.a.instList.remove(def.b);
                 def.a.IRInsts.remove(def.b);
                 cost.remove(var);
+                trim.add(var);
             }
         }
+        trim.forEach(s -> varList.remove(s));
     }
 
     public void liveAnalysis() {
@@ -245,32 +248,27 @@ public class Liveness {
                         Entity en = va.a;
                         if (en instanceof Register r) {
                             if (r.name.equals(v)) {
-                                scanBlock(va.b, v);
+                                if (!visBlocks.contains(va.b)) {
+                                    visBlocks.add(va.b);
+                                    liveOut(va.b, va.b.instList.getLast(), v);
+                                }
                             }
                         }
                     }
                 } else {
-                    liveIn(useBlock, useInst, v);
+                    IRInst pre = preInst.get(useInst);
+                    if (pre == null) {
+                        for (IRBlock p : useBlock.pred) {
+                            if (!visBlocks.contains(p)) {
+                                visBlocks.add(p);
+                                liveOut(p, p.instList.getLast(), v);
+                            }
+                        }
+                    } else {
+                        liveOut(useBlock, pre, v);
+                    }
                 }
             }
-        }
-    }
-
-    public void scanBlock(IRBlock b, String v) {
-        if (visBlocks.contains(b)) return;
-        b.liveOut.add(v);
-        visBlocks.add(b);
-        liveOut(b, b.instList.getLast(), v);
-    }
-
-    public void liveIn(IRBlock b, IRInst s, String v) {
-        IRInst pre = preInst.get(s);
-        if (pre == null) {
-            for (IRBlock p : b.pred) {
-                scanBlock(p, v);
-            }
-        } else {
-            liveOut(b, pre, v);
         }
     }
 
@@ -287,14 +285,25 @@ public class Liveness {
         }
         for (String y : def) {
             if (y.equals(v)) continue;
+            if (!cost.containsKey(y)) {
+                continue;
+            }
             rig.addEdge(v, y);
             // y: def in the inst
             // v: some active var suring the inst
         }
         if (!def.contains(v)) {
-            liveIn(b, i, v);
-        } else {
-            return;
+            IRInst pre = preInst.get(i);
+            if (pre == null) {
+                for (IRBlock p : b.pred) {
+                    if (!visBlocks.contains(p)) {
+                        visBlocks.add(p);
+                        liveOut(p, p.instList.getLast(), v);
+                    }
+                }
+            } else {
+                liveOut(b, pre, v);
+            }
         }
     }
 

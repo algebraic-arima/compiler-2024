@@ -23,17 +23,17 @@ import java.io.*;
 public class Main {
     public static void main(String[] args) throws Exception {
         SemanticJudge sj = new SemanticJudge();
-        boolean fileIn = false;
+        boolean fileIn = true;
         boolean printIR = false;
         boolean fileOutIR = false;
-        boolean printM2R = false;
-        boolean fileOutM2R = false;
+        boolean printM2R = true;
+        boolean fileOutM2R = true;
         boolean printASM = true;
         boolean fileOutASM = false;
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/codegen/forward/sha_1.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/optim/efficiency.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -57,9 +57,6 @@ public class Main {
             IRProg irProg = irBuilder.build(ASTRoot);
             irProg.reformat();
 
-            Mem2Reg m2r = new Mem2Reg(irProg);
-            RegAlloc ra = new RegAlloc(irProg);
-
             if (printIR) {
                 IRPrinter irPrinter = new IRPrinter(irProg);
                 if (fileOutIR) {
@@ -71,8 +68,10 @@ public class Main {
                     System.setOut(consolePrintStream);
                 }
                 irPrinter.print();
-
             }
+
+            Mem2Reg m2r = new Mem2Reg(irProg);
+            RegAlloc ra = new RegAlloc(irProg);
 
 
             if (printM2R) {

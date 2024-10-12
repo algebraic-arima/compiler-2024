@@ -15,8 +15,6 @@ public class IRBlock {
     static public int blockCnt;
     public int regNum = 0;
     public int funcParamMax = 0;
-    public HashSet<String> liveIn;
-    public HashSet<String> liveOut;
     public ArrayList<IRBlock> pred, succ;
     public ArrayList<IRInst> instList;
     public HashMap<String, ArrayList<Move>> mv;
@@ -28,8 +26,6 @@ public class IRBlock {
             s = "l-" + index + "-" + s;
         }
         label = new Label(s);
-        liveIn = new HashSet<>();
-        liveOut = new HashSet<>();
         pred = new ArrayList<>();
         succ = new ArrayList<>();
         instList = new ArrayList<>();
