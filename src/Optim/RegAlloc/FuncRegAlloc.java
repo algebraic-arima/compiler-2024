@@ -8,7 +8,7 @@ import src.utils.Entity.*;
 
 import java.util.*;
 
-public class Liveness {
+public class FuncRegAlloc {
 
     static int loopConst = 16;
     public IRFuncDef irFunc;
@@ -21,7 +21,7 @@ public class Liveness {
     public RIG rig;
     HashMap<String, Integer> spillList;
 
-    public Liveness(IRFuncDef irFunc) {
+    public FuncRegAlloc(IRFuncDef irFunc) {
         this.irFunc = irFunc;
         varList = new HashMap<>();
         preInst = new HashMap<>();
