@@ -52,7 +52,11 @@ public class GetElePtr extends IRInst {
         System.out.print(" = getelementptr ");
         ptrType.print();
         System.out.print(", ptr ");
-        ptr.print();
+        if (ptr != null) {
+            ptr.print();
+        } else {
+            System.out.print("null");
+        }
         System.out.print(", i32 ");
         offset.print();
         if (fieldInd != -1) {

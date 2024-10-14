@@ -24,6 +24,10 @@ public class RIG {
         public int compareTo(RIGNode o) {
             return Integer.compare(label, o.label);
         }
+
+        public int getColor(){
+            return color;
+        }
     }
 
 

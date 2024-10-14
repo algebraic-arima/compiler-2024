@@ -14,6 +14,9 @@ import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.*;
 
 public class ASMBuilder implements IRVisitor {
@@ -119,6 +122,7 @@ public class ASMBuilder implements IRVisitor {
     }
 
     String fetchReg(Register r, String tmp) {
+        if (r == null) return "zero";
         if (r.color > 0) {
             return Reg.freeRegs[r.color];
         } else if (r.color < 0) {
@@ -307,10 +311,10 @@ public class ASMBuilder implements IRVisitor {
                     String r_name = fetchReg(r, "t2");
                     curBlock.addInst(new LI("t0", c.value));
                     if (node.dest.color < 0) {
-                        curBlock.addInst(new SLL("t0", r_name, "t0"));
+                        curBlock.addInst(new SLL("t0", "t0", r_name));
                         storeReg(node.dest, "t0");
                     } else if (node.dest.color > 0) {
-                        curBlock.addInst(new SLL(storeReg(node.dest, null), r_name, "t0"));
+                        curBlock.addInst(new SLL(storeReg(node.dest, null), "t0", r_name));
                     }
                 } else if (node.rhs instanceof Constant cr) {
                     curBlock.addInst(new LI("t0", c.value));
@@ -581,7 +585,12 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(GetElePtr node) {
-        String ptrName = fetchReg(node.ptr, "t0");
+        String ptrName;
+        if (node.ptr != null) {
+            ptrName = fetchReg(node.ptr, "t0");
+        } else {
+            ptrName = "zero";
+        }
         Integer csize = classDefs.get(node.ptrType.typeName);
         if (csize == null) {
             if (node.ptrType.typeName.equals("i32") || node.ptrType.typeName.equals("ptr"))
@@ -943,7 +952,7 @@ public class ASMBuilder implements IRVisitor {
             curBlock.addInst(new ADD(dest_, lhs_, "tp"));
         }
     }
-    
+
     private void addXORI(String dest_, String lhs_, long rhs_) {
         if (rhs_ < 2048 && rhs_ >= -2048) {
             curBlock.addInst(new XORI(dest_, lhs_, rhs_));
@@ -952,7 +961,7 @@ public class ASMBuilder implements IRVisitor {
             curBlock.addInst(new XOR(dest_, lhs_, "tp"));
         }
     }
-    
+
     private void addORI(String dest_, String lhs_, long rhs_) {
         if (rhs_ < 2048 && rhs_ >= -2048) {
             curBlock.addInst(new ORI(dest_, lhs_, rhs_));
@@ -991,26 +1000,26 @@ public class ASMBuilder implements IRVisitor {
             MV m = new MV();
             if (mv.dest.color < 0) {
                 if (regPos.containsKey(mv.dest.name)) {
-                    m.dest = new Stk(regPos.get(mv.dest.name));
+                    m.dest = Stk.get(regPos.get(mv.dest.name));
                 } else {
                     occSP += 4;
                     regPos.put(mv.dest.name, curFunc.stackSize - occSP);
-                    m.dest = new Stk(curFunc.stackSize - occSP);
+                    m.dest = Stk.get(curFunc.stackSize - occSP);
                 }
             } else if (mv.dest.color > 0) {
                 m.dest = Reg.get(Reg.freeRegs[mv.dest.color]);
             }
             if (mv.src instanceof Register r) {
                 if (r.color < 0) {
-                    m.src = new Stk(regPos.get(r.name));
+                    m.src = Stk.get(regPos.get(r.name));
                 } else if (r.color > 0) {
                     m.src = Reg.get(Reg.freeRegs[r.color]);
                 } else if (r.name.endsWith(".val") || r.name.equals("%this.val")) {
                     int i = curIRFuncDef.paramNames.indexOf(r.name);
                     if (i < 8) {
-                        m.src = new Stk(regPos.get(r.name));
+                        m.src = Stk.get(regPos.get(r.name));
                     } else {
-                        m.src = new Stk(curFunc.stackSize + (i - 8) * 4L);
+                        m.src = Stk.get(curFunc.stackSize + (i - 8) * 4L);
                     }
                 } else if (r.name.startsWith("@constStr")) {
                     m.src = new Gl(r.name.substring(1).replace("-", "_"));
@@ -1077,6 +1086,20 @@ public class ASMBuilder implements IRVisitor {
             preds = new HashSet<>();
             succs = new HashSet<>();
         }
+
+        public void printErr() {
+            PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.err));
+            System.setOut(consolePrintStream);
+            System.out.println("------------");
+            mv.print();
+            System.out.println("pred:");
+            preds.forEach(MV::print);
+            System.out.println("succ:");
+            succs.forEach(MV::print);
+            System.out.println("------------");
+            consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
+            System.setOut(consolePrintStream);
+        }
     }
 
     public void addRegMV(ArrayList<MV> moves, HashMap<Operand, HashSet<MV>> srcs, HashMap<Operand, HashSet<MV>> dests) {
@@ -1109,13 +1132,15 @@ public class ASMBuilder implements IRVisitor {
                     zeroin.add(m.get(mv));
                 }
             }
-
         }
         while (!m.isEmpty()) {
             while (!zeroin.isEmpty()) {
                 mvNode n = zeroin.poll();
                 m.remove(n.mv);
                 addMV(n.mv);
+//                if (curBlock.label.equals("l_4_22_8_for_step")) {
+//                    n.printErr();
+//                }
                 for (var suc : n.succs) {
                     mvNode sucn = m.get(suc);
                     sucn.preds.remove(n.mv);

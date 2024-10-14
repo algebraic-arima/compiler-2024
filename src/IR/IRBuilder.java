@@ -867,9 +867,9 @@ public class IRBuilder implements __ASTVisitor {
         }
         IRBlock[] condBlocks = new IRBlock[loop * 3 - 3];
         for (int i = 0; i < loop - 1; ++i) {
-            condBlocks[2 * i] = new IRBlock(node.pos.row + "-" + node.pos.column + "-na-cond" + i);
-            condBlocks[2 * i + 1] = new IRBlock(node.pos.row + "-" + node.pos.column + "-na-body" + i);
-            condBlocks[loop * 3 - 4 - i] = new IRBlock(node.pos.row + "-" + node.pos.column + "-na-end" + i);
+            condBlocks[2 * i] = new IRBlock(node.pos.row + "-" + node.pos.column + "-" + i + "-na-cond");
+            condBlocks[2 * i + 1] = new IRBlock(node.pos.row + "-" + node.pos.column + "-" + i + "-na-body");
+            condBlocks[loop * 3 - 4 - i] = new IRBlock(node.pos.row + "-" + node.pos.column + "-" + i + "-na-end");
         }
         for (int i = 0; i < loop - 1; ++i) {
             Register tmp1 = Register.newReg("%na-" + node.pos.row + "-" + node.pos.column + "-tmp" + i);

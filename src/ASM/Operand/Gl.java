@@ -6,4 +6,9 @@ public class Gl extends Operand {
     public Gl(String std) {
         this.label = std;
     }
+
+    @Override
+    public String toString(){
+        return label;
+    }
 }

@@ -159,7 +159,7 @@ public class Liveness {
                             cost.put(r.name, cost.get(r.name) + loop);
                         }
                     }
-                    if (varList.containsKey(g.ptr.name)) {
+                    if (g.ptr != null && varList.containsKey(g.ptr.name)) {
                         varList.get(g.ptr.name).add(new Pair<>(b, g));
                         cost.put(g.ptr.name, cost.get(g.ptr.name) + loop);
                     }

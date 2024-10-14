@@ -26,6 +26,7 @@ public class FuncMem2Reg {
     // thus, when accessing k, use v instead
     HashMap<String, Integer> counter;
     HashMap<String, Stack<String>> stack;
+    HashSet<String> reachableList = new HashSet<>();
 
 
     public FuncMem2Reg(IRFuncDef func) {
@@ -71,6 +72,7 @@ public class FuncMem2Reg {
         renameLocal();
         putPhi();
         rename();
+        trimUselessBlock();
 //        merge();
     }
 
@@ -242,6 +244,20 @@ public class FuncMem2Reg {
                                 br.cond = en;
                                 if (en instanceof Constant con) {
                                     i.IRInsts.set(cnt, new Jmp(con.value == 0 ? br.falseBlock : br.trueBlock));
+//                                    IRBlock destBlock = con.value == 0 ? br.trueBlock : br.falseBlock;
+//                                    for (Map.Entry<String, Phi> p : destBlock.phis.entrySet()) {
+//                                        for (int ii = 0; ii < p.getValue().valList.size(); ++ii) {
+//                                            IRBlock bl = p.getValue().valList.get(ii).b;
+//                                            if (bl.label.label.equals(str)) {
+//                                                p.getValue().valList.set(ii, null);
+//                                            }
+//                                        }
+//                                        p.getValue().valList.removeIf(Objects::isNull);
+//                                    }
+//                                    CFGNode now = nodes.get(str);
+//                                    CFGNode next = nodes.get(destBlock.label.label);
+//                                    now.succ.remove(next);
+//                                    next.pred.remove(now);
                                 }
                             }
                         }
@@ -301,6 +317,19 @@ public class FuncMem2Reg {
                     }
                 }
                 i.IRInsts.removeIf(Objects::isNull);
+//                for (CFGNode suc : nodes.get(str).succ) {
+//                    IRBlock s = irBlocks.get(suc.label);
+//                    for (Map.Entry<String, Phi> epp : s.phis.entrySet()) {
+//                        Phi p = epp.getValue();
+//                        for (int cn = 0; cn < p.valList.size(); ++cn) {
+//                            if (p.valList.get(cn).a instanceof Register r) {
+//                                Entity se = rns.get(r.name);
+//                                if (se != null)
+//                                    p.valList.set(cn, new Pair<>(se, p.valList.get(cn).b));
+//                            }
+//                        }
+//                    }
+//                }
             }
         }
     }
@@ -309,7 +338,11 @@ public class FuncMem2Reg {
         for (Map.Entry<String, IRType> e : varDefGlobal.entrySet()) {
             String x = e.getKey();
             IRType t = e.getValue();
-            ArrayDeque<String> list = new ArrayDeque<>(varDefBlocks.get(x));
+            var g = varDefBlocks.get(x);
+            if (g == null || g.isEmpty()) {
+                continue;
+            }
+            ArrayDeque<String> list = new ArrayDeque<>(g);
             while (!list.isEmpty()) {
                 CFGNode b = nodes.get(list.poll());
                 for (CFGNode dd : b.DF) {
@@ -359,6 +392,8 @@ public class FuncMem2Reg {
          *   %3 = add i32 %b 4 ; use of %b  --->   %3 = add i32 %a 4
          */
         HashMap<String, Integer> pushStack = new HashMap<>();
+        Constant zero = new Constant(0);
+        reachableList.add(label);
         for (String s : varDefGlobal.keySet()) {
             pushStack.put(s, 0);
         }
@@ -380,23 +415,19 @@ public class FuncMem2Reg {
             if (i instanceof Load ii) {
                 if (!varDefGlobal.containsKey(ii.src.name)) {
                     continue;
-                }
-//                if (stack.get(ii.src.name).isEmpty()) {
-//                    ir.IRInsts.set(cnt, null);
-//                } else {
-//                    ir.IRInsts.set(cnt, new Binary("+", Register.newReg(ii.irType, getNewName(ii.src.name)),
-//                            new Constant(0), ii.dest, ii.irType));
-//                }
-
-                String str = getNewName(ii.src.name);
-                if (str != null) {
-                    Entity c = Register.newReg(ii.irType, getNewName(ii.src.name));
-                    while (c instanceof Register r) {
-                        Entity e = renameMap.get(r.name);
-                        if (e == null) break;
-                        else c = e;
+                } else {
+                    String str = getNewName(ii.src.name);
+                    if (str != null) {
+                        Entity c = Register.newReg(ii.irType, getNewName(ii.src.name));
+                        while (c instanceof Register r) {
+                            Entity e = renameMap.get(r.name);
+                            if (e == null) break;
+                            else c = e;
+                        }
+                        renameMap.put(ii.dest.name, c); // the very origin of the value
+                    } else {
+                        renameMap.put(ii.dest.name, zero);
                     }
-                    renameMap.put(ii.dest.name, c); // the very origin of the value
                 }
                 ir.IRInsts.set(cnt, null);
             } else if (i instanceof Store ii) {
@@ -444,8 +475,13 @@ public class FuncMem2Reg {
                     Entity s = renameMap.get(r.name);
                     if (s != null) g.offset = s;
                 }
+                if (g.ptr == null) continue;
                 Entity s = renameMap.get(g.ptr.name);
-                if (s != null) g.ptr = (Register) s;
+                if (s instanceof Register r) {
+                    g.ptr = r;
+                } else if (s instanceof Constant) {
+                    g.ptr = null;
+                }
             } else if (i instanceof Icmp ic) {
                 if (ic.rhs instanceof Register r) {
                     Entity s = renameMap.get(r.name);
@@ -467,6 +503,20 @@ public class FuncMem2Reg {
                         br.cond = s;
                         if (s instanceof Constant con) {
                             ir.IRInsts.set(cnt, new Jmp(con.value == 0 ? br.falseBlock : br.trueBlock));
+//                            IRBlock destBlock = con.value == 0 ? br.trueBlock : br.falseBlock;
+//                            for (Map.Entry<String, Phi> p : destBlock.phis.entrySet()) {
+//                                for (int ii = 0; ii < p.getValue().valList.size(); ++ii) {
+//                                    IRBlock bl = p.getValue().valList.get(ii).b;
+//                                    if (bl.label.label.equals(label)) {
+//                                        p.getValue().valList.set(ii, null);
+//                                    }
+//                                }
+//                                p.getValue().valList.removeIf(Objects::isNull);
+//                            }
+//                            CFGNode now = nodes.get(label);
+//                            CFGNode next = nodes.get(destBlock.label.label);
+//                            now.succ.remove(next);
+//                            next.pred.remove(now);
                         }
                     }
                 }
@@ -563,6 +613,15 @@ public class FuncMem2Reg {
                 nxt.funcParamMax = i.funcParamMax;
             }
         }
+    }
+
+    public void trimUselessBlock() {
+        for (int i = 0; i < func.blocks.size(); ++i) {
+            if (!reachableList.contains(func.blocks.get(i).label.label)) {
+                func.blocks.set(i, null);
+            }
+        }
+        func.blocks.removeIf(Objects::isNull);
     }
 
 }

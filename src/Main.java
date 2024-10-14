@@ -23,17 +23,17 @@ import java.io.*;
 public class Main {
     public static void main(String[] args) throws Exception {
         SemanticJudge sj = new SemanticJudge();
-        boolean fileIn = true;
+        boolean fileIn = false;
         boolean printIR = false;
         boolean fileOutIR = false;
-        boolean printM2R = true;
-        boolean fileOutM2R = true;
+        boolean printM2R = false;
+        boolean fileOutM2R = false;
         boolean printASM = true;
         boolean fileOutASM = false;
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/codegen/optim/efficiency.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/sema/basic-package/basic-66.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
