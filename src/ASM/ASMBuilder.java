@@ -512,7 +512,6 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(Call node) {
-        /// todo: a0-a7 parallel moving
         int cnt = 0;
 //        for (Entity e : node.args) {
 //            if (cnt < 8) {

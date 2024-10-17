@@ -6,7 +6,5 @@ public class FuncSCCP {
 
     public FuncSCCP(IRFuncDef func) {
 
-        
-
     }
 }

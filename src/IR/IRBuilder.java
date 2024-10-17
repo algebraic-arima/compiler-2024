@@ -782,6 +782,7 @@ public class IRBuilder implements __ASTVisitor {
             else c.argTypes.add(typePtr);
         }
         curBlock.IRInsts.add(c);
+        curFunc.hasCall = true;
     }
 
     @Override

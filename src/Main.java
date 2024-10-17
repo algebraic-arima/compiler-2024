@@ -11,6 +11,7 @@ import src.IR.IRPrinter;
 import src.IR.IRProg;
 import src.Optim.Mem2Reg.Mem2Reg;
 import src.Optim.RegAlloc.RegAlloc;
+import src.Optim.Inline.Inline;
 import src.Semantic.*;
 import src.parser.Lex;
 import src.parser.Mx;
@@ -33,7 +34,7 @@ public class Main {
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/sema/basic-package/basic-66.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/optim/inline.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -71,6 +72,7 @@ public class Main {
             }
 
             Mem2Reg m2r = new Mem2Reg(irProg);
+//            Inline inl = new Inline(irProg);
             RegAlloc ra = new RegAlloc(irProg);
 
 

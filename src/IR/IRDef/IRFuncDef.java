@@ -18,6 +18,7 @@ public class IRFuncDef extends IRDef {
     public int stackSize = 0;
     public int funcParamMax = 0;
     public int regNum = 0;
+    public boolean hasCall = true;
 
     public IRFuncDef(String name) {
         retType = new IRType();
@@ -53,7 +54,8 @@ public class IRFuncDef extends IRDef {
     }
 
     public void reformat() {
-        blocks.removeIf(e -> e.IRInsts.isEmpty());
+//        blocks.removeIf(e -> e.IRInsts.isEmpty() && e.phis.isEmpty());
+        // mem2reg will remove empty and useless blocks
         blocks.forEach(e -> {
             e.reformat();
 //            regNum += e.regNum;

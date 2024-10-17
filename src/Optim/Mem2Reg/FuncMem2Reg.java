@@ -45,6 +45,7 @@ public class FuncMem2Reg {
         HashSet<CFGNode> dom = new HashSet<>(nodes.values());
         for (int i = 0; i < func.blocks.size(); ++i) {
             IRBlock b = func.blocks.get(i);
+            if(b.IRInsts.isEmpty()) continue;
             CFGNode c = nodes.get(b.label.label);
             terminalIRInst t = (terminalIRInst) b.IRInsts.getLast();
             if (t instanceof Br) {
