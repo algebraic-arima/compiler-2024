@@ -21,9 +21,9 @@ public class FuncDCE {
         this.func = _func;
         varUseList = new HashMap<>();
         varDefInst = new HashMap<>();
-//        collectVar();
-//        eliminate();
-//        reformat();
+        collectVar();
+        eliminate();
+        reformat();
     }
 
     public void collectVar() {
@@ -65,7 +65,8 @@ public class FuncDCE {
                     }
                     b.instList.remove(i);
                 }
-
+                varDefInst.remove(v);
+                varUseList.remove(v);
             }
         }
     }

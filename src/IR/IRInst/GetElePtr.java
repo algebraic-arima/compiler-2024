@@ -74,7 +74,9 @@ public class GetElePtr extends IRInst {
         if (offset instanceof Register r) {
             d.add(r.name);
         }
-        d.add(ptr.name);
+        if (ptr != null) {
+            d.add(ptr.name);
+        }
         return d;
     }
 

@@ -13,7 +13,7 @@ public class FuncRegAlloc {
     static int loopConst = 16;
     public IRFuncDef irFunc;
     public HashMap<String, HashSet<Pair<IRBlock, IRInst>>> varUseList;
-    public HashMap<String, Pair<IRBlock, IRInst>> defInst;
+    public HashMap<String, Pair<IRBlock, IRInst>> varDefInst;
     public HashMap<IRInst, IRInst> preInst;
     HashSet<IRBlock> visBlocks;
     public HashMap<String, Double> cost;
@@ -26,11 +26,10 @@ public class FuncRegAlloc {
         varUseList = new HashMap<>();
         preInst = new HashMap<>();
         cost = new HashMap<>();
-        defInst = new HashMap<>();
+        varDefInst = new HashMap<>();
 
         varDefCollect();
         varUseCollect();
-        trimUseless();
 
         rig = new RIG();
         rig.add(cost);
@@ -56,8 +55,6 @@ public class FuncRegAlloc {
                     || b.label.endsWith("-na-end")) {
                 loop /= loopConst;
             }
-            b.instList.addAll(b.phis.values());
-            b.instList.addAll(b.IRInsts);
             IRInst te = b.IRInsts.getLast();
             if (te instanceof Br br) {
                 b.succ.add(br.trueBlock);
@@ -71,16 +68,14 @@ public class FuncRegAlloc {
                 b.succ.clear();
             }
             for (IRInst i : b.instList) {
-                if (i instanceof Alloca || i instanceof Binary || i instanceof GetElePtr
-                        || i instanceof Icmp || i instanceof Load || i instanceof Phi) {
-                    varUseList.put(i.dest.name, new HashSet<>());
-                    defInst.put(i.dest.name, new Pair<>(b, i));
-                    cost.put(i.dest.name, loop);
-                } else if (i instanceof Call c) {
-                    if (!c.retType.typeName.equals("void") && c.dest != null) {
-                        varUseList.put(i.dest.name, new HashSet<>());
-                        defInst.put(i.dest.name, new Pair<>(b, i));
-                        cost.put(i.dest.name, loop);
+                String def = i.getDef();
+                if (def != null) {
+                    varUseList.put(def, new HashSet<>());
+                    varDefInst.put(def, new Pair<>(b, i));
+                    if (!cost.containsKey(def)) {
+                        cost.put(def, loop);
+                    } else {
+                        cost.put(def, cost.get(def) + loop);
                     }
                 }
             }
@@ -105,114 +100,19 @@ public class FuncRegAlloc {
             for (IRInst i : b.instList) {
                 preInst.put(i, cur);
                 cur = i;
-                if (i instanceof Binary bin) {
-                    if (bin.lhs instanceof Register r) {
-                        if (varUseList.containsKey(r.name)) {
-                            varUseList.get(r.name).add(new Pair<>(b, bin));
-                            cost.put(r.name, cost.get(r.name) + loop);
-                        }
-                    }
-                    if (bin.rhs instanceof Register r) {
-                        if (varUseList.containsKey(r.name)) {
-                            varUseList.get(r.name).add(new Pair<>(b, bin));
-                            cost.put(r.name, cost.get(r.name) + loop);
-                        }
-                    }
-                } else if (i instanceof Br br) {
-                    if (br.cond instanceof Register r) {
-                        if (varUseList.containsKey(r.name)) {
-                            varUseList.get(r.name).add(new Pair<>(b, br));
-                            cost.put(r.name, cost.get(r.name) + loop);
-                        }
-                    }
-                } else if (i instanceof Call c) {
-                    for (Entity en : c.args) {
-                        if (en instanceof Register r) {
-                            if (varUseList.containsKey(r.name)) {
-                                varUseList.get(r.name).add(new Pair<>(b, c));
-                                cost.put(r.name, cost.get(r.name) + loop);
-                            }
-                        }
-                    }
-                } else if (i instanceof GetElePtr g) {
-                    if (g.offset instanceof Register r) {
-                        if (varUseList.containsKey(r.name)) {
-                            varUseList.get(r.name).add(new Pair<>(b, g));
-                            cost.put(r.name, cost.get(r.name) + loop);
-                        }
-                    }
-                    if (g.ptr != null && varUseList.containsKey(g.ptr.name)) {
-                        varUseList.get(g.ptr.name).add(new Pair<>(b, g));
-                        cost.put(g.ptr.name, cost.get(g.ptr.name) + loop);
-                    }
-                } else if (i instanceof Icmp bin) {
-                    if (bin.lhs instanceof Register r) {
-                        if (varUseList.containsKey(r.name)) {
-                            varUseList.get(r.name).add(new Pair<>(b, bin));
-                            cost.put(r.name, cost.get(r.name) + loop);
-                        }
-                    }
-                    if (bin.rhs instanceof Register r) {
-                        if (varUseList.containsKey(r.name)) {
-                            varUseList.get(r.name).add(new Pair<>(b, bin));
-                            cost.put(r.name, cost.get(r.name) + loop);
-                        }
-                    }
-                } else if (i instanceof Load l) {
-                    if (varUseList.containsKey(l.src.name)) {
-                        varUseList.get(l.src.name).add(new Pair<>(b, l));
-                        cost.put(l.src.name, cost.get(l.src.name) + loop);
-                    }
-                } else if (i instanceof Store s) {
-                    if (varUseList.containsKey(s.dest.name)) {
-                        varUseList.get(s.dest.name).add(new Pair<>(b, s));
-                        cost.put(s.dest.name, cost.get(s.dest.name) + loop);
-                    }
-                    if (s.value instanceof Register r) {
-                        if (varUseList.containsKey(r.name)) {
-                            varUseList.get(r.name).add(new Pair<>(b, s));
-                            cost.put(r.name, cost.get(r.name) + loop);
-                        }
-                    }
-
-                } else if (i instanceof Ret ret) {
-                    if (ret.value instanceof Register r) {
-                        if (varUseList.containsKey(r.name)) {
-                            varUseList.get(r.name).add(new Pair<>(b, ret));
-                            cost.put(r.name, cost.get(r.name) + loop);
-                        }
-                    }
-                } else if (i instanceof Phi p) {
-                    for (var d : p.valList) {
-                        if (d.a instanceof Register r) {
-                            if (varUseList.containsKey(r.name)) {
-                                varUseList.get(r.name).add(new Pair<>(b, p));
-                                cost.put(r.name, cost.get(r.name) + loop);
-                            }
+                HashSet<String> use = i.getUse();
+                for (String s : use) {
+                    if (varUseList.containsKey(s)) {
+                        varUseList.get(s).add(new Pair<>(b, i));
+                        if (!cost.containsKey(s)) {
+                            cost.put(s, loop);
+                        } else {
+                            cost.put(s, cost.get(s) + loop);
                         }
                     }
                 }
             }
         }
-    }
-
-    public void trimUseless() {
-        HashSet<String> trim = new HashSet<>();
-        for (Map.Entry<String, HashSet<Pair<IRBlock, IRInst>>> e : varUseList.entrySet()) {
-            if (e.getValue().isEmpty()) {
-                String var = e.getKey();
-                Pair<IRBlock, IRInst> def = defInst.get(var);
-                if (def.b instanceof Call) {
-                    continue; // Call can modify some other vars
-                }
-                preInst.put(def.a.instList.get(def.a.instList.indexOf(def.b) + 1), preInst.get(def.b));
-                def.a.instList.remove(def.b);
-                def.a.IRInsts.remove(def.b);
-                cost.remove(var);
-                trim.add(var);
-            }
-        }
-        trim.forEach(s -> varUseList.remove(s));
     }
 
     public void liveAnalysis() {
