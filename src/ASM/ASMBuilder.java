@@ -490,22 +490,60 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(Br node) {
-        if (node.cond instanceof Constant c) {
-            if (c.value == 0) {
-                curBlock.addInst(new J(node.falseBlock.label));
-            } else {
+        if (node.cmp == null) {
+            if (node.cond instanceof Constant c) {
+                if (c.value == 0) {
+                    curBlock.addInst(new J(node.falseBlock.label));
+                } else {
+                    curBlock.addInst(new J(node.trueBlock.label));
+                }
+            } else if (node.cond instanceof Register reg) {
+                String nlabel = curBlock.label + "_forb";
+                curBlock.addInst(new BEQZ(fetchReg(reg, "t0"), nlabel));
+                var mv1 = curIRBlock.mv.get(node.trueBlock.label);
+                addMVList(mv1);
                 curBlock.addInst(new J(node.trueBlock.label));
+                curBlock = new ASMBlock(nlabel);
+                var mv2 = curIRBlock.mv.get(node.falseBlock.label);
+                addMVList(mv2);
+                curBlock.addInst(new J(node.falseBlock.label));
+                curFunc.blocks.add(curBlock);
             }
-        } else if (node.cond instanceof Register reg) {
-            String nlabel = curBlock.label + "_forb";
-            curBlock.addInst(new BEQZ(fetchReg(reg, "t0"), nlabel));
-            var mv1 = curIRBlock.mv.get(node.trueBlock.label);
+        } else {
+            String ln = null, rn = null;
+            if (node.cmp.lhs instanceof Constant c) {
+                curBlock.addInst(new LI("t1", c.value));
+                ln = "t1";
+            } else if (node.cmp.lhs instanceof Register r) {
+                ln = fetchReg(r, "t1");
+            }
+            if (node.cmp.rhs instanceof Constant c) {
+                curBlock.addInst(new LI("t2", c.value));
+                rn = "t2";
+            } else if (node.cmp.rhs instanceof Register r) {
+                rn = fetchReg(r, "t2");
+            }
+            String nlabel = curBlock.label + "_true"; // truelabel
+            if (node.cmp.op.equals("eq")) {
+                curBlock.addInst(new BEQ(ln, rn, nlabel));
+            } else if (node.cmp.op.equals("ne")) {
+                curBlock.addInst(new BNE(ln, rn, nlabel));
+            } else if (node.cmp.op.equals("slt")) {
+                curBlock.addInst(new BLT(ln, rn, nlabel));
+            } else if (node.cmp.op.equals("sgt")) {
+                curBlock.addInst(new BGT(ln, rn, nlabel));
+            } else if (node.cmp.op.equals("sle")) {
+                curBlock.addInst(new BLE(ln, rn, nlabel));
+            } else if (node.cmp.op.equals("sge")) {
+                curBlock.addInst(new BGE(ln, rn, nlabel));
+            }
+            var mv1 = curIRBlock.mv.get(node.falseBlock.label);
             addMVList(mv1);
-            curBlock.addInst(new J(node.trueBlock.label));
-            curBlock = new ASMBlock(nlabel);
-            var mv2 = curIRBlock.mv.get(node.falseBlock.label);
-            addMVList(mv2);
             curBlock.addInst(new J(node.falseBlock.label));
+            curBlock = new ASMBlock(nlabel);
+            var mv2 = curIRBlock.mv.get(node.trueBlock.label);
+            addMVList(mv2);
+            curBlock.addInst(new J(node.trueBlock.label));
             curFunc.blocks.add(curBlock);
         }
     }

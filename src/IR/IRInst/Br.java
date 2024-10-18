@@ -10,6 +10,7 @@ import java.util.HashSet;
 public class Br extends terminalIRInst {
 
     public Entity cond;
+    public Icmp cmp = null;
     public IRBlock trueBlock, falseBlock;
 
     public Br(Entity cond, IRBlock trueBlock, IRBlock falseBlock) {
@@ -26,6 +27,7 @@ public class Br extends terminalIRInst {
 
     @Override
     public void print() {
+        if (cmp != null) cmp.print();
         System.out.print("  br i1 ");
         cond.print();
         System.out.print(", label %");
@@ -37,11 +39,15 @@ public class Br extends terminalIRInst {
 
     @Override
     public HashSet<String> getUse() {
-        HashSet<String> d = new HashSet<>();
-        if (cond instanceof Register r) {
-            d.add(r.name);
+        if (cmp == null) {
+            HashSet<String> d = new HashSet<>();
+            if (cond instanceof Register r) {
+                d.add(r.name);
+            }
+            return d;
+        } else {
+            return cmp.getUse();
         }
-        return d;
     }
 
     @Override

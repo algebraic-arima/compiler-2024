@@ -40,7 +40,7 @@ public class FuncRegAlloc {
         rig.MCS();
         rig.color(regNum);
         reducePhi();
-        /// may have data hazard in phi
+        // have no data hazard in phi
     }
 
     public void varDefCollect() {

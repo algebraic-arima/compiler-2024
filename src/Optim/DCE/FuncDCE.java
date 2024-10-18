@@ -3,9 +3,7 @@ package src.Optim.DCE;
 import org.antlr.v4.runtime.misc.Pair;
 import src.IR.IRDef.IRBlock;
 import src.IR.IRDef.IRFuncDef;
-import src.IR.IRInst.Call;
-import src.IR.IRInst.IRInst;
-import src.IR.IRInst.Phi;
+import src.IR.IRInst.*;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +21,7 @@ public class FuncDCE {
         varDefInst = new HashMap<>();
         collectVar();
         eliminate();
+        mergeBr();
         reformat();
     }
 
@@ -67,6 +66,25 @@ public class FuncDCE {
                 }
                 varDefInst.remove(v);
                 varUseList.remove(v);
+            }
+        }
+    }
+
+    public void mergeBr() {
+        for (IRBlock b : func.blocks) {
+            IRInst j = b.IRInsts.getLast();
+            if (j instanceof Br br) {
+                if (b.IRInsts.size() > 1 && b.IRInsts.get(b.IRInsts.size() - 2) instanceof Icmp cmp) {
+                    if (varUseList.get(cmp.dest.name).size() == 1) {
+                        br.cmp = cmp;
+                        b.IRInsts.set(b.IRInsts.size() - 2, br);
+                        b.IRInsts.removeLast();
+                        b.instList.removeLast();
+                        b.instList.set(b.instList.size() - 1, b.IRInsts.getLast());
+                        varUseList.remove(cmp.dest.name);
+                        varDefInst.remove(cmp.dest.name);
+                    }
+                }
             }
         }
     }
