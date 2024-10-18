@@ -3,6 +3,8 @@ package src.IR.IRInst;
 import src.IR.IRVisitor;
 import src.utils.Entity.*;
 
+import java.util.HashSet;
+
 public class Move extends IRInst {
 
     public Entity src;
@@ -20,5 +22,16 @@ public class Move extends IRInst {
     @Override
     public void accept(IRVisitor visitor) {
 
+    }
+
+
+    @Override
+    public HashSet<String> getUse() {
+        return null;
+    }
+
+    @Override
+    public String getDef() {
+        return null;
     }
 }

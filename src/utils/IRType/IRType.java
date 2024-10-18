@@ -4,7 +4,6 @@ import src.utils.type.Type;
 
 public class IRType {
     public String typeName;
-    public int size = 0;// bit
 
     public void print() {
         System.out.print(typeName);
@@ -12,34 +11,27 @@ public class IRType {
 
     public IRType() {
         typeName = "void";
-        size = -1;
     }
 
     public IRType(Type t) {
         if (t.dim >= 1) {
             typeName = "ptr";
-            size = 32;
         } else {
             switch (t.atomType) {
                 case INT:
                     typeName = "i32";
-                    size = 32;
                     break;
                 case BOOL:
                     typeName = "i1";
-                    size = 1;
                     break;
                 case STRING:
                     typeName = "ptr";
-                    size = 32;
                     break;
                 case VOID:
                     typeName = "void";
-                    size = -1;
                     break;
                 case CLASS:
                     typeName = "ptr"; // as a parameter
-                    size = 32;
                     break;
             }
         }
@@ -49,23 +41,18 @@ public class IRType {
         switch (s) {
             case "ptr", "string":
                 typeName = "ptr";
-                size = 32;
                 break;
             case "int":
                 typeName = "i32";
-                size = 32;
                 break;
             case "bool":
                 typeName = "i1";
-                size = 1;
                 break;
             case "void":
                 typeName = "void";
-                size = -1;
                 break;
             default:
                 typeName = "%class." + s;// on how to interpret a ptr
-                size = 0;
                 break;
         }
     }
@@ -74,19 +61,15 @@ public class IRType {
         switch (atomType) {
             case INT:
                 typeName = "i32";
-                size = 32;
                 break;
             case BOOL:
                 typeName = "i1";
-                size = 1;
                 break;
             case STRING:
                 typeName = "ptr";
-                size = 32;
                 break;
             case VOID:
                 typeName = "void";
-                size = -1;
                 break;
         }
         return this;

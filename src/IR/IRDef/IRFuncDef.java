@@ -18,7 +18,7 @@ public class IRFuncDef extends IRDef {
     public int stackSize = 0;
     public int funcParamMax = 0;
     public int regNum = 0;
-    public boolean hasCall = true;
+    public boolean hasCall = false;
 
     public IRFuncDef(String name) {
         retType = new IRType();

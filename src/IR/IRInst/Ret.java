@@ -2,7 +2,10 @@ package src.IR.IRInst;
 
 import src.IR.IRVisitor;
 import src.utils.Entity.Entity;
+import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
+
+import java.util.HashSet;
 
 public class Ret extends terminalIRInst {
 
@@ -39,5 +42,19 @@ public class Ret extends terminalIRInst {
             value.print();
             System.out.print("\n");
         }
+    }
+
+    @Override
+    public HashSet<String> getUse() {
+        HashSet<String> d = new HashSet<>();
+        if (value instanceof Register r) {
+            d.add(r.name);
+        }
+        return d;
+    }
+
+    @Override
+    public String getDef() {
+        return null;
     }
 }

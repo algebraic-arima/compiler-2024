@@ -6,10 +6,12 @@ import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
+import java.util.HashSet;
+
 public class GetElePtr extends IRInst {
 
     public IRType ptrType, destType;
-    public Register ptr;
+    public Register ptr; // ptr = null iff ptr not initialized
     public Entity offset;
     public int fieldInd;
 
@@ -64,5 +66,20 @@ public class GetElePtr extends IRInst {
             System.out.print(fieldInd);
         }
         System.out.print("\n");
+    }
+
+    @Override
+    public HashSet<String> getUse() {
+        HashSet<String> d = new HashSet<>();
+        if (offset instanceof Register r) {
+            d.add(r.name);
+        }
+        d.add(ptr.name);
+        return d;
+    }
+
+    @Override
+    public String getDef() {
+        return dest.name;
     }
 }

@@ -1,11 +1,14 @@
 package src.IR.IRInst;
 
+import src.ASM.Operand.Reg;
 import src.AST.Expr.BinaryArithExpr;
 import src.IR.IRVisitor;
 import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
+
+import java.util.HashSet;
 
 public class Binary extends IRInst {
 
@@ -104,6 +107,23 @@ public class Binary extends IRInst {
         System.out.print(", ");
         rhs.print();
         System.out.print("\n");
+    }
+
+    @Override
+    public HashSet<String> getUse() {
+        HashSet<String> d = new HashSet<>();
+        if (lhs instanceof Register r) {
+            d.add(r.name);
+        }
+        if (rhs instanceof Register r) {
+            d.add(r.name);
+        }
+        return d;
+    }
+
+    @Override
+    public String getDef() {
+        return dest.name;
     }
 
 

@@ -7,6 +7,8 @@ import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
+import java.util.HashSet;
+
 public class Icmp extends IRInst {
     public String op;
     public IRType type;
@@ -101,6 +103,23 @@ public class Icmp extends IRInst {
     @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public HashSet<String> getUse() {
+        HashSet<String> d = new HashSet<>();
+        if (lhs instanceof Register r) {
+            d.add(r.name);
+        }
+        if (rhs instanceof Register r) {
+            d.add(r.name);
+        }
+        return d;
+    }
+
+    @Override
+    public String getDef() {
+        return dest.name;
     }
 }
 

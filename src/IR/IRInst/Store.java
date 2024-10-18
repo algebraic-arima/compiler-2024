@@ -5,6 +5,8 @@ import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
+import java.util.HashSet;
+
 public class Store extends IRInst {
 
     public IRType irType;
@@ -36,4 +38,21 @@ public class Store extends IRInst {
         dest.print();
         System.out.print("\n");
     }
+
+    @Override
+    public HashSet<String> getUse() {
+        HashSet<String> d = new HashSet<>();
+        if (value instanceof Register r) {
+            d.add(r.name);
+        }
+        d.add(dest.name);
+        return d;
+    }
+
+    @Override
+    public String getDef() {
+        return null;
+    }
+
+
 }

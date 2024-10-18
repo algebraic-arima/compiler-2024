@@ -16,4 +16,8 @@ public abstract class IRInst extends IRNode {
     }
 
     abstract public void print();
+
+    abstract public HashSet<String> getUse();
+
+    abstract public String getDef();
 }

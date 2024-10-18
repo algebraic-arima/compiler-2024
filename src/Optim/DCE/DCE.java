@@ -1,16 +1,16 @@
-package src.Optim.SCCP;
+package src.Optim.DCE;
 
 import src.IR.IRDef.IRFuncDef;
 import src.IR.IRProg;
 
-public class SCCP {
+public class DCE {
 
     public IRProg irProg;
 
-    public SCCP(IRProg irProg) {
+    public DCE(IRProg irProg) {
         this.irProg = irProg;
         for (IRFuncDef func : irProg.funcDefs) {
-            FuncSCCP f = new FuncSCCP(func);
+            FuncDCE f = new FuncDCE(func);
         }
     }
 

@@ -109,8 +109,8 @@ public class ASMBuilder implements IRVisitor {
     public void visit(IRBlock node) {
         curIRBlock = node;
         if (node.IRInsts.isEmpty() && node.phis.isEmpty()) return;
-        String bn = node.label.label;
-        if (node.label.label.equals("entry")) {
+        String bn = node.label;
+        if (node.label.equals("entry")) {
             bn = curFunc.name;
         }
         if (!curBlock.label.equals(bn)) {
@@ -492,20 +492,20 @@ public class ASMBuilder implements IRVisitor {
     public void visit(Br node) {
         if (node.cond instanceof Constant c) {
             if (c.value == 0) {
-                curBlock.addInst(new J(node.falseBlock.label.label));
+                curBlock.addInst(new J(node.falseBlock.label));
             } else {
-                curBlock.addInst(new J(node.trueBlock.label.label));
+                curBlock.addInst(new J(node.trueBlock.label));
             }
         } else if (node.cond instanceof Register reg) {
             String nlabel = curBlock.label + "_forb";
             curBlock.addInst(new BEQZ(fetchReg(reg, "t0"), nlabel));
-            var mv1 = curIRBlock.mv.get(node.trueBlock.label.label);
+            var mv1 = curIRBlock.mv.get(node.trueBlock.label);
             addMVList(mv1);
-            curBlock.addInst(new J(node.trueBlock.label.label));
+            curBlock.addInst(new J(node.trueBlock.label));
             curBlock = new ASMBlock(nlabel);
-            var mv2 = curIRBlock.mv.get(node.falseBlock.label.label);
+            var mv2 = curIRBlock.mv.get(node.falseBlock.label);
             addMVList(mv2);
-            curBlock.addInst(new J(node.falseBlock.label.label));
+            curBlock.addInst(new J(node.falseBlock.label));
             curFunc.blocks.add(curBlock);
         }
     }
@@ -787,14 +787,11 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(Jmp node) {
-        var mv = curIRBlock.mv.get(node.block.label.label);
+        var mv = curIRBlock.mv.get(node.block.label);
         addMVList(mv);
-        curBlock.addInst(new J(node.block.label.label));
+        curBlock.addInst(new J(node.block.label));
     }
 
-    @Override
-    public void visit(Label node) {
-    }
 
     @Override
     public void visit(Load node) {

@@ -13,24 +13,13 @@ import java.util.HashSet;
 
 public class Inline {
 
-//    public static class fNode {
-//        public String name;
-//        public HashSet<fNode> callee;
-//        public HashSet<fNode> caller;
-//
-//        public fNode(String name) {
-//            this.name = name;
-//        }
-//    }
-
     IRProg irProg;
     HashMap<String, IRFuncDef> inlineList = new HashMap<>();
-//    public HashMap<String, fNode> callGraph;
 
     public Inline(IRProg irProg) {
         this.irProg = irProg;
         for (IRFuncDef func : irProg.funcDefs) {
-            if (func.hasCall) inlineList.put(func.name, func);
+            if (!func.hasCall) inlineList.put(func.name, func);
         }
         if (!inlineList.isEmpty()) {
             inline();
@@ -46,22 +35,17 @@ public class Inline {
                 for (int k = 0; k < b.IRInsts.size(); ++k) {
                     IRInst inst = b.IRInsts.get(k);
                     if (inst instanceof Call c) {
-                        if(!inlineList.containsKey(c.funcName)) continue;
+                        if (!inlineList.containsKey(c.funcName)) continue;
+                        if (c.dest == null || c.retType.typeName.equals("void")) {// no defs
 
+                        } else {
+
+                        }
                     }
                 }
             }
         }
     }
 
-//    public void build(IRFuncDef func) {
-//        for (IRBlock b : func.blocks) {
-//            for (IRInst i : b.IRInsts) {
-//                if (i instanceof Call c) {
-//
-//                }
-//            }
-//        }
-//    }
 
 }

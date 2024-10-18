@@ -31,8 +31,6 @@ public interface IRVisitor {
 
     public void visit(Jmp node);
 
-    public void visit(Label node);
-
     public void visit(Load node);
 
     public void visit(Ret node);

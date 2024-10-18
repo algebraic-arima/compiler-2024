@@ -8,6 +8,7 @@ import src.utils.IRType.IRType;
 import src.utils.type.Type;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Phi extends IRInst {
 
@@ -44,12 +45,28 @@ public class Phi extends IRInst {
             System.out.print(" [");
             valList.get(i).a.print();
             System.out.print(", ");
-            System.out.print("%" + valList.get(i).b.label.label);
+            System.out.print("%" + valList.get(i).b.label);
             System.out.print("]");
             if (i != valList.size() - 1) {
                 System.out.print(",");
             }
         }
         System.out.print("\n");
+    }
+
+    @Override
+    public HashSet<String> getUse() {
+        HashSet<String> d = new HashSet<>();
+        for (var e : valList) {
+            if (e.a instanceof Register r) {
+                d.add(r.name);
+            }
+        }
+        return d;
+    }
+
+    @Override
+    public String getDef() {
+        return dest.name;
     }
 }

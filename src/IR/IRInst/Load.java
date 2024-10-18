@@ -4,6 +4,8 @@ import src.IR.IRVisitor;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
+import java.util.HashSet;
+
 public class Load extends IRInst {
 
     public IRType irType;
@@ -29,5 +31,17 @@ public class Load extends IRInst {
         System.out.print(", ptr ");
         src.print();
         System.out.print("\n");
+    }
+
+    @Override
+    public HashSet<String> getUse() {
+        HashSet<String> d = new HashSet<>();
+        d.add(src.name);
+        return d;
+    }
+
+    @Override
+    public String getDef() {
+        return dest.name;
     }
 }

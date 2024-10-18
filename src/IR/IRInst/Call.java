@@ -7,6 +7,7 @@ import src.utils.IRType.IRType;
 import src.utils.type.Type;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Call extends IRInst {
 
@@ -60,6 +61,27 @@ public class Call extends IRInst {
             }
         }
         System.out.println(")");
+    }
+
+    @Override
+    public HashSet<String> getUse() {
+        HashSet<String> d = new HashSet<>();
+        for (Entity e : args) {
+            if (e instanceof Register r) {
+                d.add(r.name);
+            }
+        }
+        return d;
+    }
+
+    @Override
+    public String getDef() {
+        if (retType.typeName.equals("void")) {
+            return null;
+        } else if (dest != null) {
+            return dest.name;
+        }
+        return null;
     }
 
     @Override

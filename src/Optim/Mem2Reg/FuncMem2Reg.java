@@ -39,24 +39,24 @@ public class FuncMem2Reg {
         irBlocks = new HashMap<>();
         renameMap = new HashMap<>();
         func.blocks.forEach(e -> {
-            nodes.put(e.label.label, new CFGNode(e.label.label));
-            irBlocks.put(e.label.label, e);
+            nodes.put(e.label, new CFGNode(e.label));
+            irBlocks.put(e.label, e);
         });
         HashSet<CFGNode> dom = new HashSet<>(nodes.values());
         for (int i = 0; i < func.blocks.size(); ++i) {
             IRBlock b = func.blocks.get(i);
             if(b.IRInsts.isEmpty()) continue;
-            CFGNode c = nodes.get(b.label.label);
+            CFGNode c = nodes.get(b.label);
             terminalIRInst t = (terminalIRInst) b.IRInsts.getLast();
             if (t instanceof Br) {
-                CFGNode tt = nodes.get(((Br) t).trueBlock.label.label);
-                CFGNode ff = nodes.get(((Br) t).falseBlock.label.label);
+                CFGNode tt = nodes.get(((Br) t).trueBlock.label);
+                CFGNode ff = nodes.get(((Br) t).falseBlock.label);
                 c.setSucc(tt);
                 c.setSucc(ff);
                 ff.setPred(c);
                 tt.setPred(c);
             } else if (t instanceof Jmp) {
-                CFGNode tt = nodes.get(((Jmp) t).block.label.label);
+                CFGNode tt = nodes.get(((Jmp) t).block.label);
                 c.setSucc(tt);
                 tt.setPred(c);
             }
@@ -158,7 +158,7 @@ public class FuncMem2Reg {
                     if (!varDefBlocks.containsKey(y)) {
                         varDefBlocks.put(y, new HashSet<>());
                     }
-                    varDefBlocks.get(y).add(b.label.label);
+                    varDefBlocks.get(y).add(b.label);
                 } else if (i instanceof Call c) {
                     for (int cnt = 0; cnt < c.args.size(); ++cnt) {
                         Entity e = c.args.get(cnt);
@@ -249,14 +249,14 @@ public class FuncMem2Reg {
 //                                    for (Map.Entry<String, Phi> p : destBlock.phis.entrySet()) {
 //                                        for (int ii = 0; ii < p.getValue().valList.size(); ++ii) {
 //                                            IRBlock bl = p.getValue().valList.get(ii).b;
-//                                            if (bl.label.label.equals(str)) {
+//                                            if (bl.label.equals(str)) {
 //                                                p.getValue().valList.set(ii, null);
 //                                            }
 //                                        }
 //                                        p.getValue().valList.removeIf(Objects::isNull);
 //                                    }
 //                                    CFGNode now = nodes.get(str);
-//                                    CFGNode next = nodes.get(destBlock.label.label);
+//                                    CFGNode next = nodes.get(destBlock.label);
 //                                    now.succ.remove(next);
 //                                    next.pred.remove(now);
                                 }
@@ -508,14 +508,14 @@ public class FuncMem2Reg {
 //                            for (Map.Entry<String, Phi> p : destBlock.phis.entrySet()) {
 //                                for (int ii = 0; ii < p.getValue().valList.size(); ++ii) {
 //                                    IRBlock bl = p.getValue().valList.get(ii).b;
-//                                    if (bl.label.label.equals(label)) {
+//                                    if (bl.label.equals(label)) {
 //                                        p.getValue().valList.set(ii, null);
 //                                    }
 //                                }
 //                                p.getValue().valList.removeIf(Objects::isNull);
 //                            }
 //                            CFGNode now = nodes.get(label);
-//                            CFGNode next = nodes.get(destBlock.label.label);
+//                            CFGNode next = nodes.get(destBlock.label);
 //                            now.succ.remove(next);
 //                            next.pred.remove(now);
                         }
@@ -618,7 +618,7 @@ public class FuncMem2Reg {
 
     public void trimUselessBlock() {
         for (int i = 0; i < func.blocks.size(); ++i) {
-            if (!reachableList.contains(func.blocks.get(i).label.label)) {
+            if (!reachableList.contains(func.blocks.get(i).label)) {
                 func.blocks.set(i, null);
             }
         }

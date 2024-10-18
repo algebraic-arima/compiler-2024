@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class IRBlock {
-    public Label label;
+    public String label;
     public HashMap<String, Phi> phis = new HashMap<>();
     public ArrayList<IRInst> IRInsts = new ArrayList<>();
     public int index;
@@ -25,7 +25,7 @@ public class IRBlock {
         if (!s.equals("entry")) {
             s = "l-" + index + "-" + s;
         }
-        label = new Label(s);
+        label = s;
         pred = new ArrayList<>();
         succ = new ArrayList<>();
         instList = new ArrayList<>();
@@ -37,7 +37,7 @@ public class IRBlock {
     }
 
     public void print() {
-        System.out.print(label.label + ":\n");
+        System.out.print(label + ":\n");
         for (Phi p : phis.values()) {
             p.print();
         }
@@ -52,7 +52,7 @@ public class IRBlock {
         ArrayList<IRInst> newIRInsts = new ArrayList<>();
         for (IRInst i : IRInsts) {
             newIRInsts.add(i);
-            if (i instanceof Binary || i instanceof Select
+            if (i instanceof Binary
                     || i instanceof Load || i instanceof GetElePtr
                     || i instanceof Icmp || i instanceof Phi) {
                 regNum++;

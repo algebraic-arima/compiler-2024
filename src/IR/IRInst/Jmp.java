@@ -3,6 +3,8 @@ package src.IR.IRInst;
 import src.IR.IRDef.IRBlock;
 import src.IR.IRVisitor;
 
+import java.util.HashSet;
+
 public class Jmp extends terminalIRInst {
     // unconditional branch
 
@@ -14,7 +16,17 @@ public class Jmp extends terminalIRInst {
 
     @Override
     public void print() {
-        System.out.print("  br label %" + block.label.label + "\n");
+        System.out.print("  br label %" + block.label + "\n");
+    }
+
+    @Override
+    public HashSet<String> getUse() {
+        return new HashSet<>();
+    }
+
+    @Override
+    public String getDef() {
+        return null;
     }
 
     @Override
