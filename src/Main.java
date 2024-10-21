@@ -25,21 +25,21 @@ import java.io.*;
 public class Main {
     public static void main(String[] args) throws Exception {
         SemanticJudge sj = new SemanticJudge();
-        boolean fileIn = false;
-        boolean printIR = false;
-        boolean fileOutIR = false;
+        boolean fileIn = true;
+        boolean printIR = true;
+        boolean fileOutIR = true;
         boolean printInl = false;
         boolean fileOutInl = false;
         boolean printM2R = false;
         boolean fileOutM2R = false;
-        boolean printDCE = false;
-        boolean fileOutDCE = false;
+        boolean printDCE = true;
+        boolean fileOutDCE = true;
         boolean printASM = true;
-        boolean fileOutASM = false;
+        boolean fileOutASM = true;
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/codegen/easy/e2.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/optim/efficiency.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;

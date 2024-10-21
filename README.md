@@ -22,7 +22,7 @@ ${YOUR_PROJECT_DIR}/test_asm_all_reimu.bash 'java -cp ${ANTLR_DIR}:bin src.Main 
 ```
 
 ```bash
-~/Git/compiler-2024/test_asm_reimu.bash 'java -cp /usr/local/bin/antlr-4.13.2-complete.jar:bin src.Main -S' testcases/codegen/test/t1.mx src/builtin/builtin.s
+~/Git/compiler-2024/test_asm_reimu.bash 'java -cp /usr/local/bin/antlr-4.13.2-complete.jar:bin src.Main -S' testcases/codegen/optim/efficiency.mx src/builtin/builtin.s
 ```
 
 ```bash
