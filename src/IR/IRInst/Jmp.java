@@ -2,7 +2,10 @@ package src.IR.IRInst;
 
 import src.IR.IRDef.IRBlock;
 import src.IR.IRVisitor;
+import src.utils.Entity.Entity;
+import src.utils.Entity.Register;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Jmp extends terminalIRInst {
@@ -27,6 +30,15 @@ public class Jmp extends terminalIRInst {
     @Override
     public String getDef() {
         return null;
+    }
+
+    @Override
+    public IRInst rename(String suffix, HashMap<Register, Entity> param) {
+        return new Jmp(block);
+    }
+
+    public IRInst rename(IRBlock d) {
+        return new Jmp(d);
     }
 
     @Override

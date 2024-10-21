@@ -28,6 +28,8 @@ public class Main {
         boolean fileIn = false;
         boolean printIR = false;
         boolean fileOutIR = false;
+        boolean printInl = false;
+        boolean fileOutInl = false;
         boolean printM2R = false;
         boolean fileOutM2R = false;
         boolean printDCE = false;
@@ -37,7 +39,7 @@ public class Main {
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t1.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/easy/e2.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -60,11 +62,26 @@ public class Main {
             IRBuilder irBuilder = new IRBuilder(gScope);
             IRProg irProg = irBuilder.build(ASTRoot);
             irProg.reformat();
-
             if (printIR) {
                 IRPrinter irPrinter = new IRPrinter(irProg);
                 if (fileOutIR) {
                     FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/ir.ll");
+                    PrintStream printStream = new PrintStream(fileOutputStream);
+                    System.setOut(printStream);
+                } else {
+                    PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
+                    System.setOut(consolePrintStream);
+                }
+                irPrinter.print();
+            }
+
+            Inline inl = new Inline(irProg);
+            Inline inl2 = new Inline(irProg);
+
+            if (printInl) {
+                IRPrinter irPrinter = new IRPrinter(irProg);
+                if (fileOutInl) {
+                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/inl.ll");
                     PrintStream printStream = new PrintStream(fileOutputStream);
                     System.setOut(printStream);
                 } else {

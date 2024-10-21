@@ -1,5 +1,7 @@
 package src.IR.IRInst;
 
+import org.antlr.v4.runtime.misc.Pair;
+import src.IR.IRDef.IRBlock;
 import src.IR.IRVisitor;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
@@ -7,6 +9,7 @@ import src.utils.IRType.IRType;
 import src.utils.type.Type;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Call extends IRInst {
@@ -85,7 +88,33 @@ public class Call extends IRInst {
     }
 
     @Override
+    public IRInst rename(String suffix, HashMap<Register, Entity> param) {
+        Call n = new Call(funcName, retType, dest);
+        for (var e : args) {
+            Entity ne;
+            if (e instanceof Register r) {
+                if (r.name.startsWith("@")) {
+                    ne = e;
+                } else if (!param.containsKey(r)) {
+                    ne = Register.newReg(r.type, r.name + suffix);
+                } else {
+                    ne = param.get(r);
+                }
+            } else {
+                ne = e;
+            }
+            n.args.add(ne);
+        }
+        n.argTypes.addAll(argTypes);
+        if (n.dest != null) {
+            n.dest = Register.newReg(retType, dest.name + suffix);
+        }
+        return n;
+    }
+
+    @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }
+
 }

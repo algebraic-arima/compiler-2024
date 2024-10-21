@@ -45,7 +45,7 @@ public class FuncMem2Reg {
         HashSet<CFGNode> dom = new HashSet<>(nodes.values());
         for (int i = 0; i < func.blocks.size(); ++i) {
             IRBlock b = func.blocks.get(i);
-            if(b.IRInsts.isEmpty()) continue;
+            if (b.IRInsts.isEmpty()) continue;
             CFGNode c = nodes.get(b.label);
             terminalIRInst t = (terminalIRInst) b.IRInsts.getLast();
             if (t instanceof Br) {
@@ -131,7 +131,7 @@ public class FuncMem2Reg {
 
     public void getGlobal() {
         HashMap<String, IRType> allocate = new HashMap<>();
-        for (IRInst i : irBlocks.get("entry").IRInsts) {
+        for (IRInst i : func.regCollector.IRInsts) {
             if (i instanceof Alloca a) {
                 allocate.put(a.dest.name, a.irType);
             }
@@ -176,39 +176,63 @@ public class FuncMem2Reg {
                 }
             }
         }
+        for (int i = 0; i < func.regCollector.IRInsts.size(); ++i) {
+            IRInst inst = func.regCollector.IRInsts.get(i);
+            if (inst instanceof Alloca a) {
+                if (varDefGlobal.containsKey(a.dest.name)) {
+                    func.regCollector.IRInsts.set(i, null);
+                }
+            }
+        }
+        func.regCollector.IRInsts.removeIf(Objects::isNull);
     }
 
     public void renameLocal() {
         // rename one variable at one time
         // there are no chain renamings
         // just write over
-        IRBlock entry = irBlocks.get("entry");
-        if ((!func.paramNames.isEmpty()) && func.paramNames.getFirst().equals("%this.val")) {
-            func.paramNames.set(0, "%this1");
-            for (int i = 0; i < entry.IRInsts.size(); ++i) {
-                IRInst inst = entry.IRInsts.get(i);
-                if (inst instanceof Alloca a && a.dest.name.equals("%this")) {
-                    entry.IRInsts.set(i, null);
-                } else if (inst instanceof Store s && s.dest.name.equals("%this")
-                        && s.value instanceof Register r && r.name.equals("%this.val")) {
-                    entry.IRInsts.set(i, null);
-                } else if (inst instanceof Load l && l.src.name.equals("%this") && l.dest.name.equals("%this1")) {
-                    entry.IRInsts.set(i, null);
-                }
-            }
-        }
-        varDefLocal.remove("%this");
-        for (int i = 0; i < entry.IRInsts.size(); ++i) {
-            IRInst inst = entry.IRInsts.get(i);
+//        IRBlock entry = irBlocks.get("entry");
+//        if ((!func.paramNames.isEmpty()) && func.paramNames.getFirst().equals("%this.val")) {
+//            func.paramNames.set(0, "%this1");
+//            for (int i = 0; i < func.regCollector.IRInsts.size(); ++i) {
+//                IRInst inst = entry.IRInsts.get(i);
+//                if (inst instanceof Alloca a && a.dest.name.equals("%this")) {
+//                    func.regCollector.IRInsts.set(i, null);
+//                }
+//            }
+//            for (int i = 0; i < entry.IRInsts.size(); ++i) {
+//                IRInst inst = entry.IRInsts.get(i);
+//                if (inst instanceof Alloca a && a.dest.name.equals("%this")) {
+//                    entry.IRInsts.set(i, null);
+//                } else if (inst instanceof Store s && s.dest.name.equals("%this")
+//                        && s.value instanceof Register r && r.name.equals("%this.val")) {
+//                    entry.IRInsts.set(i, null);
+//                } else if (inst instanceof Load l && l.src.name.equals("%this") && l.dest.name.equals("%this1")) {
+//                    entry.IRInsts.set(i, null);
+//                }
+//            }
+//        }
+//        varDefLocal.remove("%this");
+//        for (int i = 0; i < entry.IRInsts.size(); ++i) {
+//            IRInst inst = entry.IRInsts.get(i);
+//            if (inst instanceof Alloca a) {
+//                if (varDefLocal.containsKey(a.dest.name)) {
+//                    entry.IRInsts.set(i, null);
+//                }
+//            } else {
+//                break;
+//            }
+//        }
+//        entry.IRInsts.removeIf(Objects::isNull);
+        for (int i = 0; i < func.regCollector.IRInsts.size(); ++i) {
+            IRInst inst = func.regCollector.IRInsts.get(i);
             if (inst instanceof Alloca a) {
                 if (varDefLocal.containsKey(a.dest.name)) {
-                    entry.IRInsts.set(i, null);
+                    func.regCollector.IRInsts.set(i, null);
                 }
-            } else {
-                break;
             }
         }
-        entry.IRInsts.removeIf(Objects::isNull);
+        func.regCollector.IRInsts.removeIf(Objects::isNull);
         for (Map.Entry<String, IRType> e : varDefLocal.entrySet()) {
             String vn = e.getKey();
             HashSet<String> b = varDefBlocks.get(vn);
@@ -216,19 +240,19 @@ public class FuncMem2Reg {
             for (String str : b) {
                 IRBlock i = irBlocks.get(str);
                 Entity cur = null;
-                HashMap<String, Entity> rns = new HashMap<>();
+//                HashMap<String, Entity> rns = new HashMap<>();
                 for (int cnt = 0; cnt < i.IRInsts.size(); ++cnt) {
                     IRInst inst = i.IRInsts.get(cnt);
                     if (inst == null) continue;
                     if (inst instanceof Load l) {
                         if (!l.src.name.equals(vn)) continue;
                         if (cur != null) {
-                            rns.put(l.dest.name, cur);
+                            renameMap.put(l.dest.name, cur);
                         }
                         i.IRInsts.set(cnt, null);
                     } else if (inst instanceof Store s) {
                         if (s.value instanceof Register r) {
-                            Entity en = rns.get(r.name);
+                            Entity en = renameMap.get(r.name);
                             if (en != null) {
                                 s.value = en;
                             }
@@ -240,7 +264,7 @@ public class FuncMem2Reg {
                         i.IRInsts.set(cnt, null);
                     } else if (inst instanceof Br br) {
                         if (br.cond instanceof Register r) {
-                            Entity en = rns.get(r.name);
+                            Entity en = renameMap.get(r.name);
                             if (en != null) {
                                 br.cond = en;
                                 if (en instanceof Constant con) {
@@ -265,7 +289,7 @@ public class FuncMem2Reg {
                     } else if (inst instanceof Call c) {
                         for (int cc = 0; cc < c.args.size(); ++cc) {
                             if (c.args.get(cc) instanceof Register r) {
-                                Entity en = rns.get(r.name);
+                                Entity en = renameMap.get(r.name);
                                 if (en != null) {
                                     c.args.set(cc, en);
                                 }
@@ -273,44 +297,44 @@ public class FuncMem2Reg {
                         }
                     } else if (inst instanceof GetElePtr g) {
                         if (g.offset instanceof Register r) {
-                            Entity en = rns.get(r.name);
+                            Entity en = renameMap.get(r.name);
                             if (en != null) {
                                 g.offset = en;
                             }
                         }
-                        Entity en = rns.get(g.ptr.name);
+                        Entity en = renameMap.get(g.ptr.name);
                         if (en != null) {
                             g.ptr = (Register) en;
                         }
                     } else if (inst instanceof Icmp ic) {
                         if (ic.lhs instanceof Register r) {
-                            Entity en = rns.get(r.name);
+                            Entity en = renameMap.get(r.name);
                             if (en != null) {
                                 ic.lhs = en;
                             }
                         }
                         if (ic.rhs instanceof Register r) {
-                            Entity en = rns.get(r.name);
+                            Entity en = renameMap.get(r.name);
                             if (en != null) {
                                 ic.rhs = en;
                             }
                         }
                     } else if (inst instanceof Ret ret) {
                         if (ret.value instanceof Register r) {
-                            Entity en = rns.get(r.name);
+                            Entity en = renameMap.get(r.name);
                             if (en != null) {
                                 ret.value = en;
                             }
                         }
                     } else if (inst instanceof Binary bin) {
                         if (bin.lhs instanceof Register r) {
-                            Entity en = rns.get(r.name);
+                            Entity en = renameMap.get(r.name);
                             if (en != null) {
                                 bin.lhs = en;
                             }
                         }
                         if (bin.rhs instanceof Register r) {
-                            Entity en = rns.get(r.name);
+                            Entity en = renameMap.get(r.name);
                             if (en != null) {
                                 bin.rhs = en;
                             }
@@ -318,19 +342,20 @@ public class FuncMem2Reg {
                     }
                 }
                 i.IRInsts.removeIf(Objects::isNull);
-//                for (CFGNode suc : nodes.get(str).succ) {
-//                    IRBlock s = irBlocks.get(suc.label);
-//                    for (Map.Entry<String, Phi> epp : s.phis.entrySet()) {
-//                        Phi p = epp.getValue();
-//                        for (int cn = 0; cn < p.valList.size(); ++cn) {
-//                            if (p.valList.get(cn).a instanceof Register r) {
-//                                Entity se = rns.get(r.name);
-//                                if (se != null)
-//                                    p.valList.set(cn, new Pair<>(se, p.valList.get(cn).b));
-//                            }
-//                        }
-//                    }
-//                }
+                for (CFGNode suc : nodes.get(str).succ) {
+                    IRBlock s = irBlocks.get(suc.label);
+                    for (Map.Entry<String, Phi> epp : s.phis.entrySet()) {
+                        Phi p = epp.getValue();
+                        for (int cn = 0; cn < p.valList.size(); ++cn) {
+                            var t = p.valList.get(cn);
+                            if (t.a instanceof Register r) {
+                                Entity se = renameMap.get(r.name);
+                                if (se != null)
+                                    p.valList.set(cn, new Pair<>(se, t.b));
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -394,6 +419,7 @@ public class FuncMem2Reg {
          */
         HashMap<String, Integer> pushStack = new HashMap<>();
         Constant zero = new Constant(0);
+        Constant nullPtr = new Constant(true);
         reachableList.add(label);
         for (String s : varDefGlobal.keySet()) {
             pushStack.put(s, 0);
@@ -427,7 +453,11 @@ public class FuncMem2Reg {
                         }
                         renameMap.put(ii.dest.name, c); // the very origin of the value
                     } else {
-                        renameMap.put(ii.dest.name, zero);
+                        if (ii.irType.typeName.equals("ptr")) {
+                            renameMap.put(ii.dest.name, nullPtr);
+                        } else {
+                            renameMap.put(ii.dest.name, zero);
+                        }
                     }
                 }
                 ir.IRInsts.set(cnt, null);
@@ -537,14 +567,23 @@ public class FuncMem2Reg {
             String succName = s.label;
             IRBlock irBlock = irBlocks.get(succName);
             for (Map.Entry<String, Phi> e : irBlock.phis.entrySet()) {
+                Phi p = e.getValue();
+                for (int cnt = 0; cnt < p.valList.size(); ++cnt) {
+                    var t = p.valList.get(cnt);
+                    if (t.a instanceof Register r) {
+                        Entity se = renameMap.get(r.name);
+                        if (se != null)
+                            p.valList.set(cnt, new Pair<>(se, t.b));
+                    }
+                } // rename the uses in successive phi
                 if (!varDefGlobal.containsKey(e.getKey())) continue;
                 Entity en;
                 String str = getNewName(e.getKey());
                 if (str == null) {
                     if (e.getValue().irType.typeName.equals("ptr")) {
-                        en = new Constant(true);
+                        en = nullPtr;
                     } else {
-                        en = new Constant(0);
+                        en = zero;
                     }
                 } else {
                     Entity entity = renameMap.get(str);

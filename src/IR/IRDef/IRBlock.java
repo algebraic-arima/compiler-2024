@@ -37,7 +37,9 @@ public class IRBlock {
     }
 
     public void print() {
-        System.out.print(label + ":\n");
+        if (!label.equals("entry")) {
+            System.out.print(label + ":\n");
+        }
         for (Phi p : phis.values()) {
             p.print();
         }
@@ -79,5 +81,17 @@ public class IRBlock {
 
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public HashSet<IRBlock> getSucc() {
+        HashSet<IRBlock> succ = new HashSet<>();
+        IRInst fin = IRInsts.getLast();
+        if (fin instanceof Br br) {
+            succ.add(br.trueBlock);
+            succ.add(br.falseBlock);
+        } else if (fin instanceof Jmp j) {
+            succ.add(j.block);
+        }
+        return succ;
     }
 }

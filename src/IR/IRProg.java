@@ -33,4 +33,8 @@ public class IRProg {
     public void reformat(){
         funcDefs.forEach(IRFuncDef::reformat);
     }
+
+    public void addAlloca(){
+        funcDefs.forEach(IRFuncDef::addAlloca);
+    }
 }

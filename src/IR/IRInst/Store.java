@@ -5,6 +5,7 @@ import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Store extends IRInst {
@@ -54,5 +55,28 @@ public class Store extends IRInst {
         return null;
     }
 
+    @Override
+    public IRInst rename(String suffix, HashMap<Register, Entity> param) {
+        Store n = new Store(irType, value, dest);
+        if (dest.name.startsWith("@")) {
+            n.dest = dest;
+        } else if (!param.containsKey(dest)) {
+            n.dest = Register.newReg(dest.type, dest.name + suffix);
+        } else {
+            if (param.get(dest) instanceof Register r) {
+                n.dest = r;
+            }
+        }
+        if (value instanceof Register r) {
+            if (r.name.startsWith("@")) {
+                n.value = value;
+            } else if (!param.containsKey(r)) {
+                n.value = Register.newReg(r.type, r.name + suffix);
+            } else {
+                n.value = param.get(r);
+            }
+        }
+        return n;
+    }
 
 }

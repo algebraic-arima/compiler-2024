@@ -7,6 +7,7 @@ import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Icmp extends IRInst {
@@ -121,5 +122,33 @@ public class Icmp extends IRInst {
     public String getDef() {
         return dest.name;
     }
+
+    @Override
+    public IRInst rename(String suffix, HashMap<Register, Entity> param) {
+        Icmp n = new Icmp(op);
+        n.op = op;
+        n.type = type;
+        if (lhs instanceof Register r) {
+            if (!param.containsKey(r)) {
+                n.lhs = Register.newReg(type, r.name + suffix);
+            } else {
+                n.lhs = param.get(r);
+            }
+        } else {
+            n.lhs = lhs;
+        }
+        if (rhs instanceof Register r) {
+            if (!param.containsKey(r)) {
+                n.rhs = Register.newReg(type, r.name + suffix);
+            } else {
+                n.rhs = param.get(r);
+            }
+        } else {
+            n.rhs = rhs;
+        }
+        n.dest = Register.newReg(type, dest.name + suffix);
+        return n;
+    }
+
 }
 

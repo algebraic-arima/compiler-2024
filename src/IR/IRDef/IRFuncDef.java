@@ -1,5 +1,6 @@
 package src.IR.IRDef;
 
+import src.IR.IRInst.IRInst;
 import src.IR.IRVisitor;
 import src.utils.IRType.IRType;
 import src.IR.IRInst.Alloca;
@@ -47,6 +48,8 @@ public class IRFuncDef extends IRDef {
                 System.out.print(", ");
         }
         System.out.print(") {\n");
+        System.out.print("entry:\n");
+        regCollector.print();
         blocks.forEach(IRBlock::print);
         System.out.print("}\n");
         System.out.print("; " + stackSize + " * 4 stack memory used\n");
@@ -63,6 +66,13 @@ public class IRFuncDef extends IRDef {
                 funcParamMax = e.funcParamMax;
             }
         });
+    }
+
+    public void addAlloca(){
+        ArrayList<IRInst> tmp = new ArrayList<>(regCollector.IRInsts);
+        tmp.addAll(blocks.getFirst().IRInsts);
+        blocks.getFirst().IRInsts = tmp;
+        regCollector.IRInsts.clear();
     }
 
     @Override

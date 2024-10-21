@@ -1,9 +1,12 @@
 package src.IR.IRInst;
 
+import src.ASM.Operand.Reg;
 import src.IR.IRVisitor;
+import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Alloca extends IRInst {
@@ -30,6 +33,13 @@ public class Alloca extends IRInst {
     @Override
     public String getDef() {
         return dest.name;
+    }
+
+    @Override
+    public IRInst rename(String suffix, HashMap<Register, Entity> param) {
+        assert !param.containsKey(dest);
+        String name = dest.name + suffix;
+        return new Alloca(irType, Register.newReg(irType, name));
     }
 
     @Override

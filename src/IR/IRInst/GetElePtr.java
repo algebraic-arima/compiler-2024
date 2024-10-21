@@ -6,6 +6,7 @@ import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class GetElePtr extends IRInst {
@@ -46,6 +47,15 @@ public class GetElePtr extends IRInst {
         this.dest = dest;
     }
 
+    public GetElePtr(IRType ptrType, IRType destType, Register ptr, Register dest, Entity offset, int fieldInd) {
+        this.ptrType = ptrType;
+        this.ptr = ptr;
+        this.offset = offset;
+        this.fieldInd = fieldInd;
+        this.destType = destType;
+        this.dest = dest;
+    }
+
 
     @Override
     public void print() {
@@ -83,5 +93,38 @@ public class GetElePtr extends IRInst {
     @Override
     public String getDef() {
         return dest.name;
+    }
+
+    @Override
+    public IRInst rename(String suffix, HashMap<Register, Entity> param) {
+        GetElePtr n = new GetElePtr(ptrType, destType, ptr, dest, offset, fieldInd);
+        if (offset instanceof Register r) {
+            if (!param.containsKey(r)) {
+                n.offset = Register.newReg(offset.type, r.name + suffix);
+            } else if (r.name.startsWith("@")) {
+                n.offset = offset;
+            } else {
+                n.offset = param.get(r);
+            }
+        }
+        if (ptr != null) {
+            if (!param.containsKey(ptr)) {
+                n.ptr = Register.newReg(ptr.type, ptr.name + suffix);
+            } else if (ptr.name.startsWith("@")) {
+                n.ptr = ptr;
+            } else {
+                if (param.get(ptr) instanceof Register r) {
+                    n.ptr = r;
+                }
+            }
+        }
+        if (!param.containsKey(dest)) {
+            n.dest = Register.newReg(dest.type, dest.name + suffix);
+        } else{
+            if (param.get(dest) instanceof Register r) {
+                n.dest = r;
+            }
+        }
+        return n;
     }
 }

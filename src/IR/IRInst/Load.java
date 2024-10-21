@@ -1,9 +1,12 @@
 package src.IR.IRInst;
 
+import src.ASM.Operand.Reg;
 import src.IR.IRVisitor;
+import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Load extends IRInst {
@@ -43,5 +46,29 @@ public class Load extends IRInst {
     @Override
     public String getDef() {
         return dest.name;
+    }
+
+    @Override
+    public IRInst rename(String suffix, HashMap<Register, Entity> param) {
+        Load n = new Load(irType, src, dest);
+        if (src.name.startsWith("@")) {
+            n.src = src;
+        } else if (!param.containsKey(src)) {
+            n.src = Register.newReg(src.type, src.name + suffix);
+        } else {
+            if (param.get(src) instanceof Register r) {
+                n.src = r;
+            }
+        }
+        if (dest.name.startsWith("@")) {
+            n.dest = dest;
+        } else if (!param.containsKey(dest)) {
+            n.dest = Register.newReg(dest.type, dest.name + suffix);
+        } else {
+            if (param.get(dest) instanceof Register r) {
+                n.dest = r;
+            }
+        }
+        return n;
     }
 }

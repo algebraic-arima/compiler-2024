@@ -1,10 +1,12 @@
 package src.IR.IRInst;
 
+import src.ASM.Operand.Reg;
 import src.IR.IRDef.IRBlock;
 import src.IR.IRVisitor;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Br extends terminalIRInst {
@@ -54,6 +56,32 @@ public class Br extends terminalIRInst {
     public String getDef() {
         return null;
     }
+
+    @Override
+    public IRInst rename(String suffix, HashMap<Register, Entity> param) {
+        Br n = new Br(cond, trueBlock, falseBlock);
+        if (cond instanceof Register r) {
+            if (!param.containsKey(r)) {
+                n.cond = Register.newReg(r.type, r.name + suffix);
+            } else {
+                n.cond = param.get(r);
+            }
+        }
+        return n;
+    }
+
+    public IRInst rename(String suffix, HashMap<Register, Entity> param, IRBlock t, IRBlock f) {
+        Br n = new Br(cond, t, f);
+        if (cond instanceof Register r) {
+            if (!param.containsKey(r)) {
+                n.cond = Register.newReg(r.type, r.name + suffix);
+            } else {
+                n.cond = param.get(r);
+            }
+        }
+        return n;
+    }
+
 
     @Override
     public void accept(IRVisitor visitor) {

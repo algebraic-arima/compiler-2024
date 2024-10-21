@@ -1,8 +1,10 @@
 package src.IR.IRInst;
 
 import src.IR.IRNode;
+import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public abstract class IRInst extends IRNode {
@@ -20,4 +22,6 @@ public abstract class IRInst extends IRNode {
     abstract public HashSet<String> getUse();
 
     abstract public String getDef();
+
+    abstract public IRInst rename(String suffix, HashMap<Register, Entity> param); // for inline
 }

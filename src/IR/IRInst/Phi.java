@@ -8,6 +8,7 @@ import src.utils.IRType.IRType;
 import src.utils.type.Type;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Phi extends IRInst {
@@ -68,5 +69,28 @@ public class Phi extends IRInst {
     @Override
     public String getDef() {
         return dest.name;
+    }
+
+    @Override
+    public IRInst rename(String suffix, HashMap<Register, Entity> param) {
+        Phi n = new Phi(dest, irType);
+        for (var e : valList) {
+            Pair<Entity, IRBlock> ne;
+            if (e.a instanceof Register r) {
+                if (r.name.startsWith("@")) {
+                    ne = new Pair<>(r, e.b);
+                } else if (!param.containsKey(r)) {
+                    Register newReg = Register.newReg(r.type, r.name + suffix);
+                    ne = new Pair<>(newReg, e.b);
+                } else {
+                    ne = new Pair<>(param.get(r), e.b);
+                }
+            } else {
+                ne = new Pair<>(e.a, e.b);
+            }
+            n.valList.add(ne);
+        }
+        n.dest = Register.newReg(irType, dest.name + suffix);
+        return n;
     }
 }
