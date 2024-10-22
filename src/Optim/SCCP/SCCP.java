@@ -9,7 +9,7 @@ public class SCCP {
     public SCCP(IRProg irProgram_) {
         irProgram = irProgram_;
         for (var func : irProgram.funcDefs) {
-                FuncSCCP f = new FuncSCCP(func);
+            FuncSCCP f = new FuncSCCP(func);
         }
     }
 }

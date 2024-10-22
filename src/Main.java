@@ -13,6 +13,7 @@ import src.Optim.DCE.DCE;
 import src.Optim.Mem2Reg.Mem2Reg;
 import src.Optim.RegAlloc.RegAlloc;
 import src.Optim.Inline.Inline;
+import src.Optim.SCCP.SCCP;
 import src.Semantic.*;
 import src.parser.Lex;
 import src.parser.Mx;
@@ -25,17 +26,26 @@ import java.io.*;
 public class Main {
     public static void main(String[] args) throws Exception {
         SemanticJudge sj = new SemanticJudge();
-        boolean fileIn = true;
-        boolean printIR = true;
-        boolean fileOutIR = true;
+
+        boolean fileIn = false;
+
+        boolean printIR = false;
+        boolean fileOutIR = false;
+
         boolean printInl = false;
         boolean fileOutInl = false;
+
         boolean printM2R = false;
         boolean fileOutM2R = false;
-        boolean printDCE = true;
-        boolean fileOutDCE = true;
+
+        boolean printSCCP = false;
+        boolean fileOutSCCP = false;
+
+        boolean printDCE = false;
+        boolean fileOutDCE = false;
+
         boolean printASM = true;
-        boolean fileOutASM = true;
+        boolean fileOutASM = false;
         try {
             InputStream in;
             if (fileIn) {
@@ -106,12 +116,27 @@ public class Main {
                 irPrinter.print();
             }
 
+//            SCCP sccp = new SCCP(irProg);
+//
+//            if (printSCCP) {
+//                IRPrinter irPrinter = new IRPrinter(irProg);
+//                if (fileOutSCCP) {
+//                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/sccp.ll");
+//                    PrintStream printStream = new PrintStream(fileOutputStream);
+//                    System.setOut(printStream);
+//                } else {
+//                    PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
+//                    System.setOut(consolePrintStream);
+//                }
+//                irPrinter.print();
+//            }
+
             DCE dce = new DCE(irProg);
 
             if (printDCE) {
                 IRPrinter irPrinter = new IRPrinter(irProg);
                 if (fileOutDCE) {
-                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/dce.ll");
+                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/hdce.ll");
                     PrintStream printStream = new PrintStream(fileOutputStream);
                     System.setOut(printStream);
                 } else {

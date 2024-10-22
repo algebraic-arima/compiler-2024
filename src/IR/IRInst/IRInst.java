@@ -10,10 +10,11 @@ import java.util.HashSet;
 public abstract class IRInst extends IRNode {
 
     public Register dest;
-    public HashSet<Register> liveOut=new HashSet<>();
+    public HashSet<Register> liveOut = new HashSet<>();
     public int omega;
+    public boolean DCER = false;
 
-    public void addOut(String c){
+    public void addOut(String c) {
         liveOut.add(Register.registers.get(c));
     }
 

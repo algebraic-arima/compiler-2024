@@ -5,6 +5,7 @@ import src.IR.IRDef.IRBlock;
 import src.IR.IRDef.IRFuncDef;
 import src.IR.IRInst.*;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -14,6 +15,8 @@ public class FuncDCE {
     public IRFuncDef func;
     public HashMap<String, HashSet<Pair<IRBlock, IRInst>>> varUseList;
     public HashMap<String, Pair<IRBlock, IRInst>> varDefInst;
+    ArrayDeque<IRInst> workList = new ArrayDeque<>();
+//    HashSet<String> wl = new HashSet<>(varDefInst.keySet());
 
     public FuncDCE(IRFuncDef _func) {
         this.func = _func;
@@ -27,6 +30,7 @@ public class FuncDCE {
 
     public void collectVar() {
         for (IRBlock b : func.blocks) {
+            b.instList.clear();
             b.instList.addAll(b.phis.values());
             b.instList.addAll(b.IRInsts);
             for (IRInst i : b.instList) {
@@ -40,33 +44,54 @@ public class FuncDCE {
                     }
                     varUseList.get(u).add(new Pair<>(b, i));
                 }
+                i.DCER = true;
+                if (i instanceof Store || i instanceof Call || i instanceof terminalIRInst) {
+                    workList.add(i);
+                    i.DCER = false;
+                }
             }
         }
     }
 
     public void eliminate() {
-        HashSet<String> wl = new HashSet<>(varDefInst.keySet());
-        while (!wl.isEmpty()) {
-            String v = wl.iterator().next();
-            wl.remove(v);
-            var t = varUseList.get(v);
-            if (t == null || t.isEmpty()) {
-                var defAt = varDefInst.get(v);
-                if (defAt == null) continue;
-                IRBlock b = defAt.a;
-                IRInst i = defAt.b;
-                if (i instanceof Call c) {
-                    c.dest = null;
-                } else {
-                    for (String x : i.getUse()) {
-                        varUseList.get(x).removeIf(use -> use.b == i);
-                        wl.add(x);
+//        while (!wl.isEmpty()) {
+//            String v = wl.iterator().next();
+//            wl.remove(v);
+//            var t = varUseList.get(v);
+//            if (t == null || t.isEmpty()) {
+//                var defAt = varDefInst.get(v);
+//                if (defAt == null) continue;
+//                IRBlock b = defAt.a;
+//                IRInst i = defAt.b;
+//                if (i instanceof Call c) {
+//                    c.dest = null;
+//                } else {
+//                    for (String x : i.getUse()) {
+//                        varUseList.get(x).removeIf(use -> use.b == i);
+//                        wl.add(x);
+//                    }
+//                    b.instList.remove(i);
+//                }
+//                varDefInst.remove(v);
+//                varUseList.remove(v);
+//            }
+//        }
+        while (!workList.isEmpty()) {
+            IRInst i = workList.poll();
+            for (String r : i.getUse()) {
+                var defAt = varDefInst.get(r);
+                if (defAt != null) {
+                    IRInst def = defAt.b;
+                    if (def.DCER) {
+                        def.DCER = false;
+                        workList.add(def);
                     }
-                    b.instList.remove(i);
                 }
-                varDefInst.remove(v);
-                varUseList.remove(v);
+
             }
+        }
+        for (IRBlock b : func.blocks) {
+            b.instList.removeIf(d -> d.DCER);
         }
     }
 
@@ -108,6 +133,10 @@ public class FuncDCE {
             }
             t.forEach(s -> b.phis.remove(s));
         }
+    }
+
+    public void mergeEdge(){
+
     }
 
 }

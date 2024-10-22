@@ -1,6 +1,7 @@
 package src.Optim.SCCP;
 
 import src.IR.IRInst.IRInst;
+import src.utils.IRType.IRType;
 
 import java.util.HashSet;
 
@@ -10,11 +11,13 @@ public class Var extends SCCPNode {
     static int U = 0;
 
     public String name;
-    public int type = U;
+    public IRType type;
+    public int p = U;
     public long value;
     public HashSet<IRInst> use = new HashSet<>();
 
     public Var(String s){
         name=s;
     }
+
 }

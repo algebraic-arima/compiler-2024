@@ -1,6 +1,5 @@
 package src.IR.IRInst;
 
-import src.ASM.Operand.Reg;
 import src.AST.Expr.BinaryArithExpr;
 import src.IR.IRVisitor;
 import src.utils.Entity.Constant;

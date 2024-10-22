@@ -567,7 +567,7 @@ public class IRBuilder implements __ASTVisitor {
             if (node.op == ADD || node.op == SUB || node.op == MUL || node.op == DIV || node.op == MOD
                     || node.op == BLS || node.op == BRS || node.op == BAND || node.op == BOR || node.op == BXOR) {
                 if (node.lhs.entity instanceof Constant lc && node.rhs.entity instanceof Constant rc
-                        && !(node.op == DIV && rc.value == 0)) {
+                        && !((node.op == DIV || node.op == MOD) && rc.value == 0)) {
                     long value = lc.value;
                     if (node.op == ADD) {
                         value += rc.value;

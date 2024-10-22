@@ -80,7 +80,9 @@ public class FuncMem2Reg {
     public void computeDom() {
         visit(CFGRoot);
         boolean changed = true;
+        int c = 0;
         while (changed) {
+            ++c;
             changed = false;
             for (int i = postOrder.size() - 2; i >= 0; --i) {
                 CFGNode node = postOrder.get(i);
@@ -93,6 +95,7 @@ public class FuncMem2Reg {
                 }
             }
         }
+//        System.err.print(c + "\n");
     }
 
     public void visit(CFGNode node) {
