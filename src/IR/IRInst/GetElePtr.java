@@ -133,5 +133,8 @@ public class GetElePtr extends IRInst {
         if (offset instanceof Register r && r.name.equals(str)) {
             offset = new Constant(value);
         }
+        if (ptr.name.equals(str)) {
+            ptr = null;
+        }
     }
 }

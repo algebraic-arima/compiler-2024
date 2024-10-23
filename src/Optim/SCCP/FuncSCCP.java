@@ -125,6 +125,8 @@ public class FuncSCCP {
                         handlePhi(p);
                     } else if (i instanceof Br br) {
                         handleBr(br);
+                    } else if (i instanceof GetElePtr) {
+                        setM(i.dest);
                     }
                 }
             }

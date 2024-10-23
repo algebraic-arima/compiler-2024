@@ -35,9 +35,6 @@ public class Register extends Entity {
         }
         Register reg = new Register(name);
         registers.put(name, reg);
-        if (name == null) {
-            System.out.print(4);/// warning: may cause wa
-        }
         return reg;
     }
 
@@ -47,9 +44,6 @@ public class Register extends Entity {
         }
         Register reg = new Register(type, name);
         registers.put(name, reg);
-        if (name == null) {
-            System.out.print(4);/// warning: may cause wa
-        }
         return reg;
     }
 
