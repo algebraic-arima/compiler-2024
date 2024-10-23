@@ -2,6 +2,7 @@ package src.IR.IRInst;
 
 import src.IR.IRDef.IRBlock;
 import src.IR.IRVisitor;
+import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
@@ -63,6 +64,17 @@ public class Ret extends terminalIRInst {
     @Override
     public IRInst rename(String suffix, HashMap<Register, Entity> param) {
         return new Jmp(null);
+    }
+
+    @Override
+    public void CP(String str, long v) {
+        if (value instanceof Register r && r.name.equals(str)) {
+            if (type.typeName.equals("i32")) {
+                value = new Constant(v);
+            } else if (type.typeName.equals("i1")) {
+                value = new Constant(v, true);
+            }
+        }
     }
 
     public IRInst rename(IRBlock d) {

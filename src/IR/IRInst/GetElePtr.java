@@ -120,11 +120,18 @@ public class GetElePtr extends IRInst {
         }
         if (!param.containsKey(dest)) {
             n.dest = Register.newReg(dest.type, dest.name + suffix);
-        } else{
+        } else {
             if (param.get(dest) instanceof Register r) {
                 n.dest = r;
             }
         }
         return n;
+    }
+
+    @Override
+    public void CP(String str, long value) {
+        if (offset instanceof Register r && r.name.equals(str)) {
+            offset = new Constant(value);
+        }
     }
 }

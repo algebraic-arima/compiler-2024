@@ -37,6 +37,11 @@ public class Jmp extends terminalIRInst {
         return new Jmp(block);
     }
 
+    @Override
+    public void CP(String str, long value) {
+
+    }
+
     public IRInst rename(IRBlock d) {
         return new Jmp(d);
     }

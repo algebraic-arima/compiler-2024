@@ -93,4 +93,19 @@ public class Phi extends IRInst {
         n.dest = Register.newReg(irType, dest.name + suffix);
         return n;
     }
+
+    @Override
+    public void CP(String str, long value) {
+        for (int i = 0; i < valList.size(); ++i) {
+            var v = valList.get(i);
+            Entity l = v.a;
+            if (l instanceof Register r && r.name.equals(str)) {
+                if (irType.typeName.equals("i32")) {
+                    valList.set(i, new Pair<>(new Constant(value), v.b));
+                } else if (irType.typeName.equals("i1")) {
+                    valList.set(i, new Pair<>(new Constant(value, true), v.b));
+                }
+            }
+        }
+    }
 }

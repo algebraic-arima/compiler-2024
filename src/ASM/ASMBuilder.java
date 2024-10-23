@@ -639,14 +639,14 @@ public class ASMBuilder implements IRVisitor {
         if (node.offset instanceof Constant c) {
             if (node.dest.color < 0) {
                 addADDI("t0", ptrName, c.value * csize * 4);
-                if (node.fieldInd != -1) {
+                if (node.fieldInd > 0) {
                     addADDI("t0", "t0", node.fieldInd * 4L);
                 }
                 storeReg(node.dest, "t0");
             } else if (node.dest.color > 0) {
                 String dest_reg = storeReg(node.dest, null);
                 addADDI(dest_reg, ptrName, c.value * csize * 4);
-                if (node.fieldInd != -1) {
+                if (node.fieldInd > 0) {
                     addADDI(dest_reg, dest_reg, node.fieldInd * 4L);
                 }
             }
@@ -656,7 +656,7 @@ public class ASMBuilder implements IRVisitor {
                 curBlock.addInst(new LI("t2", csize == null ? 1 : 4));
                 curBlock.addInst(new MUL("t1", offset_name, "t2"));
                 curBlock.addInst(new ADD("t0", ptrName, "t1"));
-                if (node.fieldInd != -1) {
+                if (node.fieldInd > 0) {
                     addADDI("t0", "t0", node.fieldInd * 4L);
                 }
                 storeReg(node.dest, "t0");
@@ -665,7 +665,7 @@ public class ASMBuilder implements IRVisitor {
                 curBlock.addInst(new LI("t2", csize == null ? 1 : 4));
                 curBlock.addInst(new MUL("t1", offset_name, "t2"));
                 curBlock.addInst(new ADD(dest_reg, ptrName, "t1"));
-                if (node.fieldInd != -1) {
+                if (node.fieldInd > 0) {
                     addADDI(dest_reg, dest_reg, node.fieldInd * 4L);
                 }
             }

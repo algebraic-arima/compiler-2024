@@ -134,7 +134,7 @@ public class Binary extends IRInst {
         if (lhs instanceof Register r) {
             if (!param.containsKey(r)) {
                 n.lhs = Register.newReg(type, r.name + suffix);
-            } else  {
+            } else {
                 n.lhs = param.get(r);
             }
         } else {
@@ -151,6 +151,16 @@ public class Binary extends IRInst {
         }
         n.dest = Register.newReg(type, dest.name + suffix);
         return n;
+    }
+
+    @Override
+    public void CP(String str, long value) {
+        if (lhs instanceof Register r && r.name.equals(str)) {
+            lhs = new Constant(value);
+        }
+        if (rhs instanceof Register r && r.name.equals(str)) {
+            rhs = new Constant(value);
+        }
     }
 
 

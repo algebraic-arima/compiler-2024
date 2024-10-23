@@ -25,4 +25,6 @@ public abstract class IRInst extends IRNode {
     abstract public String getDef();
 
     abstract public IRInst rename(String suffix, HashMap<Register, Entity> param); // for inline
+
+    abstract public void CP(String str, long value); // for SCCP
 }

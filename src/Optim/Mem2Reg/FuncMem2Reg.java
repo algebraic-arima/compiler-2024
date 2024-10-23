@@ -377,7 +377,7 @@ public class FuncMem2Reg {
                 for (CFGNode dd : b.DF) {
                     IRBlock d = irBlocks.get(dd.label);
                     if (!d.phis.containsKey(x)) {
-                        d.putPhi(x, new Phi(Register.newReg(x), t));// occupier
+                        d.putPhi(x, new Phi(Register.newReg(t, x), t));// occupier
                         list.offer(dd.label);
                     }
                 }
@@ -433,7 +433,7 @@ public class FuncMem2Reg {
         // rename result of phi
         for (Map.Entry<String, Phi> e : ir.phis.entrySet()) {
             if (!varDefGlobal.containsKey(e.getKey())) continue;
-            e.getValue().dest = Register.newReg(newName(e.getKey()));
+            e.getValue().dest = Register.newReg(e.getValue().irType, newName(e.getKey()));
             pushStack.put(e.getKey(), pushStack.get(e.getKey()) + 1);
         }
 

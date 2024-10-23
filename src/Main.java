@@ -44,6 +44,9 @@ public class Main {
         boolean printDCE = false;
         boolean fileOutDCE = false;
 
+        boolean printDCE2 = false;
+        boolean fileOutDCE2 = false;
+
         boolean printASM = true;
         boolean fileOutASM = false;
         try {
@@ -116,20 +119,20 @@ public class Main {
                 irPrinter.print();
             }
 
-//            SCCP sccp = new SCCP(irProg);
-//
-//            if (printSCCP) {
-//                IRPrinter irPrinter = new IRPrinter(irProg);
-//                if (fileOutSCCP) {
-//                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/sccp.ll");
-//                    PrintStream printStream = new PrintStream(fileOutputStream);
-//                    System.setOut(printStream);
-//                } else {
-//                    PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
-//                    System.setOut(consolePrintStream);
-//                }
-//                irPrinter.print();
-//            }
+            SCCP sccp = new SCCP(irProg);
+
+            if (printSCCP) {
+                IRPrinter irPrinter = new IRPrinter(irProg);
+                if (fileOutSCCP) {
+                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/sccp.ll");
+                    PrintStream printStream = new PrintStream(fileOutputStream);
+                    System.setOut(printStream);
+                } else {
+                    PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
+                    System.setOut(consolePrintStream);
+                }
+                irPrinter.print();
+            }
 
             DCE dce = new DCE(irProg);
 
@@ -146,6 +149,21 @@ public class Main {
                 irPrinter.print();
             }
 
+            SCCP sccp2 = new SCCP(irProg);
+            DCE dce2 = new DCE(irProg);
+
+            if (printDCE2) {
+                IRPrinter irPrinter = new IRPrinter(irProg);
+                if (fileOutDCE2) {
+                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/hdce2.ll");
+                    PrintStream printStream = new PrintStream(fileOutputStream);
+                    System.setOut(printStream);
+                } else {
+                    PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
+                    System.setOut(consolePrintStream);
+                }
+                irPrinter.print();
+            }
 
             RegAlloc ra = new RegAlloc(irProg);
             if (printASM) {

@@ -1,6 +1,8 @@
 package src.IR.IRInst;
 
+import org.antlr.v4.runtime.misc.Pair;
 import src.IR.IRVisitor;
+import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
@@ -77,6 +79,17 @@ public class Store extends IRInst {
             }
         }
         return n;
+    }
+
+    @Override
+    public void CP(String str, long v) {
+        if (value instanceof Register r && r.name.equals(str)) {
+            if (irType.typeName.equals("i32")) {
+                value = new Constant(v);
+            } else if (irType.typeName.equals("i1")) {
+                value = new Constant(v, true);
+            }
+        }
     }
 
 }

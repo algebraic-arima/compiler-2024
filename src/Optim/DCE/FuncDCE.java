@@ -26,6 +26,7 @@ public class FuncDCE {
         eliminate();
         mergeBr();
         reformat();
+        mergeEdge();
     }
 
     public void collectVar() {
@@ -135,7 +136,8 @@ public class FuncDCE {
         }
     }
 
-    public void mergeEdge(){
+    public void mergeEdge() {
+        HashMap<IRBlock, IRBlock> mergeList = new HashMap<>();
 
     }
 

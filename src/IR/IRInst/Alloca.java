@@ -43,6 +43,11 @@ public class Alloca extends IRInst {
     }
 
     @Override
+    public void CP(String str, long value) {
+
+    }
+
+    @Override
     public void accept(IRVisitor visitor) {
         visitor.visit(this);
     }

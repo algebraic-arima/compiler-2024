@@ -6,6 +6,7 @@ import src.IR.IRVisitor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 
 public class IRBlock {
     public String label;
@@ -93,5 +94,18 @@ public class IRBlock {
             succ.add(j.block);
         }
         return succ;
+    }
+
+    public void removePred(IRBlock pr) {
+        for (var e : phis.entrySet()) {
+            Phi p = e.getValue();
+            for (int i = 0; i < p.valList.size(); ++i) {
+                var d = p.valList.get(i);
+                if (d.b == pr) {
+                    p.valList.set(i, null);
+                }
+            }
+            p.valList.removeIf(Objects::isNull);
+        }
     }
 }

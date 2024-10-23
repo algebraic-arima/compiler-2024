@@ -45,4 +45,9 @@ public class Move extends IRInst {
         n.dest = Register.newReg(dest.type, dest.name + suffix);
         return n;
     }
+
+    @Override
+    public void CP(String str, long value) {
+
+    }
 }

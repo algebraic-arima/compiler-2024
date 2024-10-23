@@ -71,4 +71,9 @@ public class Load extends IRInst {
         }
         return n;
     }
+
+    @Override
+    public void CP(String str, long value) {
+
+    }
 }

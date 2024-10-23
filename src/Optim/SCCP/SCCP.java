@@ -2,14 +2,17 @@ package src.Optim.SCCP;
 
 import src.IR.IRProg;
 
+import java.util.HashMap;
+
 public class SCCP {
 
-    public IRProg irProgram;
+    public HashMap<String, FuncSCCP> list;
 
     public SCCP(IRProg irProgram_) {
-        irProgram = irProgram_;
-        for (var func : irProgram.funcDefs) {
+        list = new HashMap<>();
+        for (var func : irProgram_.funcDefs) {
             FuncSCCP f = new FuncSCCP(func);
+            list.put(func.name, f);
         }
     }
 }

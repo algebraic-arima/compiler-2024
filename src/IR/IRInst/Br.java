@@ -3,6 +3,7 @@ package src.IR.IRInst;
 import src.ASM.Operand.Reg;
 import src.IR.IRDef.IRBlock;
 import src.IR.IRVisitor;
+import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 
@@ -68,6 +69,13 @@ public class Br extends terminalIRInst {
             }
         }
         return n;
+    }
+
+    @Override
+    public void CP(String str, long value) {
+        if (cond instanceof Register r && r.name.equals(str)) {
+            cond = new Constant(value == 0 ? 0 : 1, true);
+        }
     }
 
     public IRInst rename(String suffix, HashMap<Register, Entity> param, IRBlock t, IRBlock f) {

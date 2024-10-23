@@ -150,5 +150,15 @@ public class Icmp extends IRInst {
         return n;
     }
 
+    @Override
+    public void CP(String str, long value) {
+        if (lhs instanceof Register r && r.name.equals(str)) {
+            lhs = new Constant(value);
+        }
+        if (rhs instanceof Register r && r.name.equals(str)) {
+            rhs = new Constant(value);
+        }
+    }
+
 }
 

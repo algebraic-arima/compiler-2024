@@ -16,8 +16,14 @@ public class Var extends SCCPNode {
     public long value;
     public HashSet<IRInst> use = new HashSet<>();
 
-    public Var(String s){
-        name=s;
+    public Var(String s, IRType t) {
+        name = s;
+        type = t;
+    }
+
+    public Var(long val) {
+        value = val;
+        p = C;
     }
 
 }

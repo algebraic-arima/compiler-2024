@@ -3,6 +3,7 @@ package src.IR.IRInst;
 import org.antlr.v4.runtime.misc.Pair;
 import src.IR.IRDef.IRBlock;
 import src.IR.IRVisitor;
+import src.utils.Entity.Constant;
 import src.utils.Entity.Entity;
 import src.utils.Entity.Register;
 import src.utils.IRType.IRType;
@@ -110,6 +111,21 @@ public class Call extends IRInst {
             n.dest = Register.newReg(retType, dest.name + suffix);
         }
         return n;
+    }
+
+    @Override
+    public void CP(String str, long value) {
+        for (int i = 0; i < args.size(); ++i) {
+            Entity l = args.get(i);
+            if (l instanceof Register r && r.name.equals(str)) {
+                IRType t = argTypes.get(i);
+                if (t.typeName.equals("i32")) {
+                    args.set(i, new Constant(value));
+                } else if (t.typeName.equals("i1")) {
+                    args.set(i, new Constant(value, true));
+                }
+            }
+        }
     }
 
     @Override
