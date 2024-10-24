@@ -4,6 +4,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import src.ASM.ASMBuilder;
 import src.ASM.ASMPrinter;
+import src.ASM.ASMProg;
 import src.AST.ASTBuilder;
 import src.AST.Prog;
 import src.IR.IRBuilder;
@@ -52,7 +53,7 @@ public class Main {
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t1.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/optim/binary_tree.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -168,6 +169,8 @@ public class Main {
             RegAlloc ra = new RegAlloc(irProg);
             if (printASM) {
                 ASMBuilder asmBuilder = new ASMBuilder(irBuilder.irProg, printIR);
+                ASMProg asmProg = asmBuilder.asmProg;
+                asmProg.reformat();
                 ASMPrinter asmPrinter = new ASMPrinter(asmBuilder.asmProg);
                 if (fileOutASM) {
                     FileOutputStream fileOutputStream1 = new FileOutputStream("/home/limike/Git/compiler-2024/test.s");

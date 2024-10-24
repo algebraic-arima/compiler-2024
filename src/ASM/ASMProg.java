@@ -27,4 +27,8 @@ public class ASMProg extends ASMNode {
         System.out.println("\n  .section .rodata");
         gStrDefs.forEach(ASMGStrDef::print);
     }
+
+    public void reformat() {
+        funcDefs.forEach(ASMFuncDef::reformat);
+    }
 }

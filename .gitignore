@@ -1,4 +1,4 @@
-.idea
+/.idea
 *.xml
 out
 lib
@@ -14,3 +14,4 @@ bin.src
 *.s
 utils.bash
 src/ASM/ASMPrinter.java
+misc.xml
