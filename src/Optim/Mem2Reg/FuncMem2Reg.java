@@ -270,8 +270,8 @@ public class FuncMem2Reg {
                             Entity en = renameMap.get(r.name);
                             if (en != null) {
                                 br.cond = en;
-                                if (en instanceof Constant con) {
-                                    i.IRInsts.set(cnt, new Jmp(con.value == 0 ? br.falseBlock : br.trueBlock));
+//                                if (en instanceof Constant con) {
+//                                    i.IRInsts.set(cnt, new Jmp(con.value == 0 ? br.falseBlock : br.trueBlock));
 //                                    IRBlock destBlock = con.value == 0 ? br.trueBlock : br.falseBlock;
 //                                    for (Map.Entry<String, Phi> p : destBlock.phis.entrySet()) {
 //                                        for (int ii = 0; ii < p.getValue().valList.size(); ++ii) {
@@ -286,7 +286,7 @@ public class FuncMem2Reg {
 //                                    CFGNode next = nodes.get(destBlock.label);
 //                                    now.succ.remove(next);
 //                                    next.pred.remove(now);
-                                }
+//                                }
                             }
                         }
                     } else if (inst instanceof Call c) {
@@ -535,8 +535,8 @@ public class FuncMem2Reg {
                     Entity s = renameMap.get(r.name);
                     if (s != null) {
                         br.cond = s;
-                        if (s instanceof Constant con) {
-                            ir.IRInsts.set(cnt, new Jmp(con.value == 0 ? br.falseBlock : br.trueBlock));
+//                        if (s instanceof Constant con) {
+//                            ir.IRInsts.set(cnt, new Jmp(con.value == 0 ? br.falseBlock : br.trueBlock));
 //                            IRBlock destBlock = con.value == 0 ? br.trueBlock : br.falseBlock;
 //                            for (Map.Entry<String, Phi> p : destBlock.phis.entrySet()) {
 //                                for (int ii = 0; ii < p.getValue().valList.size(); ++ii) {
@@ -551,7 +551,7 @@ public class FuncMem2Reg {
 //                            CFGNode next = nodes.get(destBlock.label);
 //                            now.succ.remove(next);
 //                            next.pred.remove(now);
-                        }
+//                        }
                     }
                 }
             } else if (i instanceof Phi p) {
