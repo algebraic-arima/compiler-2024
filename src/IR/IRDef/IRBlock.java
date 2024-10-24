@@ -1,5 +1,6 @@
 package src.IR.IRDef;
 
+import org.antlr.v4.runtime.misc.Pair;
 import src.IR.IRInst.*;
 import src.IR.IRVisitor;
 
@@ -106,6 +107,18 @@ public class IRBlock {
                 }
             }
             p.valList.removeIf(Objects::isNull);
+        }
+    }
+
+    public void replacePred(IRBlock f, IRBlock t) {
+        for (var e : phis.entrySet()) {
+            Phi p = e.getValue();
+            for (int i = 0; i < p.valList.size(); ++i) {
+                var d = p.valList.get(i);
+                if (d.b == f) {
+                    p.valList.set(i, new Pair<>(d.a, t));
+                }
+            }
         }
     }
 }

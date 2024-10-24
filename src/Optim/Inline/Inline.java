@@ -60,14 +60,15 @@ public class Inline {
                 replaceList.put(b, l);
                 IRBlock phiReplaceBlock = l.getLast();
                 for (IRBlock s : succBlock) {
-                    for (Phi p : s.phis.values()) {
-                        for (int ii = 0; ii < p.valList.size(); ++ii) {
-                            var e = p.valList.get(ii);
-                            if (e.b == b) {
-                                p.valList.set(ii, new Pair<>(e.a, phiReplaceBlock));
-                            }
-                        }
-                    }
+                    s.replacePred(b, phiReplaceBlock);
+//                    for (Phi p : s.phis.values()) {
+//                        for (int ii = 0; ii < p.valList.size(); ++ii) {
+//                            var e = p.valList.get(ii);
+//                            if (e.b == b) {
+//                                p.valList.set(ii, new Pair<>(e.a, phiReplaceBlock));
+//                            }
+//                        }
+//                    }
                 }
             }
             ArrayList<IRBlock> newBlocks = new ArrayList<>();

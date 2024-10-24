@@ -21,6 +21,8 @@ public class FuncSCCP {
     HashMap<String, Blk> blockList;
     HashSet<IRBlock> trblk = new HashSet<>();
     HashSet<String> trdef = new HashSet<>();
+    HashMap<String, HashMap<String, Edge>> edges = new HashMap<>();
+    // succ -> (pred -> edge)
 
     public FuncSCCP(IRFuncDef _func) {
         func = _func;
@@ -43,6 +45,7 @@ public class FuncSCCP {
             v.p = M;
         }
         for (IRBlock b : func.blocks) {
+            edges.put(b.label, new HashMap<>());
             b.instList.clear();
             b.instList.addAll(b.phis.values());
             b.instList.addAll(b.IRInsts);
@@ -58,7 +61,7 @@ public class FuncSCCP {
             for (IRInst i : b.instList) {
                 for (String str : i.getUse()) {
                     if (varList.containsKey(str)) {
-                        varList.get(str).use.add(i);
+                        varList.get(str).use.put(i, b);
                     }
                 }
                 if (i instanceof terminalIRInst) {
@@ -70,10 +73,13 @@ public class FuncSCCP {
                         fa.pred.add(t);
                         t.succ.add(tr);
                         t.succ.add(fa);
+                        edges.get(br.trueBlock.label).put(b.label, new Edge(b, br.trueBlock));
+                        edges.get(br.falseBlock.label).put(b.label, new Edge(b, br.falseBlock));
                     } else if (i instanceof Jmp j) {
                         Blk n = blockList.get(j.block.label);
                         n.pred.add(t);
                         t.succ.add(n);
+                        edges.get(j.block.label).put(b.label, new Edge(b, j.block));
                     }
                 }
             }
@@ -99,34 +105,39 @@ public class FuncSCCP {
                             setM(c.dest);
                         }
                     } else if (i instanceof Phi p) {
-                        handlePhi(p);
+                        handlePhi(b.blk, p);
                     } else if (i instanceof Br br) {
-                        handleBr(br);
+                        handleBr(b.blk, br);
                     } else if (i instanceof Jmp j) {
                         Blk next = blockList.get(j.block.label);
                         setExec(next);
+                        setPass(b.blk.label, j.block.label);
                     } else if (i instanceof GetElePtr) {
                         setM(i.dest);
                     }
                 }
             } else if (n instanceof Var v) {
-                for (IRInst i : v.use) {
-                    if (i instanceof Binary bin) {
-                        meet(getVar(bin.dest), getVar(bin.lhs), bin.op, getVar(bin.rhs));
-                    } else if (i instanceof Icmp bin) {
-                        meet(getVar(bin.dest), getVar(bin.lhs), bin.op, getVar(bin.rhs));
-                    } else if (i instanceof Load) {
-                        setM(i.dest);
-                    } else if (i instanceof Call c) {
-                        if (c.dest != null) {
-                            setM(c.dest);
+                for (var d : v.use.entrySet()) {
+                    IRInst i = d.getKey();
+                    IRBlock b = d.getValue();
+                    if(blockList.get(b.label).exec) {
+                        if (i instanceof Binary bin) {
+                            meet(getVar(bin.dest), getVar(bin.lhs), bin.op, getVar(bin.rhs));
+                        } else if (i instanceof Icmp bin) {
+                            meet(getVar(bin.dest), getVar(bin.lhs), bin.op, getVar(bin.rhs));
+                        } else if (i instanceof Load) {
+                            setM(i.dest);
+                        } else if (i instanceof Call c) {
+                            if (c.dest != null) {
+                                setM(c.dest);
+                            }
+                        } else if (i instanceof Phi p) {
+                            handlePhi(b, p);
+                        } else if (i instanceof Br br) {
+                            handleBr(b, br);
+                        } else if (i instanceof GetElePtr) {
+                            setM(i.dest);
                         }
-                    } else if (i instanceof Phi p) {
-                        handlePhi(p);
-                    } else if (i instanceof Br br) {
-                        handleBr(br);
-                    } else if (i instanceof GetElePtr) {
-                        setM(i.dest);
                     }
                 }
             }
@@ -164,7 +175,7 @@ public class FuncSCCP {
             Var va = v.getValue();
             String name = v.getKey();
             if (va.p == C) {
-                for (IRInst i : va.use) {
+                for (IRInst i : va.use.keySet()) {
                     i.CP(name, va.value);
                 }
             }
@@ -281,12 +292,11 @@ public class FuncSCCP {
         return ret;
     }
 
-    public void handlePhi(Phi p) {
+    public void handlePhi(IRBlock b, Phi p) {
         Long uniqueConst = null;
         boolean isM = false;
         for (var e : p.valList) {
-            Blk pre = blockList.get(e.b.label);
-            if (pre.exec && !(e.a instanceof Register r && r.name.startsWith("@"))) {
+            if (queryPass(e.b.label, b.label) && !(e.a instanceof Register r && r.name.startsWith("@"))) {
                 Var v = getVar(e.a);
                 if (v.p == M) {
                     isM = true;
@@ -312,7 +322,7 @@ public class FuncSCCP {
         }
     }
 
-    public void handleBr(Br br) {
+    public void handleBr(IRBlock b, Br br) {
         boolean isM = false;
         for (String s : br.getUse()) {
             Var v = varList.get(s);
@@ -325,14 +335,18 @@ public class FuncSCCP {
         if (isM) {
             setExec(tr);
             setExec(fl);
+            setPass(b.label, tr.blk.label);
+            setPass(b.label, fl.blk.label);
         } else {
             if (br.cmp == null) {
                 Var cond = getVar(br.cond);
                 if (cond.p == C) {
                     if (cond.value == 0) {
                         setExec(fl);
+                        setPass(b.label, fl.blk.label);
                     } else {
                         setExec(tr);
+                        setPass(b.label, tr.blk.label);
                     }
                 }
             } else {
@@ -342,12 +356,16 @@ public class FuncSCCP {
                     boolean res = cmp(lhs.value, br.cmp.op, rhs.value);
                     if (res) {
                         setExec(tr);
+                        setPass(b.label, tr.blk.label);
                     } else {
                         setExec(fl);
+                        setPass(b.label, fl.blk.label);
                     }
                 } else if (lhs.p == M || rhs.p == M) {
                     setExec(tr);
+                    setPass(b.label, tr.blk.label);
                     setExec(fl);
+                    setPass(b.label, fl.blk.label);
                 }
             }
         }
@@ -383,6 +401,14 @@ public class FuncSCCP {
             }
         }
         b.exec = true;
+    }
+
+    public void setPass(String f, String t) {
+        edges.get(t).get(f).pass = true;
+    }
+
+    public boolean queryPass(String f, String t) {
+        return edges.get(t).get(f).pass;
     }
 
 }

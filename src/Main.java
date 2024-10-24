@@ -52,7 +52,7 @@ public class Main {
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/sema/misc-package/misc-7.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t1.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
