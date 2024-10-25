@@ -967,6 +967,56 @@ public class ASMBuilder implements IRVisitor {
         }
     }
 
+    @Override
+    public void visit(Tail node) {
+        int cnt = 0;
+        for (Entity e : node.args) {
+            if (cnt < 8) {
+                if (e instanceof Constant) {
+                    curBlock.addInst(new LI("a" + cnt, ((Constant) e).value));
+                } else if (e instanceof Register r) {
+                    if (r.name.startsWith("%")) { // some variable
+                        if (r.color < 0) {
+                            addLW("a" + cnt, regPos.get(r.name), "sp");
+                        } else if (r.color > 0) {
+                            curBlock.addInst(new MV("a" + cnt, Reg.freeRegs[r.color]));
+                        } else if (r.name.endsWith(".val") || r.name.equals("%this1")) {
+                            int i = curIRFuncDef.paramNames.indexOf(r.name);
+                            if (i < 8) {
+                                curBlock.addInst(new LW("a" + cnt, regPos.get(r.name), "sp"));
+                            } else {
+                                curBlock.addInst(new LW("a" + cnt, curFunc.stackSize + (i - 8) * 4L, "sp"));
+                            }
+                        }
+                    } else {
+                        curBlock.addInst(new LA("a" + cnt, ((Register) e).name.substring(1).replace("-", "_")));
+                    }
+                }
+            } else {
+                if (e instanceof Constant) {
+                    curBlock.addInst(new LI("t0", ((Constant) e).value));
+                    addSW("t0", (cnt - 8) * 4L, "sp");
+                } else if (e instanceof Register r) {
+                    String n = null;
+                    if (r.name.startsWith("%")) {
+                        n = fetchReg(r, "t0");
+                    } else {
+                        curBlock.addInst(new LA("t0", r.name.substring(1).replace("-", "_")));
+                        n = "t0";
+                    }
+                    addSW(n, (cnt - 8) * 4L, "sp");
+                }
+            }
+            ++cnt;
+        }
+        addLW("ra", curFunc.stackSize - 4, "sp");
+        for (int i = 0; i < curIRFuncDef.regNum; ++i) {
+            addLW("s" + i, curFunc.stackSize - 4L * (i + 2), "sp");
+        }
+        addADDI("sp", "sp", curFunc.stackSize);
+        curBlock.addInst(new TAIL(node.funcName.substring(1)));
+    }
+
     private void addSW(String src_, long offset_, String destAddr_) {
         assert !destAddr_.equals("sp") || offset_ >= 0;
         if (offset_ < 2048 && offset_ >= -2048) {

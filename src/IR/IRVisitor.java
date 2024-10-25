@@ -37,5 +37,7 @@ public interface IRVisitor {
 
     public void visit(Store node);
 
+    public void visit(Tail node);
+
 
 }

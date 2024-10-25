@@ -15,6 +15,7 @@ import src.Optim.Mem2Reg.Mem2Reg;
 import src.Optim.RegAlloc.RegAlloc;
 import src.Optim.Inline.Inline;
 import src.Optim.SCCP.SCCP;
+import src.Optim.TailCall.TailCall;
 import src.Semantic.*;
 import src.parser.Lex;
 import src.parser.Mx;
@@ -53,7 +54,7 @@ public class Main {
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/codegen/optim/binary_tree.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t10.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -152,6 +153,7 @@ public class Main {
 
             SCCP sccp2 = new SCCP(irProg);
             DCE dce2 = new DCE(irProg);
+            TailCall tc = new TailCall(irProg);
 
             if (printDCE2) {
                 IRPrinter irPrinter = new IRPrinter(irProg);
