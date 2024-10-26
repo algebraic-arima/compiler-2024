@@ -11,6 +11,7 @@ import src.IR.IRBuilder;
 import src.IR.IRPrinter;
 import src.IR.IRProg;
 import src.Optim.DCE.DCE;
+import src.Optim.Global2Local.Global2Local;
 import src.Optim.Mem2Reg.Mem2Reg;
 import src.Optim.RegAlloc.RegAlloc;
 import src.Optim.Inline.Inline;
@@ -37,6 +38,9 @@ public class Main {
         boolean printInl = false;
         boolean fileOutInl = false;
 
+        boolean printG2l = false;
+        boolean fileOutG2l = false;
+
         boolean printM2R = false;
         boolean fileOutM2R = false;
 
@@ -54,7 +58,7 @@ public class Main {
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t10.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t28.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -97,6 +101,21 @@ public class Main {
                 IRPrinter irPrinter = new IRPrinter(irProg);
                 if (fileOutInl) {
                     FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/inl.ll");
+                    PrintStream printStream = new PrintStream(fileOutputStream);
+                    System.setOut(printStream);
+                } else {
+                    PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
+                    System.setOut(consolePrintStream);
+                }
+                irPrinter.print();
+            }
+
+            Global2Local g2l = new Global2Local(irProg);
+
+            if (printG2l) {
+                IRPrinter irPrinter = new IRPrinter(irProg);
+                if (fileOutG2l) {
+                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/g2l.ll");
                     PrintStream printStream = new PrintStream(fileOutputStream);
                     System.setOut(printStream);
                 } else {
