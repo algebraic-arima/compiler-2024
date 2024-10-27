@@ -231,7 +231,7 @@ public class FuncRegAlloc {
     public void reducePhi() {
         for (IRBlock b : irFunc.blocks) {
             HashMap<Register, Phi> phis = new HashMap<>();
-            HashMap<String, ArrayList<Pair<Entity, Register>>> totMVList = new HashMap<>();
+            HashMap<String, ArrayList<Pair<Pair<Entity, Register>, Boolean>>> totMVList = new HashMap<>();
             for (IRBlock p : b.pred) {
                 totMVList.put(p.label, new ArrayList<>());
             }
@@ -239,7 +239,13 @@ public class FuncRegAlloc {
                 if (i instanceof Phi p) {
                     phis.put(p.dest, p);
                     for (var c : p.valList) {
-                        totMVList.get(c.b.label).add(new Pair<>(c.a, p.dest));
+                        boolean coalesce = false;
+                        if (c.a instanceof Register r) {
+                            if (!p.liveOut.contains(r)) {
+                                coalesce = true;
+                            }
+                        }
+                        totMVList.get(c.b.label).add(new Pair<>(new Pair<>(c.a, p.dest), coalesce));
                     }
                 } else break;
             }
@@ -247,11 +253,13 @@ public class FuncRegAlloc {
             // since you don't know where it will be assigned
             for (IRBlock p : b.pred) {
                 // apply modifies to p.mv
-                ArrayList<Pair<Entity, Register>> mvList = totMVList.get(p.label);
+                ArrayList<Pair<Pair<Entity, Register>, Boolean>> mvList = totMVList.get(p.label);
                 ArrayList<Move> moveArray = new ArrayList<>();
                 p.mv.put(b.label, moveArray);
                 for (var e : mvList) {
-                    moveArray.add(new Move(e.a, e.b));
+                    Move m = new Move(e.a.a, e.a.b);
+                    m.coalesce = e.b;
+                    moveArray.add(m);
                 }
             }
             // reserve those not trimmed, using phis

@@ -9,6 +9,7 @@ import java.util.HashSet;
 public class Move extends IRInst {
 
     public Entity src;
+    public boolean coalesce = false;
 
     public Move(Entity src, Register dest) {
         this.src = src;

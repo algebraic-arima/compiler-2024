@@ -1086,9 +1086,15 @@ public class ASMBuilder implements IRVisitor {
                 if (regPos.containsKey(mv.dest.name)) {
                     m.dest = Stk.get(regPos.get(mv.dest.name));
                 } else {
-                    occSP += 4;
-                    regPos.put(mv.dest.name, curFunc.stackSize - occSP);
-                    m.dest = Stk.get(curFunc.stackSize - occSP);
+                    if (mv.coalesce && (mv.src instanceof Register r && r.color < 0)) {
+                        int p = regPos.get(r.name);
+                        m.dest = Stk.get(p);
+                        regPos.put(mv.dest.name, p);
+                    } else {
+                        occSP += 4;
+                        regPos.put(mv.dest.name, curFunc.stackSize - occSP);
+                        m.dest = Stk.get(curFunc.stackSize - occSP);
+                    }
                 }
             } else if (mv.dest.color > 0) {
                 m.dest = Reg.get(Reg.freeRegs[mv.dest.color]);

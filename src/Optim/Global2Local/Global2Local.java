@@ -82,7 +82,8 @@ public class Global2Local {
                     IRType t = globalVarList.get(str);
                     s.dest = Register.newReg(t, "%" + str + "." + func.name.substring(1));
                     tmp.add(s);
-                } else if ((i instanceof Call c && !IRBuilder.builtinFunc.contains(c.funcName)) || i instanceof Ret || i instanceof Tail) {
+                } else if ((i instanceof Call c && !IRBuilder.builtinFunc.contains(c.funcName)) ||
+                        (i instanceof Ret && !func.name.equals("@main")) || i instanceof Tail) {
                     for (String s : uses) {
                         IRType t = globalVarList.get(s);
                         Register dest = Register.newReg(t, "@" + s);
