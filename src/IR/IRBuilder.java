@@ -593,6 +593,33 @@ public class IRBuilder implements __ASTVisitor {
                     node.entity = new Constant(value);
                 } else {
                     Register res = new AnonReg(typeI32);
+                    if (node.op == MUL) {
+                        if (node.lhs.entity instanceof Constant c) {
+                            int d = c.log2();
+                            if (d >= 0) {
+                                Binary n = new Binary(BLS);
+                                n.dest = res;
+                                n.setLhs(node.rhs.entity);
+                                n.setRhs(new Constant(d));
+                                n.type = typeI32;
+                                node.entity = res;
+                                curBlock.IRInsts.add(n);
+                                return;
+                            }
+                        } else if (node.rhs.entity instanceof Constant c) {
+                            int d = c.log2();
+                            if (d >= 0) {
+                                Binary n = new Binary(BLS);
+                                n.dest = res;
+                                n.setLhs(node.lhs.entity);
+                                n.setRhs(new Constant(d));
+                                n.type = typeI32;
+                                node.entity = res;
+                                curBlock.IRInsts.add(n);
+                                return;
+                            }
+                        }
+                    }
                     Binary n = new Binary(node.op);
                     n.dest = res;
                     n.setLhs(node.lhs.entity);

@@ -25,40 +25,58 @@ public class RIG {
             return Integer.compare(label, o.label);
         }
 
-        public int getColor(){
+        public int getColor() {
             return color;
         }
     }
 
 
-    public HashMap<String, RIGNode> g = new HashMap<>();
+    public HashMap<String, RIGNode> reg = new HashMap<>();
+    public HashMap<String, RIGNode> spill = new HashMap<>();
     public HashSet<Integer> colors = new HashSet<>();
-    public ArrayList<RIGNode> peo = new ArrayList<>();
+    public HashSet<Integer> stackColors = new HashSet<>();
+    public ArrayList<RIGNode> regPEO = new ArrayList<>();
+    public ArrayList<RIGNode> stackPEO = new ArrayList<>();
 
     public void add(HashMap<String, Double> m) {
         for (Map.Entry<String, Double> e : m.entrySet()) {
-            g.put(e.getKey(), new RIGNode(e.getKey()));
+            reg.put(e.getKey(), new RIGNode(e.getKey()));
         }
     }
 
     public void addEdge(String s, String t) {
-        g.get(s).n.put(t, g.get(t));
-        g.get(t).n.put(s, g.get(s));
+        reg.get(s).n.put(t, reg.get(t));
+        reg.get(t).n.put(s, reg.get(s));
     }
 
     public int getN(String s) {
-        return g.get(s).n.size();
+        return reg.get(s).n.size();
     }
 
-    public void removeVertex(String s) {
-        RIGNode u = g.get(s);
-        for (Map.Entry<String, RIGNode> e : u.n.entrySet()) {
-            e.getValue().n.remove(s);
+    public void spillVertex(String s) {
+        RIGNode u = reg.get(s);
+//        for (Map.Entry<String, RIGNode> e : u.n.entrySet()) {
+//            e.getValue().n.remove(s);
+//        }
+        spill.put(s, u);
+        reg.remove(s);
+    }
+
+    public void subgraph() {
+        for (Map.Entry<String, RIGNode> e : reg.entrySet()) {
+            for (Map.Entry<String, RIGNode> f : spill.entrySet()) {
+                e.getValue().n.remove(f.getKey());
+            }
         }
-        g.remove(s);
+        for (Map.Entry<String, RIGNode> e : spill.entrySet()) {
+            for (Map.Entry<String, RIGNode> f : reg.entrySet()) {
+                e.getValue().n.remove(f.getKey());
+            }
+        }
     }
 
-    public void MCS() {
+    public void MCS(boolean isStack) {
+        HashMap<String, RIGNode> g = isStack ? spill : reg;
         int cnt = g.size(), max = 0;
         HashMap<Integer, HashSet<RIGNode>> bucket = new HashMap<>();
         bucket.put(0, new HashSet<>(g.values()));
@@ -84,7 +102,7 @@ public class RIG {
                 max = Math.max(max, v.label);
             }
         }
-        peo = new ArrayList<>(g.values());
+        ArrayList<RIGNode> peo = new ArrayList<>(g.values());
         Collections.sort(peo);
         boolean isChordal = true;
         for (int i = 0; i < cnt && isChordal; ++i) {
@@ -106,13 +124,18 @@ public class RIG {
                 }
             }
         }
+        if (isStack) {
+            stackPEO = peo;
+        } else {
+            regPEO = peo;
+        }
         assert isChordal;
     }
 
     public void color(int rn) {
         // sort by label
-        for (int r = peo.size() - 1; r >= 0; --r) {
-            var u = peo.get(r);
+        for (int r = regPEO.size() - 1; r >= 0; --r) {
+            var u = regPEO.get(r);
             HashSet<Integer> s = new HashSet<>();
             for (Map.Entry<String, RIGNode> e : u.n.entrySet()) {
                 RIGNode v = e.getValue();
@@ -127,6 +150,30 @@ public class RIG {
                     colors.add(i);
                     u.colored = true;
                     Register.markReg(u.name, i);
+                    break;
+                }
+            }
+        }
+
+    }
+
+    public void colorStack() {
+        // sort by label
+        for (int r = stackPEO.size() - 1; r >= 0; --r) {
+            var u = stackPEO.get(r);
+            HashSet<Integer> s = new HashSet<>();
+            for (Map.Entry<String, RIGNode> e : u.n.entrySet()) {
+                RIGNode v = e.getValue();
+                if (v.colored) {
+                    s.add(v.color);
+                }
+            }
+            for (int i = 1; ; ++i) {
+                if (!s.contains(-i)) {
+                    u.color = -i;
+                    stackColors.add(-i);
+                    u.colored = true;
+                    Register.markStack(u.name, i);
                     break;
                 }
             }

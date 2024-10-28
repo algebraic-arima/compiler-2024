@@ -37,8 +37,10 @@ public class FuncRegAlloc {
 
         int regNum = 12;
         spill(regNum);
-        rig.MCS();
+        rig.MCS(false);
+        rig.MCS(true);
         rig.color(regNum);
+        rig.colorStack();
         reducePhi();
         // have no data hazard in phi
     }
@@ -222,9 +224,10 @@ public class FuncRegAlloc {
         }
         for (Map.Entry<String, Integer> e : spillList.entrySet()) {
 //            System.out.println("  " + e.getKey() + " " + e.getValue());
-            Register.markStack(e.getKey());
-            rig.removeVertex(e.getKey());
+            Register.markStack(e.getKey(), 1);
+            rig.spillVertex(e.getKey());
         }
+        rig.subgraph();
         irFunc.stackSize = spillList.size();
     }
 
@@ -240,8 +243,8 @@ public class FuncRegAlloc {
                     phis.put(p.dest, p);
                     for (var c : p.valList) {
                         boolean coalesce = false;
-                        if (c.a instanceof Register r) {
-                            if (!p.liveOut.contains(r)) {
+                        if (c.a instanceof Register r && p.dest.color < 0) {
+                            if (!p.liveOut.contains(r) && r.color < 0) {
                                 coalesce = true;
                             }
                         }
@@ -258,7 +261,6 @@ public class FuncRegAlloc {
                 p.mv.put(b.label, moveArray);
                 for (var e : mvList) {
                     Move m = new Move(e.a.a, e.a.b);
-                    m.coalesce = e.b;
                     moveArray.add(m);
                 }
             }

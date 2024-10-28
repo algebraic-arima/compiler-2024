@@ -653,18 +653,24 @@ public class ASMBuilder implements IRVisitor {
         } else if (node.offset instanceof Register r) {
             String offset_name = fetchReg(r, "t1");
             if (node.dest.color < 0) {
-                curBlock.addInst(new LI("t2", csize == null ? 1 : 4));
-                curBlock.addInst(new MUL("t1", offset_name, "t2"));
-                curBlock.addInst(new ADD("t0", ptrName, "t1"));
+                if (csize != null) {
+                    curBlock.addInst(new SLLI("t1", offset_name, 2));
+                    curBlock.addInst(new ADD("t0", ptrName, "t1"));
+                } else {
+                    curBlock.addInst(new ADD("t0", ptrName, offset_name));
+                }
                 if (node.fieldInd > 0) {
                     addADDI("t0", "t0", node.fieldInd * 4L);
                 }
                 storeReg(node.dest, "t0");
             } else if (node.dest.color > 0) {
                 String dest_reg = storeReg(node.dest, null);
-                curBlock.addInst(new LI("t2", csize == null ? 1 : 4));
-                curBlock.addInst(new MUL("t1", offset_name, "t2"));
-                curBlock.addInst(new ADD(dest_reg, ptrName, "t1"));
+                if (csize != null) {
+                    curBlock.addInst(new SLLI("t1", offset_name, 2));
+                    curBlock.addInst(new ADD(dest_reg, ptrName, "t1"));
+                } else {
+                    curBlock.addInst(new ADD(dest_reg, ptrName, offset_name));
+                }
                 if (node.fieldInd > 0) {
                     addADDI(dest_reg, dest_reg, node.fieldInd * 4L);
                 }

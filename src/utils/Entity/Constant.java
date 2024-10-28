@@ -2,8 +2,21 @@ package src.utils.Entity;
 
 import src.utils.IRType.IRType;
 
+import java.util.HashMap;
+
 public class Constant extends Entity {
     public long value;
+
+    public static HashMap<Long, Integer> log2n;
+
+    static {
+        log2n = new HashMap<>();
+        long p = 1;
+        for (int i = 0; i < 30; ++i) {
+            log2n.put(p, i);
+            p *= 2;
+        }
+    }
 
     public String getName() {
         return null;
@@ -34,5 +47,9 @@ public class Constant extends Entity {
         super();
         value = 0;
         type = typePtr;
+    }
+
+    public int log2() {
+        return log2n.getOrDefault(value, -1);
     }
 }

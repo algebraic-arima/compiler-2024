@@ -47,8 +47,8 @@ public class Register extends Entity {
         return reg;
     }
 
-    static public void markStack(String name) {
-        registers.get(name).color = -1;
+    static public void markStack(String name, int c) {
+        registers.get(name).color = -c;
     }
 
     static public void markReg(String name, int c) {

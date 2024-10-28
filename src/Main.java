@@ -10,6 +10,7 @@ import src.AST.Prog;
 import src.IR.IRBuilder;
 import src.IR.IRPrinter;
 import src.IR.IRProg;
+import src.Optim.CSE.CSE;
 import src.Optim.DCE.DCE;
 import src.Optim.Global2Local.Global2Local;
 import src.Optim.Mem2Reg.Mem2Reg;
@@ -52,6 +53,9 @@ public class Main {
 
         boolean printDCE2 = false;
         boolean fileOutDCE2 = false;
+
+        boolean printCSE = false;
+        boolean fileOutCSE = false;
 
         boolean printASM = true;
         boolean fileOutASM = false;
@@ -161,6 +165,21 @@ public class Main {
                 IRPrinter irPrinter = new IRPrinter(irProg);
                 if (fileOutDCE) {
                     FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/hdce.ll");
+                    PrintStream printStream = new PrintStream(fileOutputStream);
+                    System.setOut(printStream);
+                } else {
+                    PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
+                    System.setOut(consolePrintStream);
+                }
+                irPrinter.print();
+            }
+
+            CSE cse = new CSE(irProg);
+
+            if (printCSE) {
+                IRPrinter irPrinter = new IRPrinter(irProg);
+                if (fileOutCSE) {
+                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/cse.ll");
                     PrintStream printStream = new PrintStream(fileOutputStream);
                     System.setOut(printStream);
                 } else {
