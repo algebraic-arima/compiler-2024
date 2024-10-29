@@ -33,7 +33,8 @@ public class Jopt {
                 pos.put(b.label, (long) assembly.size());
                 blockList.put(b.label, b);
                 assembly.addAll(b.insts);
-                if (b.insts.size() == 1 && b.insts.getFirst() instanceof BR br) {
+                if (b.insts.size() == 1 && b.insts.getFirst() instanceof BR br
+                        && !b.label.equals(br.label)) {
                     trimList.put(b.label, br.label);
                 }
             }
