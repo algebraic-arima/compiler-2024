@@ -254,6 +254,48 @@ public class ASMBuilder implements IRVisitor {
             }
         } else if (node.op.equals("mul") || node.op.equals("sdiv") || node.op.equals("srem")) {
             String l_name = null, r_name = null;
+            if (node.op.equals("mul")) {
+                if (node.lhs instanceof Constant c && c.log2() != -1) {
+                    if (node.rhs instanceof Constant rc) {
+                        if (node.dest.color < 0) {
+                            curBlock.addInst(new LI("t0", c.value * rc.value));
+                            storeReg(node.dest, "t0");
+                        } else if (node.dest.color > 0) {
+                            curBlock.addInst(new LI(storeReg(node.dest, null), c.value * rc.value));
+                        }
+                    } else if (node.rhs instanceof Register r) {
+                        int o = c.log2();
+                        r_name = fetchReg(r, "t1");
+                        if (node.dest.color < 0) {
+                            curBlock.addInst(new SLLI("t0", r_name, o));
+                            storeReg(node.dest, "t0");
+                        } else if (node.dest.color > 0) {
+                            curBlock.addInst(new SLLI(storeReg(node.dest, null), r_name, o));
+                        }
+                    }
+                    return;
+                }
+                if (node.rhs instanceof Constant c && c.log2() != -1) {
+                    if (node.lhs instanceof Constant lc) {
+                        if (node.dest.color < 0) {
+                            curBlock.addInst(new LI("t0", c.value * lc.value));
+                            storeReg(node.dest, "t0");
+                        } else if (node.dest.color > 0) {
+                            curBlock.addInst(new LI(storeReg(node.dest, null), c.value * lc.value));
+                        }
+                    } else if (node.lhs instanceof Register r) {
+                        int o = c.log2();
+                        l_name = fetchReg(r, "t1");
+                        if (node.dest.color < 0) {
+                            curBlock.addInst(new SLLI("t0", l_name, o));
+                            storeReg(node.dest, "t0");
+                        } else if (node.dest.color > 0) {
+                            curBlock.addInst(new SLLI(storeReg(node.dest, null), l_name, o));
+                        }
+                    }
+                    return;
+                }
+            }
             if (node.lhs instanceof Constant) {
                 curBlock.addInst(new LI("t0", ((Constant) node.lhs).value));
                 l_name = "t0";
@@ -551,14 +593,13 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(Call node) {
+        int funcParamNum = curIRFuncDef.paramNames.size();
         int cnt = 0;
-//        for (Entity e : node.args) {
+//        for (String n : curIRFuncDef.paramNames) {
 //            if (cnt < 8) {
-//                if (!curIRFuncDef.name.equals("@main")) {// caller save a0-a7
-//                    occSP += 4;
-//                    curBlock.addInst(new SW("a" + cnt,
-//                            curFunc.stackSize - occSP, "sp"));
-//                }
+//                occSP += 4;
+//                curBlock.addInst(new SW("a" + cnt,
+//                        curFunc.stackSize - occSP, "sp"));
 //            } else break;
 //            ++cnt;
 //        }
@@ -577,6 +618,13 @@ public class ASMBuilder implements IRVisitor {
                             int i = curIRFuncDef.paramNames.indexOf(r.name);
                             if (i < 8) {
                                 curBlock.addInst(new LW("a" + cnt, regPos.get(r.name), "sp"));
+//                                if (i >= cnt) {
+//                                    // fetch from "a" reg
+//                                    if (i != cnt) curBlock.addInst(new MV("a" + cnt, "a" + i));
+//                                } else {
+//                                    // fetch from stack
+//                                    curBlock.addInst(new LW("a" + cnt, curFunc.stackSize - occSP + 4L * (funcParamNum - i - 1), "sp"));
+//                                }
                             } else {
                                 curBlock.addInst(new LW("a" + cnt, curFunc.stackSize + (i - 8) * 4L, "sp"));
                             }
@@ -612,12 +660,11 @@ public class ASMBuilder implements IRVisitor {
                 curBlock.addInst(new MV(storeReg(node.dest, null), "a0"));
             }
         }
-//        if (!curIRFuncDef.name.equals("@main")) {// caller save a0-a7
-//            if (cnt > 8) cnt = 8;
-//            while (cnt-- > 0) {
-//                curBlock.addInst(new LW("a" + cnt, curFunc.stackSize - occSP, "sp"));
-//                occSP -= 4;
-//            }
+//        cnt = curIRFuncDef.paramNames.size();
+//        if (cnt > 8) cnt = 8;
+//        while (cnt-- > 0) {
+//            curBlock.addInst(new LW("a" + cnt, curFunc.stackSize - occSP, "sp"));
+//            occSP -= 4;
 //        }
     }
 
@@ -880,6 +927,7 @@ public class ASMBuilder implements IRVisitor {
                         int i = curIRFuncDef.paramNames.indexOf(r.name);
                         if (i < 8) {
                             curBlock.addInst(new LW("a0", regPos.get(r.name), "sp"));
+//                            if (i != 0) curBlock.addInst(new MV("a0", "a" + i));
                         } else {
                             curBlock.addInst(new LW("a0", curFunc.stackSize + (i - 8) * 4L, "sp"));
                         }
@@ -976,6 +1024,7 @@ public class ASMBuilder implements IRVisitor {
 
     @Override
     public void visit(Tail node) {
+        int funcParamNum = curIRFuncDef.paramNames.size();
         int cnt = 0;
         for (Entity e : node.args) {
             if (cnt < 8) {
@@ -991,6 +1040,13 @@ public class ASMBuilder implements IRVisitor {
                             int i = curIRFuncDef.paramNames.indexOf(r.name);
                             if (i < 8) {
                                 curBlock.addInst(new LW("a" + cnt, regPos.get(r.name), "sp"));
+//                                if (i >= cnt) {
+//                                    // fetch from "a" reg
+//                                    curBlock.addInst(new MV("a" + cnt, "a" + i));
+//                                } else {
+//                                    // fetch from stack
+//                                    curBlock.addInst(new LW("a" + cnt, curFunc.stackSize - occSP + 4L * (funcParamNum - i - 1), "sp"));
+//                                }
                             } else {
                                 curBlock.addInst(new LW("a" + cnt, curFunc.stackSize + (i - 8) * 4L, "sp"));
                             }
@@ -1115,6 +1171,7 @@ public class ASMBuilder implements IRVisitor {
                     int i = curIRFuncDef.paramNames.indexOf(r.name);
                     if (i < 8) {
                         m.src = Stk.get(regPos.get(r.name));
+//                        m.src = Reg.get("a" + i);
                     } else {
                         m.src = Stk.get(curFunc.stackSize + (i - 8) * 4L);
                     }

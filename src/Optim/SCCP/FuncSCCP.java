@@ -252,6 +252,14 @@ public class FuncSCCP {
             dst.value = value;
             return;
         }
+        if (((lhs.p == C && lhs.value == 0) || (rhs.p == C && rhs.value == 0)) && op.equals("mul")) {
+            if (dst.p == U) {
+                workList.add(dst);
+            }
+            dst.p = C;
+            dst.value = 0;
+            return;
+        }
         if (lhs.name != null && rhs.name != null && lhs.name.equals(rhs.name)) {
             if (op.equals("sub") || op.equals("xor") || op.equals("slt")
                     || op.equals("sgt") || op.equals("ne")) {

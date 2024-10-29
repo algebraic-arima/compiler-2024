@@ -9,8 +9,6 @@ import src.ASM.ASMProg;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Objects;
 
 public class Jopt {
 
@@ -44,7 +42,7 @@ public class Jopt {
     public void jumpSim() {
         for (int i = 0; i < assembly.size(); ++i) {
             ASMInst inst = assembly.get(i);
-            if (inst instanceof BR br) {
+            if (inst instanceof BR br && !(inst instanceof J)) {
                 if (trimList.containsKey(br.label)) {
                     String repDest = trimList.get(br.label);
                     long offset = pos.get(repDest) - i;

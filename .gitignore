@@ -12,6 +12,7 @@ bin.src
 *.txt
 *.ll
 *.s
+*.tmp
 utils.bash
 src/ASM/ASMPrinter.java
 misc.xml

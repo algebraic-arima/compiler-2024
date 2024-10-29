@@ -24,6 +24,14 @@ public class Register extends Entity {
         System.out.print(name);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Register r) {
+            return r == this;
+        }
+        return false;
+    }
+
     public Register(IRType type, String name) {
         super(type);
         this.name = name;

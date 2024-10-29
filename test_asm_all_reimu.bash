@@ -46,6 +46,7 @@ elif [ ! -f ${CODEGEN_DIR}judgelist.txt ]; then
 fi
 
 TEMPDIR="$(mktemp -d -p /tmp mxc.XXXXXXXXXX)"
+echo $TEMPDIR
 if [ $? -ne 0 ]; then
     echo "Error: Failed to create temp directory." >&2
     exit 1
@@ -62,8 +63,8 @@ judge_one_testcase() {
         print_red_msg "Fail to pass testcase: '$1'."
         return 1
     else
-        rm -rf $TESTDIR
         print_green_msg "Pass testcases: '$1'."
+        strings "$TESTDIR/reimu_err.txt" | grep "^Total cycles:"
         return 0
     fi
 }
@@ -77,7 +78,6 @@ while read line; do
     fi
 done < ${CODEGEN_DIR}judgelist.txt
 if [ $wrong_count -eq 0 ]; then
-    rm -rf $TEMPDIR
     print_green_msg "Passed all testcases."
 else
     print_red_msg "$(( total_count - wrong_count ))/$total_count passed, $wrong_count/$total_count failed."

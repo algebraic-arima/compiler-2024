@@ -21,4 +21,7 @@ abstract public class Entity {
 
     abstract public void print();
 
+    @Override
+    public abstract boolean equals(Object obj);
+
 }

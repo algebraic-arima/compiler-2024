@@ -31,6 +31,14 @@ public class Constant extends Entity {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Constant c) {
+            return c.value == value;
+        }
+        return false;
+    }
+
     public Constant(long d) {
         super();
         value = d;
