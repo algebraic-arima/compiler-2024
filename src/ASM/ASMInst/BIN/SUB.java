@@ -1,4 +1,4 @@
-package src.ASM.ASMInst.Bin;
+package src.ASM.ASMInst.BIN;
 
 public class SUB extends BinInst{
     public SUB(String dest_, String lhs_, String rhs_) {

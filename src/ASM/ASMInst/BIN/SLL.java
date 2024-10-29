@@ -1,4 +1,4 @@
-package src.ASM.ASMInst.Bin;
+package src.ASM.ASMInst.BIN;
 
 public class SLL extends BinInst{
     public SLL(String dest_, String lhs_, String rhs_) {

@@ -8,9 +8,9 @@ import java.util.ArrayList;
 
 public class ASMProg extends ASMNode {
 
-    ArrayList<ASMFuncDef> funcDefs;
-    ArrayList<ASMGStrDef> gStrDefs;
-    ArrayList<ASMGVarDef> gVarDefs;
+    public ArrayList<ASMFuncDef> funcDefs;
+    public ArrayList<ASMGStrDef> gStrDefs;
+    public ArrayList<ASMGVarDef> gVarDefs;
 
     public ASMProg() {
         funcDefs = new ArrayList<>();
@@ -26,9 +26,5 @@ public class ASMProg extends ASMNode {
         gVarDefs.forEach(ASMGVarDef::print);
         System.out.println("\n  .section .rodata");
         gStrDefs.forEach(ASMGStrDef::print);
-    }
-
-    public void reformat() {
-        funcDefs.forEach(ASMFuncDef::reformat);
     }
 }

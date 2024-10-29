@@ -1,4 +1,4 @@
-package src.ASM.ASMInst.Bin;
+package src.ASM.ASMInst.BIN;
 
 public class SRAI extends BinInst {
     public SRAI(String dest_, String lhs_, long rhs_) {

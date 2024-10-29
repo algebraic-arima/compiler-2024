@@ -13,6 +13,7 @@ import src.IR.IRProg;
 import src.Optim.CSE.CSE;
 import src.Optim.DCE.DCE;
 import src.Optim.Global2Local.Global2Local;
+import src.Optim.Jopt.Jopt;
 import src.Optim.Mem2Reg.Mem2Reg;
 import src.Optim.RegAlloc.RegAlloc;
 import src.Optim.Inline.Inline;
@@ -62,7 +63,7 @@ public class Main {
         try {
             InputStream in;
             if (fileIn) {
-                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t28.mx";
+                String file = "/home/limike/Git/compiler-2024/testcases/codegen/test/t32.mx";
                 in = new FileInputStream(file);
             } else {
                 in = System.in;
@@ -174,20 +175,20 @@ public class Main {
                 irPrinter.print();
             }
 
-            CSE cse = new CSE(irProg);
-
-            if (printCSE) {
-                IRPrinter irPrinter = new IRPrinter(irProg);
-                if (fileOutCSE) {
-                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/cse.ll");
-                    PrintStream printStream = new PrintStream(fileOutputStream);
-                    System.setOut(printStream);
-                } else {
-                    PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
-                    System.setOut(consolePrintStream);
-                }
-                irPrinter.print();
-            }
+//            CSE cse = new CSE(irProg);
+//
+//            if (printCSE) {
+//                IRPrinter irPrinter = new IRPrinter(irProg);
+//                if (fileOutCSE) {
+//                    FileOutputStream fileOutputStream = new FileOutputStream("/home/limike/Git/compiler-2024/cse.ll");
+//                    PrintStream printStream = new PrintStream(fileOutputStream);
+//                    System.setOut(printStream);
+//                } else {
+//                    PrintStream consolePrintStream = new PrintStream(new FileOutputStream(FileDescriptor.out));
+//                    System.setOut(consolePrintStream);
+//                }
+//                irPrinter.print();
+//            }
 
             SCCP sccp2 = new SCCP(irProg);
             DCE dce2 = new DCE(irProg);
@@ -207,10 +208,12 @@ public class Main {
             }
 
             RegAlloc ra = new RegAlloc(irProg);
+
+            ASMBuilder asmBuilder = new ASMBuilder(irBuilder.irProg, printIR);
+            ASMProg asmProg = asmBuilder.asmProg;
+            Jopt j = new Jopt(asmProg);
+
             if (printASM) {
-                ASMBuilder asmBuilder = new ASMBuilder(irBuilder.irProg, printIR);
-                ASMProg asmProg = asmBuilder.asmProg;
-                asmProg.reformat();
                 ASMPrinter asmPrinter = new ASMPrinter(asmBuilder.asmProg);
                 if (fileOutASM) {
                     FileOutputStream fileOutputStream1 = new FileOutputStream("/home/limike/Git/compiler-2024/test.s");

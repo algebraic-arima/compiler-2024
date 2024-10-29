@@ -1,4 +1,4 @@
-package src.ASM.ASMInst.Bin;
+package src.ASM.ASMInst.BIN;
 
 public class MUL extends BinInst {
     public MUL(String dest_, String lhs_, String rhs_) {

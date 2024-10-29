@@ -1,4 +1,4 @@
-package src.ASM.ASMInst.Bin;
+package src.ASM.ASMInst.BIN;
 
 public class XORI extends BinInst {
     public XORI(String dest_, String lhs_, long rhs_) {

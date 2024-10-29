@@ -1,6 +1,9 @@
 # A Fake Mx* Compiler
 
-*Fake it till you make it.*
+*Make it till you fake it.*
+
+<font size=2>\* One Sunday afternoon, it dawns on me that I have faked through the project until I complete it.</font>
+
 
 ## Tasks
 
@@ -18,7 +21,23 @@
 - [x] Global variable localization
 - [ ] CSE
 - [ ] Loop Invariant
-- [ ] 
+
+[//]: # (## Scores)
+
+[//]: # ()
+[//]: # (- Mem2Reg+RegAlloc ~58pts)
+
+[//]: # (- Inline ~62pts)
+
+[//]: # (- Dead Code Elimination ~63pts)
+
+[//]: # (- SCCP ~64pts)
+
+[//]: # (- Tail Calling ~70pts)
+
+[//]: # (- Global2Local ~76pts)
+
+[//]: # (- Down Code Elimination ~81pts &#40;including mul->sll in getelementptr&#41;)
 
 ## Usage
 

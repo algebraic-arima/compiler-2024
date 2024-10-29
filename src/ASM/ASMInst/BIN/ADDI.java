@@ -1,4 +1,4 @@
-package src.ASM.ASMInst.Bin;
+package src.ASM.ASMInst.BIN;
 
 public class ADDI extends BinInst {
     public ADDI(String dest_, String lhs_, long rhs_) {

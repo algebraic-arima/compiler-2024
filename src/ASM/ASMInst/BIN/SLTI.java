@@ -1,4 +1,4 @@
-package src.ASM.ASMInst.Bin;
+package src.ASM.ASMInst.BIN;
 
 public class SLTI extends BinInst {
     public SLTI(String dest_, String lhs_, long rhs_) {

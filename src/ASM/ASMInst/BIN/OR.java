@@ -1,4 +1,4 @@
-package src.ASM.ASMInst.Bin;
+package src.ASM.ASMInst.BIN;
 
 public class OR extends BinInst {
     public OR(String dest_, String lhs_, String rhs_) {

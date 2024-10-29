@@ -1,4 +1,4 @@
-package src.ASM.ASMInst.Bin;
+package src.ASM.ASMInst.BIN;
 
 import src.ASM.ASMInst.ASMInst;
 import src.ASM.Operand.Imm;

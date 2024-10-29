@@ -1,10 +1,9 @@
-package src.ASM.ASMInst;
+package src.ASM.ASMInst.BR;
 
 import src.ASM.Operand.Reg;
 
-public class BEQZ extends ASMInst {
+public class BEQZ extends BR {
     public Reg rs;
-    public String label;
 
     public BEQZ(String rs_, String label_) {
         rs = Reg.get(rs_);

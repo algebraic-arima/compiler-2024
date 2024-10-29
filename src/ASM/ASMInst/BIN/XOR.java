@@ -1,4 +1,4 @@
-package src.ASM.ASMInst.Bin;
+package src.ASM.ASMInst.BIN;
 
 public class XOR extends BinInst{
     public XOR(String dest_, String lhs_, String rhs_) {

@@ -1,4 +1,4 @@
-package src.ASM.ASMInst.Bin;
+package src.ASM.ASMInst.BIN;
 
 public class AND extends BinInst{
     public AND(String dest_, String lhs_, String rhs_) {

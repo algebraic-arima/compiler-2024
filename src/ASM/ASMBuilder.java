@@ -2,7 +2,8 @@ package src.ASM;
 
 import src.ASM.ASMDef.*;
 import src.ASM.ASMInst.*;
-import src.ASM.ASMInst.Bin.*;
+import src.ASM.ASMInst.BIN.*;
+import src.ASM.ASMInst.BR.*;
 import src.ASM.ASMInst.MV;
 import src.ASM.Operand.*;
 
