@@ -62,7 +62,7 @@ public class Global2Local {
             }
             HashSet<String> locVar = new HashSet<>();
             for (Map.Entry<String, Integer> e : useNum.entrySet()) {
-                if (e.getValue() >= callCnt) {
+                if (e.getValue() >= 0.8 * callCnt) {
                     locVar.add(e.getKey());
                 }
             }
