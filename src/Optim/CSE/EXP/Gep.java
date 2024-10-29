@@ -9,10 +9,11 @@ public class Gep extends EXP {
     public Entity offset;
     public int fieldInd;
 
-    public Gep(Register ptr, Entity offset, int fieldInd) {
+    public Gep(Register ptr, Entity offset, int fieldInd,Register d) {
         this.ptr = ptr;
         this.offset = offset;
         this.fieldInd = fieldInd;
+        dest = d;
     }
 
     @Override

@@ -43,26 +43,36 @@ public class FuncCSE {
     public void scan(IRBlock b) {
         HashSet<EXP> expList = new HashSet<>();
         for (IRInst inst : b.IRInsts) {
+            EXP curExp = null;
             if (inst instanceof GetElePtr g) {
-                Gep gep = new Gep(g.ptr, g.offset, g.fieldInd);
-                expList.add(gep);
+                curExp = new Gep(g.ptr, g.offset, g.fieldInd, g.dest);
             } else if (inst instanceof Binary bi) {
                 if (a.contains(bi.op)) {
-                    Abel aa = new Abel(bi.op, bi.lhs, bi.rhs);
-                    expList.add(aa);
+                    curExp = new Abel(bi.op, bi.lhs, bi.rhs, bi.dest);
                 } else if (n.contains(bi.op)) {
-                    NonAbel aa = new NonAbel(bi.op, bi.lhs, bi.rhs);
-                    expList.add(aa);
+                    curExp = new NonAbel(bi.op, bi.lhs, bi.rhs, bi.dest);
                 }
             } else if (inst instanceof Icmp bi) {
                 if (a.contains(bi.op)) {
-                    Abel aa = new Abel(bi.op, bi.lhs, bi.rhs);
-                    expList.add(aa);
+                    curExp = new Abel(bi.op, bi.lhs, bi.rhs, bi.dest);
                 } else if (n.contains(bi.op)) {
-                    NonAbel aa = new NonAbel(bi.op, bi.lhs, bi.rhs);
-                    expList.add(aa);
+                    curExp = new NonAbel(bi.op, bi.lhs, bi.rhs, bi.dest);
                 }
             }
+            if (curExp != null) {
+                boolean isin = false;
+                for (EXP e : expList) {
+                    if (e.equals(curExp)) {
+                        isin = true;
+                        rename.put(curExp.dest, e.dest);
+                    }
+                }
+                if (!isin) {
+                    expList.add(curExp);
+                }
+            }
+
         }
+        return;
     }
 }

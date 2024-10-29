@@ -1,16 +1,18 @@
 package src.Optim.CSE.EXP;
 
 import src.utils.Entity.Entity;
+import src.utils.Entity.Register;
 
 public class Abel extends EXP {
 
     String op;
     Entity lhs, rhs;
 
-    public Abel(String op, Entity lhs, Entity rhs) {
+    public Abel(String op, Entity lhs, Entity rhs, Register d) {
         this.op = op;
         this.lhs = lhs;
         this.rhs = rhs;
+        dest = d;
     }
 
     @Override
