@@ -22,23 +22,6 @@
 - [ ] CSE
 - [ ] Loop Invariant
 
-[//]: # (## Scores)
-
-[//]: # ()
-[//]: # (- Mem2Reg+RegAlloc ~58pts)
-
-[//]: # (- Inline ~62pts)
-
-[//]: # (- Dead Code Elimination ~63pts)
-
-[//]: # (- SCCP ~64pts)
-
-[//]: # (- Tail Calling ~70pts)
-
-[//]: # (- Global2Local ~76pts)
-
-[//]: # (- Down Code Elimination ~81pts &#40;including mul->sll in getelementptr&#41;)
-
 ## Usage
 
 Place `utils.bash` under the same directory before running the bash.
@@ -68,6 +51,21 @@ Example
 ~/Git/compiler-2024/testcases/codegen/scripts/test_llvm_ir_all.bash 'java -cp /usr/local/bin/antlr-4.13.2-complete.jar:bin src.Main -S' testcases/codegen src/builtin/builtin.ll
 ```
 
+## Scores
+
+- Mem2Reg + RegAlloc ~58pts
+
+- Inline ~62pts
+
+- Dead Code Elimination ~63pts
+
+- SCCP ~64pts
+
+- Tail Calling ~70pts
+
+- Global2Local ~76pts
+
+- Down Code Elimination ~81pts (including mul->sll in getelementptr)
 
 [//]: # (## References)
 
